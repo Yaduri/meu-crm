@@ -26,6 +26,9 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
   const [telegramChatId, setTelegramChatId] = useState(() => {
     return localStorage.getItem('crm_telegram_chat_id') || '';
   });
+  const [telegramBotToken, setTelegramBotToken] = useState(() => {
+    return localStorage.getItem('crm_telegram_bot_token') || '';
+  });
   const [telegramSending, setTelegramSending] = useState(false);
   const [telegramStatus, setTelegramStatus] = useState<string | null>(null);
 
@@ -58,15 +61,21 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
   // Função para testar disparo do Telegram
   const handleTestTelegram = async () => {
     if (!telegramChatId.trim()) {
-      alert('Por favor, informe seu Chat ID do Telegram. Você pode descobrir seu Chat ID enviando uma mensagem no Telegram para @userinfobot ou iniciando conversa com @YagoCRMbot.');
+      alert('Por favor, informe seu Chat ID do Telegram. Você pode descobrir seu Chat ID enviando uma mensagem no Telegram para @userinfobot ou iniciando conversa com seu bot.');
+      return;
+    }
+
+    if (!telegramBotToken.trim()) {
+      alert('Por favor, informe o Token HTTP do seu Bot do Telegram gerado no @BotFather.');
       return;
     }
 
     localStorage.setItem('crm_telegram_chat_id', telegramChatId.trim());
+    localStorage.setItem('crm_telegram_bot_token', telegramBotToken.trim());
     setTelegramSending(true);
     setTelegramStatus(null);
 
-    const token = '8898849039:AAHg_Y-kZKBogg8kO6cSC_Y9kggSWv6Je1U';
+    const token = telegramBotToken.trim();
     const followupsHoje = leads.filter(l => l.proximo_followup === new Date().toISOString().slice(0, 10)).length;
     const projetosAndamento = projects.filter(p => p.etapa !== 'No ar / Entregue').length;
 
@@ -75,7 +84,7 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
       `🚀 *Projetos em desenvolvimento:* ${projetosAndamento} sites na esteira\n` +
       `💰 *MRR Ativo (Hospedagem):* R$ ${totalMRR.toFixed(2)}/mês\n` +
       `🎯 *Pipeline:* ${negociacao} propostas quentes em negociação\n\n` +
-      `👉 Acesse seu painel: http://localhost:5173/`;
+      `👉 Acesse seu painel: https://meu-crm.yaduri16.workers.dev/`;
 
     try {
       const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -252,28 +261,44 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
                 Receba todo dia às 08:00 o resumo dos contatos agendados para o dia, projetos em andamento e mensalidades a vencer direto no seu Telegram.
               </p>
 
-              <div className="space-y-2">
-                <label className="block text-[11px] text-zinc-300 font-medium">Seu Chat ID do Telegram:</label>
-                <div className="flex gap-2">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[11px] text-zinc-300 font-medium mb-1">Token HTTP do Bot Telegram:</label>
                   <input
-                    type="text"
-                    value={telegramChatId}
-                    onChange={(e) => setTelegramChatId(e.target.value)}
-                    placeholder="Ex: 123456789"
-                    className="flex-1 bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-hidden focus:border-emerald-500 font-mono"
+                    type="password"
+                    value={telegramBotToken}
+                    onChange={(e) => setTelegramBotToken(e.target.value)}
+                    placeholder="Cole o token do @BotFather aqui..."
+                    className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-hidden focus:border-emerald-500 font-mono"
                   />
-                  <button
-                    onClick={handleTestTelegram}
-                    disabled={telegramSending}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
-                  >
-                    <Send size={13} />
-                    <span>{telegramSending ? 'Enviando...' : 'Testar Agora'}</span>
-                  </button>
+                  <span className="text-[10px] text-zinc-500 mt-0.5 block">
+                    🔒 Salvo de forma segura e privada apenas no armazenamento local do seu navegador.
+                  </span>
                 </div>
-                <p className="text-[10px] text-zinc-500 leading-normal">
-                  💡 Para descobrir seu Chat ID: abra o Telegram, mande <code>/start</code> para o bot <strong>@userinfobot</strong> ou procure seu ID e cole aqui.
-                </p>
+
+                <div>
+                  <label className="block text-[11px] text-zinc-300 font-medium mb-1">Seu Chat ID do Telegram:</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={telegramChatId}
+                      onChange={(e) => setTelegramChatId(e.target.value)}
+                      placeholder="Ex: 123456789"
+                      className="flex-1 bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-hidden focus:border-emerald-500 font-mono"
+                    />
+                    <button
+                      onClick={handleTestTelegram}
+                      disabled={telegramSending}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+                    >
+                      <Send size={13} />
+                      <span>{telegramSending ? 'Enviando...' : 'Testar Agora'}</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-zinc-500 leading-normal mt-1">
+                    💡 Para descobrir seu Chat ID: abra o Telegram, mande <code>/start</code> para o bot <strong>@userinfobot</strong> ou procure seu ID e cole aqui.
+                  </p>
+                </div>
               </div>
             </div>
 

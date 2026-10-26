@@ -4,6 +4,7 @@ import { handle } from 'hono/cloudflare-pages';
 type Bindings = {
   DB?: D1Database;
   BUCKET?: R2Bucket;
+  TELEGRAM_BOT_TOKEN?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>().basePath('/api');
@@ -88,7 +89,11 @@ app.post('/telegram/summary', async (c) => {
   try {
     const body = await c.req.json();
     const chatId = body.chat_id;
-    const token = '8898849039:AAHg_Y-kZKBogg8kO6cSC_Y9kggSWv6Je1U';
+    const token = c.env?.TELEGRAM_BOT_TOKEN || body.bot_token;
+
+    if (!token) {
+      return c.json({ error: 'TELEGRAM_BOT_TOKEN não configurado' }, 400);
+    }
 
     if (!chatId) {
       return c.json({ error: 'chat_id é obrigatório' }, 400);
