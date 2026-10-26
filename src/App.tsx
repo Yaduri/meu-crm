@@ -731,6 +731,9 @@ export function App() {
       {currentView === 'hoje' && (
         <HojeView
           leads={leads}
+          projects={projects}
+          invoices={invoices}
+          installments={installments}
           selectedLeadId={selectedLeadId}
           onSelectLead={setSelectedLeadId}
           onOpenWhatsApp={handleOpenWhatsApp}

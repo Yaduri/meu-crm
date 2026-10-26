@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ClientLead } from '../../types/crm';
+import type { ClientLead, Project, MonthlyInvoice, Installment } from '../../types/crm';
 import { 
   Send, 
   Clock, 
@@ -11,6 +11,9 @@ import {
 
 interface HojeViewProps {
   leads: ClientLead[];
+  projects?: Project[];
+  invoices?: MonthlyInvoice[];
+  installments?: Installment[];
   selectedLeadId: string | null;
   onSelectLead: (leadId: string) => void;
   onOpenWhatsApp: (lead: ClientLead) => void;
@@ -22,6 +25,9 @@ interface HojeViewProps {
 
 export const HojeView: React.FC<HojeViewProps> = ({
   leads,
+  projects = [],
+  invoices = [],
+  installments = [],
   selectedLeadId,
   onSelectLead,
   onOpenWhatsApp,
@@ -37,6 +43,12 @@ export const HojeView: React.FC<HojeViewProps> = ({
   const overdueLeads = leads.filter(l => l.proximo_followup && l.proximo_followup < todayStr && l.fase === 'prospeccao');
   const todayLeads = leads.filter(l => l.proximo_followup === todayStr && l.fase === 'prospeccao');
   const pendingQueue = [...overdueLeads, ...todayLeads];
+
+  // Métricas dinâmicas reais
+  const projetosAtivos = projects.filter(p => p.etapa !== 'No ar / Entregue').length;
+  const pendenteInvoices = invoices.filter(inv => !inv.pago).reduce((acc, inv) => acc + inv.valor, 0);
+  const pendenteInstallments = installments.filter(inst => !inst.pago).reduce((acc, inst) => acc + inst.valor, 0);
+  const totalAReceber = pendenteInvoices + pendenteInstallments;
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#09090b]">
@@ -72,12 +84,16 @@ export const HojeView: React.FC<HojeViewProps> = ({
 
           <div className="bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-2">
             <div className="text-[11px] text-zinc-400 font-medium">Projetos no forno</div>
-            <div className="text-lg font-bold text-zinc-100">3 ativos</div>
+            <div className="text-lg font-bold text-zinc-100">
+              {projetosAtivos} {projetosAtivos === 1 ? 'ativo' : 'ativos'}
+            </div>
           </div>
 
           <div className="bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-2">
             <div className="text-[11px] text-zinc-400 font-medium">A receber no mês</div>
-            <div className="text-lg font-bold text-emerald-400">R$ 3.840,00</div>
+            <div className="text-lg font-bold text-emerald-400">
+              R$ {totalAReceber.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
           </div>
         </div>
       </header>
