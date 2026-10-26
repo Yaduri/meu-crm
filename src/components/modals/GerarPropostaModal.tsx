@@ -55,14 +55,16 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
   const defaultToken = `prop-${lead.id}`;
 
   const proposalParams = new URLSearchParams({
-    p: defaultToken,
     c: lead.nome,
     n: lead.nicho,
     v: String(implantacao),
     m: String(mensalidade),
     d: String(prazoDias),
   });
-  const proposalLink = `${window.location.origin}/?${proposalParams.toString()}`;
+  const publicBaseOrigin = window.location.hostname.endsWith('yagoduarte.com.br')
+    ? 'https://propostas.yagoduarte.com.br'
+    : window.location.origin;
+  const proposalLink = `${publicBaseOrigin}/p/${defaultToken}?${proposalParams.toString()}`;
 
   const currentProposal: Proposal = {
     id: `prop-${lead.id}`,

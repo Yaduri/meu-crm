@@ -203,10 +203,14 @@ export function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Roteamento de páginas públicas
+  // Roteamento de páginas públicas (/p/:token, /b/:token, ?p=token, ?b=token)
   const urlParams = new URLSearchParams(window.location.search);
-  const pToken = urlParams.get('p') || (window.location.hash.startsWith('#p=') ? window.location.hash.replace('#p=', '') : null);
-  const bToken = urlParams.get('b') || (window.location.hash.startsWith('#b=') ? window.location.hash.replace('#b=', '') : null);
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  const pathPToken = pathParts[0] === 'p' && pathParts[1] ? pathParts[1] : null;
+  const pathBToken = pathParts[0] === 'b' && pathParts[1] ? pathParts[1] : null;
+
+  const pToken = pathPToken || urlParams.get('p') || (window.location.hash.startsWith('#p=') ? window.location.hash.replace('#p=', '') : null);
+  const bToken = pathBToken || urlParams.get('b') || (window.location.hash.startsWith('#b=') ? window.location.hash.replace('#b=', '') : null);
 
   // Persistência Local + Sincronização Automática em Nuvem (Cloudflare D1)
   const [d1Hydrated, setD1Hydrated] = useState(false);

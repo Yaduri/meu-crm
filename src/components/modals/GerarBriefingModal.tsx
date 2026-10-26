@@ -35,7 +35,10 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
 
   if (!isOpen) return null;
 
-  const briefingLink = `${window.location.origin}/?b=${briefing.token}`;
+  const publicBaseOrigin = window.location.hostname.endsWith('yagoduarte.com.br')
+    ? 'https://propostas.yagoduarte.com.br'
+    : window.location.origin;
+  const briefingLink = `${publicBaseOrigin}/b/${briefing.token}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(briefingLink);

@@ -17,8 +17,20 @@ interface PublicProposalViewProps {
   onAccept?: () => void;
 }
 
-export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal }) => {
+export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal: initialProposal }) => {
+  const [proposal, setProposal] = React.useState<Proposal>(initialProposal);
   const yagoWhatsApp = '5511911300834'; // WhatsApp de contato de Yago
+
+  React.useEffect(() => {
+    fetch(`/api/proposals/${initialProposal.token}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.proposal) {
+          setProposal(res.proposal);
+        }
+      })
+      .catch(() => {});
+  }, [initialProposal.token]);
 
   const handleAceitarProposta = () => {
     const msg = `Olá Yago Duarte! Vi a proposta comercial para "${proposal.cliente_nome}" no valor de R$ ${proposal.implantacao.toFixed(2)} e aprovei os termos! Como podemos dar início?`;

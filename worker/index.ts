@@ -489,6 +489,49 @@ app.post('/api/telegram/summary', async (c) => {
 export default {
   async fetch(request: Request, env: Bindings, ctx: unknown): Promise<Response> {
     const url = new URL(request.url);
+    const isPublicPortal = url.hostname === 'propostas.yagoduarte.com.br';
+
+    // No domínio público de propostas/briefings, bloqueia qualquer acesso ao painel do CRM ou APIs internas
+    if (isPublicPortal) {
+      const isPublicApi =
+        url.pathname.startsWith('/api/proposals/') ||
+        url.pathname.startsWith('/api/briefings/') ||
+        url.pathname === '/api/upload' ||
+        url.pathname.startsWith('/api/files/');
+
+      if (url.pathname.startsWith('/api/')) {
+        if (!isPublicApi) {
+          return new Response(JSON.stringify({ error: 'Acesso restrito ao painel administrativo.' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        return app.fetch(request, env, ctx as never);
+      }
+
+      const isStaticAsset =
+        url.pathname.startsWith('/assets/') ||
+        url.pathname.endsWith('.png') ||
+        url.pathname.endsWith('.ico') ||
+        url.pathname.endsWith('.svg');
+
+      const isPublicPage =
+        url.pathname.startsWith('/p/') ||
+        url.pathname.startsWith('/b/') ||
+        url.searchParams.has('p') ||
+        url.searchParams.has('b');
+
+      if (!isStaticAsset && !isPublicPage) {
+        return new Response(
+          `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Yago Duarte · Portal do Cliente</title><style>body{background:#09090b;color:#f4f4f5;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}.box{background:#121215;border:1px solid #27272a;padding:32px;border-radius:16px;max-width:400px}h1{font-size:18px;margin:0 0 8px}p{font-size:13px;color:#a1a1aa;line-height:1.5;margin:0}</style></head><body><div class="box"><h1>Portal Exclusivo de Clientes</h1><p>Para visualizar sua proposta comercial ou preencher seu briefing, acesse utilizando o link exclusivo enviado no seu WhatsApp.</p></div></body></html>`,
+          {
+            status: 403,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          }
+        );
+      }
+    }
+
     if (url.pathname.startsWith('/api/')) {
       return app.fetch(request, env, ctx as never);
     }
