@@ -6,6 +6,8 @@ import { ProjetosView } from './components/views/ProjetosView';
 import { FinanceiroView } from './components/views/FinanceiroView';
 import { CarteiraView } from './components/views/CarteiraView';
 import { RelatoriosView } from './components/views/RelatoriosView';
+import { ConfiguracoesView, DEFAULT_CRM_SETTINGS } from './components/views/ConfiguracoesView';
+import type { CrmSettings } from './components/views/ConfiguracoesView';
 import { LeadModal } from './components/modals/LeadModal';
 import { MigrationModal } from './components/modals/MigrationModal';
 import { FechamentoVendaModal } from './components/modals/FechamentoVendaModal';
@@ -36,9 +38,23 @@ const INVOICES_STORAGE_KEY = 'crm_yago_invoices';
 const MAINTENANCE_STORAGE_KEY = 'crm_yago_maintenance';
 const PROPOSALS_STORAGE_KEY = 'crm_yago_proposals';
 const BRIEFINGS_STORAGE_KEY = 'crm_yago_briefings';
+const SETTINGS_STORAGE_KEY = 'crm_yago_settings';
 
 export function App() {
   const [currentView, setCurrentView] = useState('hoje');
+
+  // Configurações Gerais do Sistema
+  const [settings, setSettings] = useState<CrmSettings>(() => {
+    const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (saved) {
+      try {
+        return { ...DEFAULT_CRM_SETTINGS, ...JSON.parse(saved) };
+      } catch (e) {
+        console.error('Erro ao ler configurações', e);
+      }
+    }
+    return DEFAULT_CRM_SETTINGS;
+  });
   
   // Leads (Inicia com os 306 leads reais do backup se não houver dados salvos)
   const [leads, setLeads] = useState<ClientLead[]>(() => {
@@ -224,6 +240,10 @@ export function App() {
     localStorage.setItem(BRIEFINGS_STORAGE_KEY, JSON.stringify(briefings));
   }, [briefings]);
 
+  useEffect(() => {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  }, [settings]);
+
   const handleOpenWhatsApp = (lead: ClientLead) => {
     if (!lead.whatsapp) return;
     const cleanPhone = lead.whatsapp.replace(/\D/g, '');
@@ -403,8 +423,8 @@ export function App() {
         presenca_digital: leadData.presenca_digital || 'Sem site',
         origem: leadData.origem || 'Google Maps',
         status_id: leadData.status_id || 'abordar',
-        implantacao: leadData.implantacao || 1200,
-        mensalidade: leadData.mensalidade || 89,
+        implantacao: leadData.implantacao || settings.implantacaoPadrao || 1200,
+        mensalidade: leadData.mensalidade || settings.mensalidadePadrao || 89,
         msg_a_mandar: leadData.msg_a_mandar,
         observacoes: leadData.observacoes,
         followups_sem_resposta: 0,
@@ -416,6 +436,57 @@ export function App() {
       setSelectedLeadId(newLead.id);
     }
     setEditingLead(null);
+  };
+
+  const handleDeleteLead = (leadId: string) => {
+    setLeads(prev => prev.filter(l => l.id !== leadId));
+    if (selectedLeadId === leadId) {
+      setSelectedLeadId(null);
+    }
+  };
+
+  const handleExportFullBackup = () => {
+    const backup = {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      settings,
+      leads,
+      projects,
+      installments,
+      invoices,
+      maintenanceRequests,
+      proposals,
+      briefings,
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `backup-completo-crm-yago-${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImportFullBackup = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (parsed.leads && Array.isArray(parsed.leads)) setLeads(parsed.leads);
+        if (parsed.projects && Array.isArray(parsed.projects)) setProjects(parsed.projects);
+        if (parsed.installments && Array.isArray(parsed.installments)) setInstallments(parsed.installments);
+        if (parsed.invoices && Array.isArray(parsed.invoices)) setInvoices(parsed.invoices);
+        if (parsed.maintenanceRequests && Array.isArray(parsed.maintenanceRequests)) setMaintenanceRequests(parsed.maintenanceRequests);
+        if (parsed.proposals && Array.isArray(parsed.proposals)) setProposals(parsed.proposals);
+        if (parsed.briefings && Array.isArray(parsed.briefings)) setBriefings(parsed.briefings);
+        if (parsed.settings) setSettings({ ...DEFAULT_CRM_SETTINGS, ...parsed.settings });
+        alert('Backup completo restaurado com sucesso!');
+      } catch {
+        alert('Arquivo de backup inválido.');
+      }
+    };
+    reader.readAsText(file, 'utf-8');
   };
 
   const handleImportMigratedLeads = (migratedLeads: ClientLead[], replaceAll: boolean) => {
@@ -578,7 +649,8 @@ export function App() {
     }
     const cleanPhone = invoice.cliente_whatsapp.replace(/\D/g, '');
     const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    const msg = `Olá ${invoice.cliente_nome}, tudo bem? Me chamo Yago Duarte. Passando para enviar o lembrete da mensalidade de hospedagem e manutenção do seu site referente ao mês de ${invoice.competencia} no valor de R$ ${invoice.valor.toFixed(2)}. Chave Pix: seu-pix@aqui. Qualquer dúvida, estou à disposição!`;
+    const pixInfo = settings.chavePix ? ` Chave Pix: ${settings.chavePix}.` : '';
+    const msg = `Olá ${invoice.cliente_nome}, tudo bem? Me chamo ${settings.nomeProfissional || 'Yago Duarte'}. Passando para enviar o lembrete da mensalidade de hospedagem e manutenção do seu site referente ao mês de ${invoice.competencia} no valor de R$ ${invoice.valor.toFixed(2)}.${pixInfo} Qualquer dúvida, estou à disposição!`;
     const url = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
   };
@@ -640,15 +712,19 @@ export function App() {
 
   // Se a rota for pública de proposta (/p/:token ou ?p=token)
   if (pToken) {
-    const firstLead = leads[0];
-    const clientName = firstLead ? firstLead.nome : 'Cliente';
-    const clientNicho = firstLead ? firstLead.nicho : 'Negócios';
+    const matchedLead = leads.find(l => pToken === `prop-${l.id}` || l.id === pToken) || leads[0];
+    const clientName = urlParams.get('c') || (matchedLead ? matchedLead.nome : 'Cliente');
+    const clientNicho = urlParams.get('n') || (matchedLead ? matchedLead.nicho : 'Negócios');
+    const customImplantacao = urlParams.get('v') ? Number(urlParams.get('v')) : (matchedLead?.implantacao || 1200);
+    const customMensalidade = urlParams.get('m') ? Number(urlParams.get('m')) : (matchedLead?.mensalidade || 89);
+    const customPrazo = urlParams.get('d') ? Number(urlParams.get('d')) : 7;
+
     const foundProposal = proposals.find(p => p.token === pToken) || {
       id: `prop-${pToken}`,
       token: pToken,
-      lead_id: firstLead?.id || 'lead-1',
+      lead_id: matchedLead?.id || 'lead-1',
       cliente_nome: clientName,
-      cliente_whatsapp: firstLead?.whatsapp || '11911300834',
+      cliente_whatsapp: matchedLead?.whatsapp || '11911300834',
       nicho: clientNicho,
       titulo_proposta: `Landing Page de Alta Conversão para ${clientName}`,
       apresentacao: `Apresentamos uma proposta completa para posicionar a marca ${clientName} com máxima autoridade na web e atrair clientes qualificados diretamente para o seu WhatsApp.`,
@@ -660,10 +736,10 @@ export function App() {
         { id: '5', titulo: 'Otimização Técnica de SEO e Velocidade', descricao: 'Pontuação 90+ no Google PageSpeed para melhor posicionamento orgânico.', incluso: true },
         { id: '6', titulo: 'Instalação de Pixel Meta & Google Analytics', descricao: 'Tags configuradas para mensurar cliques e conversões de anúncios futuros.', incluso: true }
       ],
-      prazo_dias: 7,
-      implantacao: firstLead?.implantacao || 1200,
+      prazo_dias: customPrazo,
+      implantacao: customImplantacao,
       forma_pagamento_implantacao: '50% de entrada e 50% na aprovação final',
-      mensalidade: firstLead?.mensalidade || 89,
+      mensalidade: customMensalidade,
       beneficios_mensalidade: [
         'Hospedagem ultra rápida Cloudflare + SSL grátis',
         'Suporte técnico direto no WhatsApp e pequenos ajustes mensais',
@@ -726,6 +802,7 @@ export function App() {
         }}
         onOpenMigration={() => setIsMigrationOpen(true)}
         onExportCsv={handleExportCsv}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
       />
 
       {currentView === 'hoje' && (
@@ -741,6 +818,10 @@ export function App() {
           onRegistrarContato={handleRegistrarContato}
           onMudarStatus={handleMoveLeadStatus}
           onOpenProposta={(lead) => setSelectedProposalLead(lead)}
+          onEditLead={(lead) => {
+            setEditingLead(lead);
+            setIsModalOpen(true);
+          }}
         />
       )}
 
@@ -818,11 +899,19 @@ export function App() {
         />
       )}
 
-      {currentView !== 'hoje' && currentView !== 'prospeccao' && currentView !== 'projetos' && currentView !== 'financeiro' && currentView !== 'carteira' && currentView !== 'relatorios' && (
-        <div className="flex-1 flex flex-col items-center justify-center text-zinc-500">
-          <div className="text-base font-medium text-zinc-300">Tela {currentView.toUpperCase()}</div>
-          <p className="text-xs text-zinc-500 mt-1">Será implementada nas próximas fases do plano.</p>
-        </div>
+      {currentView === 'configuracoes' && (
+        <ConfiguracoesView
+          settings={settings}
+          onSaveSettings={setSettings}
+          onExportFullBackup={handleExportFullBackup}
+          onImportFullBackup={handleImportFullBackup}
+          counts={{
+            leads: leads.length,
+            projects: projects.length,
+            invoices: invoices.length,
+            installments: installments.length,
+          }}
+        />
       )}
 
       {/* Modal de Lead */}
@@ -833,6 +922,8 @@ export function App() {
           setEditingLead(null);
         }}
         onSave={handleSaveLead}
+        onDelete={handleDeleteLead}
+        onOpenProposta={(lead) => setSelectedProposalLead(lead)}
         initialLead={editingLead}
         existingLeads={leads}
       />

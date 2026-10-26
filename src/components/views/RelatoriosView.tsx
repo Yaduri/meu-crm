@@ -84,7 +84,7 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
       `🚀 *Projetos em desenvolvimento:* ${projetosAndamento} sites na esteira\n` +
       `💰 *MRR Ativo (Hospedagem):* R$ ${totalMRR.toFixed(2)}/mês\n` +
       `🎯 *Pipeline:* ${negociacao} propostas quentes em negociação\n\n` +
-      `👉 Acesse seu painel: https://meu-crm.yaduri16.workers.dev/`;
+      `👉 Acesse seu painel: https://crm.yagoduarte.com.br`;
 
     try {
       const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { ClientLead, TipoProjeto } from '../../types/crm';
 import { CHECKLIST_PADRAO_LP } from '../../types/crm';
 import { CheckCircle, X, Sparkles } from 'lucide-react';
@@ -35,6 +35,13 @@ export const FechamentoVendaModal: React.FC<FechamentoVendaModalProps> = ({
 
   const [inicio, setInicio] = useState(todayStr);
   const [prazo, setPrazo] = useState(defaultPrazo);
+
+  useEffect(() => {
+    if (lead) {
+      setImplantacao(lead.implantacao !== undefined ? lead.implantacao.toString() : '1200');
+      setMensalidade(lead.mensalidade !== undefined ? lead.mensalidade.toString() : '89');
+    }
+  }, [lead, isOpen]);
 
   if (!isOpen || !lead) return null;
 

@@ -25,6 +25,7 @@ interface SidebarProps {
   onNewLead: () => void;
   onOpenMigration: () => void;
   onExportCsv: () => void;
+  onOpenCommandPalette?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -34,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNewLead,
   onOpenMigration,
   onExportCsv,
+  onOpenCommandPalette,
 }) => {
   const navItems = [
     { id: 'hoje', label: 'Hoje', icon: Calendar, badge: counts.hoje },
@@ -133,7 +135,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Command palette hint */}
       <div className="p-3 border-t border-[#27272a]">
-        <div className="flex items-center justify-between px-2.5 py-2 rounded-lg bg-[#18181b] border border-[#27272a] text-zinc-400 text-[11px]">
+        <button
+          type="button"
+          onClick={onOpenCommandPalette}
+          className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg bg-[#18181b] hover:bg-[#222227] border border-[#27272a] text-zinc-400 hover:text-zinc-200 text-[11px] transition-colors cursor-pointer"
+        >
           <div className="flex items-center gap-2">
             <Search size={13} />
             <span>Buscar lead...</span>
@@ -141,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <kbd className="text-[10px] bg-[#27272a] px-1.5 py-0.5 rounded text-zinc-300 font-mono">
             Ctrl+K
           </kbd>
-        </div>
+        </button>
       </div>
     </aside>
   );

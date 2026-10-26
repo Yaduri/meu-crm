@@ -30,6 +30,8 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNicho, setSelectedNicho] = useState<string>('todos');
 
+  const uniqueNichos = Array.from(new Set(leads.map(l => l.nicho).filter(Boolean))).sort();
+
   // Filtragem
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -70,15 +72,12 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
           <select
             value={selectedNicho}
             onChange={(e) => setSelectedNicho(e.target.value)}
-            className="bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-hidden focus:border-emerald-500"
+            className="bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
           >
             <option value="todos">Todos os nichos</option>
-            <option value="Estética">Estética</option>
-            <option value="Advogado">Advogado</option>
-            <option value="Massoterapia">Massoterapia</option>
-            <option value="Dentista">Dentista</option>
-            <option value="Psicólogo">Psicólogo</option>
-            <option value="Outro">Outro</option>
+            {uniqueNichos.map(nicho => (
+              <option key={nicho} value={nicho}>{nicho}</option>
+            ))}
           </select>
         </div>
 

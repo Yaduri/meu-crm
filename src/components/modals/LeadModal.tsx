@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
-import { X, AlertCircle } from 'lucide-react';
+import { X, AlertCircle, Trash2, FileText } from 'lucide-react';
 
 interface LeadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (leadData: Partial<ClientLead>) => void;
+  onDelete?: (leadId: string) => void;
+  onOpenProposta?: (lead: ClientLead) => void;
   initialLead?: ClientLead | null;
   existingLeads: ClientLead[];
 }
@@ -15,6 +17,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onDelete,
+  onOpenProposta,
   initialLead,
   existingLeads
 }) => {
@@ -74,6 +78,15 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   }, [initialLead, isOpen]);
 
   if (!isOpen) return null;
+
+  // Lista combinada de nichos padrão + nichos existentes na base
+  const allNichos = Array.from(
+    new Set([
+      ...NICHOS_PADRAO,
+      ...existingLeads.map(l => l.nicho).filter(Boolean),
+      ...(initialLead?.nicho ? [initialLead.nicho] : [])
+    ])
+  ).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
   // Checagem de WhatsApp duplicado
   const cleanPhone = whatsapp.replace(/\D/g, '');
@@ -152,7 +165,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
                 onChange={(e) => setNicho(e.target.value)}
                 className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 focus:outline-hidden focus:border-emerald-500"
               >
-                {NICHOS_PADRAO.map(n => (
+                {allNichos.map(n => (
                   <option key={n} value={n}>{n}</option>
                 ))}
               </select>
@@ -321,20 +334,54 @@ export const LeadModal: React.FC<LeadModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="pt-4 border-t border-[#27272a] flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-[#27272a] hover:bg-zinc-700 text-zinc-300 font-medium transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors"
-            >
-              {initialLead?.nome ? 'Salvar Alterações' : 'Cadastrar Lead'}
-            </button>
+          <div className="pt-4 border-t border-[#27272a] flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              {initialLead?.id && onDelete && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm(`Deseja realmente excluir o lead "${initialLead.nome}"?`)) {
+                      onDelete(initialLead.id);
+                      onClose();
+                    }
+                  }}
+                  className="px-3 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Trash2 size={14} />
+                  <span>Excluir</span>
+                </button>
+              )}
+
+              {initialLead?.id && onOpenProposta && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenProposta(initialLead);
+                  }}
+                  className="px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <FileText size={14} />
+                  <span>Gerar Proposta (/p/)</span>
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 rounded-lg bg-[#27272a] hover:bg-zinc-700 text-zinc-300 font-medium transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors cursor-pointer"
+              >
+                {initialLead?.nome ? 'Salvar Alterações' : 'Cadastrar Lead'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

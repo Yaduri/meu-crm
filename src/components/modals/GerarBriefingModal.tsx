@@ -31,9 +31,10 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
   briefing,
   onUpdateBriefing
 }) => {
+  const [copied, setCopied] = useState(false);
+
   if (!isOpen) return null;
 
-  const [copied, setCopied] = useState(false);
   const briefingLink = `${window.location.origin}/?b=${briefing.token}`;
 
   const handleCopyLink = () => {

@@ -1,12 +1,14 @@
 import React from 'react';
 import type { ClientLead, Project, MonthlyInvoice, Installment } from '../../types/crm';
+import { DEFAULT_STATUSES } from '../../types/crm';
 import { 
   Send, 
   Clock, 
   CheckCircle2, 
   AlertTriangle,
   History,
-  FileText
+  FileText,
+  Edit3
 } from 'lucide-react';
 
 interface HojeViewProps {
@@ -21,6 +23,7 @@ interface HojeViewProps {
   onRegistrarContato: (leadId: string) => void;
   onMudarStatus: (leadId: string, statusId: string) => void;
   onOpenProposta?: (lead: ClientLead) => void;
+  onEditLead?: (lead: ClientLead) => void;
 }
 
 export const HojeView: React.FC<HojeViewProps> = ({
@@ -33,16 +36,18 @@ export const HojeView: React.FC<HojeViewProps> = ({
   onOpenWhatsApp,
   onReagendar,
   onRegistrarContato,
+  onMudarStatus,
   onOpenProposta,
+  onEditLead,
 }) => {
-  const selectedLead = leads.find((l) => l.id === selectedLeadId) || leads[0];
-
   const todayStr = new Date().toISOString().slice(0, 10);
   
   // Classificar followups
   const overdueLeads = leads.filter(l => l.proximo_followup && l.proximo_followup < todayStr && l.fase === 'prospeccao');
   const todayLeads = leads.filter(l => l.proximo_followup === todayStr && l.fase === 'prospeccao');
   const pendingQueue = [...overdueLeads, ...todayLeads];
+
+  const selectedLead = leads.find((l) => l.id === selectedLeadId) || pendingQueue[0] || leads[0];
 
   // Métricas dinâmicas reais
   const projetosAtivos = projects.filter(p => p.etapa !== 'No ar / Entregue').length;
@@ -174,8 +179,19 @@ export const HojeView: React.FC<HojeViewProps> = ({
               <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className="text-xl font-bold text-zinc-100">{selectedLead.nome}</h2>
-                    <div className="flex items-center gap-2 mt-1.5">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold text-zinc-100">{selectedLead.nome}</h2>
+                      {onEditLead && (
+                        <button
+                          onClick={() => onEditLead(selectedLead)}
+                          className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
+                          title="Editar dados do lead"
+                        >
+                          <Edit3 size={13} />
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
                       <span className="text-xs px-2.5 py-0.5 rounded-md bg-zinc-800 text-zinc-200 font-medium">
                         {selectedLead.nicho}
                       </span>
@@ -185,6 +201,15 @@ export const HojeView: React.FC<HojeViewProps> = ({
                       <span className="text-xs px-2.5 py-0.5 rounded-md bg-zinc-800/60 text-zinc-400">
                         Origem: {selectedLead.origem}
                       </span>
+                      <select
+                        value={selectedLead.status_id}
+                        onChange={(e) => onMudarStatus(selectedLead.id, e.target.value)}
+                        className="bg-[#18181b] border border-zinc-700 rounded-md px-2 py-0.5 text-xs text-zinc-200 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+                      >
+                        {DEFAULT_STATUSES.map(s => (
+                          <option key={s.id} value={s.id}>{s.label}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
@@ -273,26 +298,40 @@ export const HojeView: React.FC<HojeViewProps> = ({
                 </div>
               </div>
 
-              {/* History Timeline */}
+              {/* History & Notes Timeline */}
               <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-4 text-xs font-semibold text-zinc-300 uppercase tracking-wider">
                   <History size={14} />
-                  <span>Linha do Tempo de Interações</span>
+                  <span>Histórico & Observações do Cliente</span>
                 </div>
 
                 <div className="space-y-3">
+                  {selectedLead.observacoes && (
+                    <div className="p-3 bg-[#18181b] border border-[#27272a] rounded-xl text-xs text-zinc-300">
+                      <span className="text-[10px] font-semibold uppercase text-zinc-500 block mb-1">Observações Internas:</span>
+                      {selectedLead.observacoes}
+                    </div>
+                  )}
                   <div className="flex items-start gap-3 text-xs">
                     <div className="w-2 h-2 rounded-full bg-emerald-400 mt-1.5 shrink-0"></div>
                     <div>
-                      <div className="text-zinc-200 font-medium">Prévia exclusiva enviada via WhatsApp</div>
-                      <div className="text-[11px] text-zinc-500">22/10/2026 às 14:30 · aguardando retorno</div>
+                      <div className="text-zinc-200 font-medium">
+                        Status Atual: {DEFAULT_STATUSES.find(s => s.id === selectedLead.status_id)?.label || selectedLead.status_id}
+                      </div>
+                      <div className="text-[11px] text-zinc-500">
+                        Próximo Follow-up: {selectedLead.proximo_followup ? selectedLead.proximo_followup.split('-').reverse().join('/') : 'Não agendado'}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 text-xs">
                     <div className="w-2 h-2 rounded-full bg-zinc-600 mt-1.5 shrink-0"></div>
                     <div>
-                      <div className="text-zinc-200 font-medium">Abordagem inicial realizada</div>
-                      <div className="text-[11px] text-zinc-500">18/10/2026 às 10:15 · lead demonstrou interesse</div>
+                      <div className="text-zinc-200 font-medium">
+                        Último contato registrado: {selectedLead.ultimo_contato ? selectedLead.ultimo_contato.split('-').reverse().join('/') : 'Ainda não abordado'}
+                      </div>
+                      <div className="text-[11px] text-zinc-500">
+                        Cadastrado em {selectedLead.created_at ? selectedLead.created_at.split('-').reverse().join('/') : '-'}
+                      </div>
                     </div>
                   </div>
                 </div>

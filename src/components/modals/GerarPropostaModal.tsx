@@ -32,12 +32,9 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
   lead,
   onSaveProposal
 }) => {
-  if (!isOpen || !lead) return null;
-
-  const defaultToken = `prop-${lead.id}`;
-  const [titulo, setTitulo] = useState(`Landing Page de Alta Conversão para ${lead.nome}`);
-  const [implantacao, setImplantacao] = useState(lead.implantacao || 1200);
-  const [mensalidade, setMensalidade] = useState(lead.mensalidade || 89);
+  const [titulo, setTitulo] = useState(`Landing Page de Alta Conversão para ${lead?.nome || 'Cliente'}`);
+  const [implantacao, setImplantacao] = useState(lead?.implantacao || 1200);
+  const [mensalidade, setMensalidade] = useState(lead?.mensalidade || 89);
   const [prazoDias, setPrazoDias] = useState(7);
   const [formaPagamento, setFormaPagamento] = useState('50% de entrada e 50% na aprovação final');
   const [apresentacao, setApresentacao] = useState(
@@ -45,7 +42,27 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
   );
   const [copied, setCopied] = useState(false);
 
-  const proposalLink = `${window.location.origin}/?p=${defaultToken}`;
+  React.useEffect(() => {
+    if (lead) {
+      setTitulo(`Landing Page de Alta Conversão para ${lead.nome}`);
+      setImplantacao(lead.implantacao || 1200);
+      setMensalidade(lead.mensalidade || 89);
+    }
+  }, [lead, isOpen]);
+
+  if (!isOpen || !lead) return null;
+
+  const defaultToken = `prop-${lead.id}`;
+
+  const proposalParams = new URLSearchParams({
+    p: defaultToken,
+    c: lead.nome,
+    n: lead.nicho,
+    v: String(implantacao),
+    m: String(mensalidade),
+    d: String(prazoDias),
+  });
+  const proposalLink = `${window.location.origin}/?${proposalParams.toString()}`;
 
   const currentProposal: Proposal = {
     id: `prop-${lead.id}`,
