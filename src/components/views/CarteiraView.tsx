@@ -70,82 +70,94 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Lista de Clientes Ativos */}
         <div className="flex-1 overflow-auto p-6 border-r border-[#27272a]">
-          <div className="grid grid-cols-2 gap-4">
-            {clients.map((client) => {
-              const isSelected = selectedClient?.id === client.id;
-              const pendingRequestsCount = maintenanceRequests.filter(r => r.client_id === client.id && r.status !== 'concluido').length;
+          {clients.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-zinc-500">
+              <div className="w-14 h-14 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center text-zinc-400 mb-3">
+                <Wallet size={24} />
+              </div>
+              <h3 className="text-sm font-semibold text-zinc-200">Nenhum cliente ativo na carteira ainda</h3>
+              <p className="text-xs text-zinc-400 max-w-md mt-1 leading-relaxed">
+                Quando você fechar um projeto e entregá-lo (movendo para a etapa "No ar / Entregue" na esteira de Projetos), o cliente aparecerá aqui automaticamente com a gestão de solicitações de suporte e mensalidade recorrente (MRR).
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {clients.map((client) => {
+                const isSelected = selectedClient?.id === client.id;
+                const pendingRequestsCount = maintenanceRequests.filter(r => r.client_id === client.id && r.status !== 'concluido').length;
 
-              return (
-                <div
-                  key={client.id}
-                  onClick={() => setSelectedClientId(client.id)}
-                  className={`p-4 bg-[#121215] border rounded-2xl cursor-pointer transition-all ${
-                    isSelected
-                      ? 'border-emerald-500/70 bg-[#16161b] shadow-md shadow-emerald-500/5 ring-1 ring-emerald-500/20'
-                      : 'border-[#27272a] hover:border-zinc-700 hover:bg-[#141418]'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-sm text-zinc-100">{client.nome}</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-medium">
-                          {client.nicho}
-                        </span>
-                        {client.site_atual && (
-                          <span className="text-[11px] text-zinc-400 flex items-center gap-1">
-                            <Globe size={11} className="text-emerald-400" />
-                            <span className="truncate max-w-[140px]">{client.site_atual}</span>
+                return (
+                  <div
+                    key={client.id}
+                    onClick={() => setSelectedClientId(client.id)}
+                    className={`p-4 bg-[#121215] border rounded-2xl cursor-pointer transition-all ${
+                      isSelected
+                        ? 'border-emerald-500/70 bg-[#16161b] shadow-md shadow-emerald-500/5 ring-1 ring-emerald-500/20'
+                        : 'border-[#27272a] hover:border-zinc-700 hover:bg-[#141418]'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-sm text-zinc-100">{client.nome}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-medium">
+                            {client.nicho}
                           </span>
-                        )}
+                          {client.site_atual && (
+                            <span className="text-[11px] text-zinc-400 flex items-center gap-1">
+                              <Globe size={11} className="text-emerald-400" />
+                              <span className="truncate max-w-[140px]">{client.site_atual}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <div className="text-xs font-mono font-bold text-emerald-400">
+                          R$ {client.mensalidade?.toFixed(2)}/mês
+                        </div>
+                        <div className="text-[10px] text-zinc-500 mt-0.5">
+                          Venc: dia {client.dia_vencimento || 10}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <div className="text-xs font-mono font-bold text-emerald-400">
-                        R$ {client.mensalidade?.toFixed(2)}/mês
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-800/60 text-xs">
+                      <div className="flex items-center gap-1.5 text-zinc-400 text-[11px]">
+                        <Wrench size={12} className={pendingRequestsCount > 0 ? 'text-amber-400' : 'text-zinc-500'} />
+                        <span>{pendingRequestsCount} manutenção pendente</span>
                       </div>
-                      <div className="text-[10px] text-zinc-500 mt-0.5">
-                        Venc: dia {client.dia_vencimento || 10}
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenWhatsApp(client);
+                          }}
+                          className="text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 rounded transition-colors flex items-center gap-1 text-[11px]"
+                        >
+                          <Send size={11} />
+                          <span>Zap</span>
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onNovaVenda(client);
+                          }}
+                          className="text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded transition-colors flex items-center gap-1 text-[11px] font-medium"
+                          title="Reabrir lead para novo escopo ou novo site"
+                        >
+                          <Sparkles size={11} />
+                          <span>Nova Venda</span>
+                        </button>
                       </div>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-800/60 text-xs">
-                    <div className="flex items-center gap-1.5 text-zinc-400 text-[11px]">
-                      <Wrench size={12} className={pendingRequestsCount > 0 ? 'text-amber-400' : 'text-zinc-500'} />
-                      <span>{pendingRequestsCount} manutenção pendente</span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onOpenWhatsApp(client);
-                        }}
-                        className="text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 rounded transition-colors flex items-center gap-1 text-[11px]"
-                      >
-                        <Send size={11} />
-                        <span>Zap</span>
-                      </button>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onNovaVenda(client);
-                        }}
-                        className="text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded transition-colors flex items-center gap-1 text-[11px] font-medium"
-                        title="Reabrir lead para novo escopo ou novo site"
-                      >
-                        <Sparkles size={11} />
-                        <span>Nova Venda</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Right: Painel de Manutenção & Detalhes */}

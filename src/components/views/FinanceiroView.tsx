@@ -158,111 +158,129 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
       <div className="flex-1 overflow-auto px-8 py-4">
         <div className="bg-[#121215] border border-[#27272a] rounded-2xl overflow-hidden shadow-xl">
           {activeTab === 'mensalidades' ? (
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-[#16161b] text-zinc-400 font-semibold uppercase tracking-wider text-[10px] border-b border-[#27272a]">
-                <tr>
-                  <th className="py-3 px-4">Cliente</th>
-                  <th className="py-3 px-4">Competência</th>
-                  <th className="py-3 px-4">Vencimento</th>
-                  <th className="py-3 px-4 text-right">Valor</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Ação Rápida</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#1e1e24] text-zinc-300">
-                {invoices.map((inv) => {
-                  const isLate = !inv.pago && inv.vencimento < todayStr;
-                  return (
-                    <tr key={inv.id} className="hover:bg-[#18181d] transition-colors">
+            invoices.length === 0 ? (
+              <div className="p-12 text-center text-zinc-500 text-xs space-y-2">
+                <p className="font-semibold text-zinc-300 text-sm">Nenhuma mensalidade registrada ainda</p>
+                <p className="max-w-md mx-auto text-zinc-400">
+                  As faturas mensais de hospedagem e suporte são geradas automaticamente assim que um projeto tem seu site entregue e entra na etapa "No ar / Entregue".
+                </p>
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-[#16161b] text-zinc-400 font-semibold uppercase tracking-wider text-[10px] border-b border-[#27272a]">
+                  <tr>
+                    <th className="py-3 px-4">Cliente</th>
+                    <th className="py-3 px-4">Competência</th>
+                    <th className="py-3 px-4">Vencimento</th>
+                    <th className="py-3 px-4 text-right">Valor</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                    <th className="py-3 px-4 text-right">Ação Rápida</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1e1e24] text-zinc-300">
+                  {invoices.map((inv) => {
+                    const isLate = !inv.pago && inv.vencimento < todayStr;
+                    return (
+                      <tr key={inv.id} className="hover:bg-[#18181d] transition-colors">
+                        <td className="py-3 px-4 font-semibold text-zinc-100">
+                          {inv.cliente_nome}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-zinc-400">
+                          {inv.competencia}
+                        </td>
+                        <td className="py-3 px-4 font-mono">
+                          <span className={isLate ? 'text-rose-400 font-bold' : 'text-zinc-300'}>
+                            {inv.vencimento.split('-').reverse().join('/')}
+                          </span>
+                          {isLate && (
+                            <span className="ml-2 text-[10px] bg-rose-500/15 text-rose-400 px-1.5 py-0.2 rounded font-semibold">
+                              Atrasado
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-bold text-zinc-100">
+                          R$ {inv.valor.toFixed(2)}
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            onClick={() => onToggleInvoice(inv.id)}
+                            className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                              inv.pago
+                                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                                : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-700'
+                            }`}
+                          >
+                            {inv.pago ? '✓ Pago' : 'Pendente (Clique p/ Quitar)'}
+                          </button>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          {!inv.pago && (
+                            <button
+                              onClick={() => onSendCobrançaWhatsApp(inv)}
+                              className="text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <Send size={12} />
+                              <span>Lembrete WhatsApp</span>
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )
+          ) : (
+            installments.length === 0 ? (
+              <div className="p-12 text-center text-zinc-500 text-xs space-y-2">
+                <p className="font-semibold text-zinc-300 text-sm">Nenhuma parcela de implantação cadastrada</p>
+                <p className="max-w-md mx-auto text-zinc-400">
+                  Quando você fecha uma venda no funil de prospecção, as parcelas de entrada (50% no início) e entrega (50% no término) são criadas automaticamente aqui para controle financeiro.
+                </p>
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-[#16161b] text-zinc-400 font-semibold uppercase tracking-wider text-[10px] border-b border-[#27272a]">
+                  <tr>
+                    <th className="py-3 px-4">Cliente</th>
+                    <th className="py-3 px-4">Parcela / Descrição</th>
+                    <th className="py-3 px-4">Vencimento</th>
+                    <th className="py-3 px-4 text-right">Valor</th>
+                    <th className="py-3 px-4 text-center">Situação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1e1e24] text-zinc-300">
+                  {installments.map((inst) => (
+                    <tr key={inst.id} className="hover:bg-[#18181d] transition-colors">
                       <td className="py-3 px-4 font-semibold text-zinc-100">
-                        {inv.cliente_nome}
+                        {inst.cliente_nome}
+                      </td>
+                      <td className="py-3 px-4 text-zinc-300 font-medium">
+                        {inst.descricao}
                       </td>
                       <td className="py-3 px-4 font-mono text-zinc-400">
-                        {inv.competencia}
+                        {inst.vencimento.split('-').reverse().join('/')}
                       </td>
-                      <td className="py-3 px-4 font-mono">
-                        <span className={isLate ? 'text-rose-400 font-bold' : 'text-zinc-300'}>
-                          {inv.vencimento.split('-').reverse().join('/')}
-                        </span>
-                        {isLate && (
-                          <span className="ml-2 text-[10px] bg-rose-500/15 text-rose-400 px-1.5 py-0.2 rounded font-semibold">
-                            Atrasado
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4 text-right font-mono font-bold text-zinc-100">
-                        R$ {inv.valor.toFixed(2)}
+                      <td className="py-3 px-4 text-right font-mono font-bold text-emerald-400">
+                        R$ {inst.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="py-3 px-4 text-center">
                         <button
-                          onClick={() => onToggleInvoice(inv.id)}
+                          onClick={() => onToggleInstallment(inst.id)}
                           className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
-                            inv.pago
+                            inst.pago
                               ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                               : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-700'
                           }`}
                         >
-                          {inv.pago ? '✓ Pago' : 'Pendente (Clique p/ Quitar)'}
+                          {inst.pago ? '✓ Recebido' : 'Pendente (Clique p/ Quitar)'}
                         </button>
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        {!inv.pago && (
-                          <button
-                            onClick={() => onSendCobrançaWhatsApp(inv)}
-                            className="text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                          >
-                            <Send size={12} />
-                            <span>Lembrete WhatsApp</span>
-                          </button>
-                        )}
-                      </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          ) : (
-            <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-[#16161b] text-zinc-400 font-semibold uppercase tracking-wider text-[10px] border-b border-[#27272a]">
-                <tr>
-                  <th className="py-3 px-4">Cliente</th>
-                  <th className="py-3 px-4">Parcela / Descrição</th>
-                  <th className="py-3 px-4">Vencimento</th>
-                  <th className="py-3 px-4 text-right">Valor</th>
-                  <th className="py-3 px-4 text-center">Situação</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#1e1e24] text-zinc-300">
-                {installments.map((inst) => (
-                  <tr key={inst.id} className="hover:bg-[#18181d] transition-colors">
-                    <td className="py-3 px-4 font-semibold text-zinc-100">
-                      {inst.cliente_nome}
-                    </td>
-                    <td className="py-3 px-4 text-zinc-300 font-medium">
-                      {inst.descricao}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-zinc-400">
-                      {inst.vencimento.split('-').reverse().join('/')}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-emerald-400">
-                      R$ {inst.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => onToggleInstallment(inst.id)}
-                        className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
-                          inst.pago
-                            ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-700'
-                        }`}
-                      >
-                        {inst.pago ? '✓ Recebido' : 'Pendente (Clique p/ Quitar)'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            )
           )}
         </div>
       </div>

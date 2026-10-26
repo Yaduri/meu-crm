@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
 import { X, AlertCircle } from 'lucide-react';
@@ -35,6 +35,43 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   const [linkProposta, setLinkProposta] = useState(initialLead?.link_proposta || '');
   const [msgAMandar, setMsgAMandar] = useState(initialLead?.msg_a_mandar || '');
   const [observacoes, setObservacoes] = useState(initialLead?.observacoes || '');
+
+  // Sincroniza os campos sempre que o modal abre ou o lead selecionado muda
+  useEffect(() => {
+    if (initialLead) {
+      setNome(initialLead.nome || '');
+      setNicho(initialLead.nicho || 'Estética');
+      setWhatsapp(initialLead.whatsapp || '');
+      setInstagram(initialLead.instagram || '');
+      setGoogleUrl(initialLead.google_url || '');
+      setSiteAtual(initialLead.site_atual || '');
+      setPresencaDigital(initialLead.presenca_digital || 'Sem site');
+      setOrigem(initialLead.origem || 'Google Maps');
+      setStatusId(initialLead.status_id || 'abordar');
+      setImplantacao(initialLead.implantacao !== undefined ? initialLead.implantacao.toString() : '1200');
+      setMensalidade(initialLead.mensalidade !== undefined ? initialLead.mensalidade.toString() : '89');
+      setLinkPrevia(initialLead.link_previa || '');
+      setLinkProposta(initialLead.link_proposta || '');
+      setMsgAMandar(initialLead.msg_a_mandar || '');
+      setObservacoes(initialLead.observacoes || '');
+    } else {
+      setNome('');
+      setNicho('Estética');
+      setWhatsapp('');
+      setInstagram('');
+      setGoogleUrl('');
+      setSiteAtual('');
+      setPresencaDigital('Sem site');
+      setOrigem('Google Maps');
+      setStatusId('abordar');
+      setImplantacao('1200');
+      setMensalidade('89');
+      setLinkPrevia('');
+      setLinkProposta('');
+      setMsgAMandar('');
+      setObservacoes('');
+    }
+  }, [initialLead, isOpen]);
 
   if (!isOpen) return null;
 

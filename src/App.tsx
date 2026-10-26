@@ -15,6 +15,7 @@ import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
 import { PublicProposalView } from './components/public/PublicProposalView';
 import { PublicBriefingView } from './components/public/PublicBriefingView';
 import { exportLeadsToCsv } from './lib/csvMigration';
+import initialRealLeads from './data/initialLeads.json';
 import type { 
   ClientLead, 
   Project, 
@@ -39,25 +40,33 @@ const BRIEFINGS_STORAGE_KEY = 'crm_yago_briefings';
 export function App() {
   const [currentView, setCurrentView] = useState('hoje');
   
-  // Leads
+  // Leads (Inicia com os 306 leads reais do backup se não houver dados salvos)
   const [leads, setLeads] = useState<ClientLead[]>(() => {
     const saved = localStorage.getItem(LEADS_STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Garante remoção de leads de teste antigos caso existam
+          const cleaned = parsed.filter((l: ClientLead) => !l.nome.includes('Camila Rocha') && !l.nome.includes('Letícia Vieira'));
+          if (cleaned.length > 0) return cleaned;
+        }
       } catch (e) {
         console.error('Erro ao ler do localStorage', e);
       }
     }
-    return [];
+    return initialRealLeads as ClientLead[];
   });
 
-  // Projetos
+  // Projetos (Apenas projetos reais criados ao fechar vendas)
   const [projects, setProjects] = useState<Project[]>(() => {
     const saved = localStorage.getItem(PROJECTS_STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((p: Project) => !p.cliente_nome.includes('Camila Rocha'));
+        }
       } catch (e) {
         console.error('Erro ao ler projetos', e);
       }
@@ -65,82 +74,41 @@ export function App() {
     return [];
   });
 
-  // Parcelas de Implantação
+  // Parcelas de Implantação (Apenas parcelas reais de vendas)
   const [installments, setInstallments] = useState<Installment[]>(() => {
     const saved = localStorage.getItem(INSTALLMENTS_STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((inst: Installment) => !inst.cliente_nome.includes('Camila Rocha'));
+        }
       } catch (e) {
         console.error('Erro ao ler parcelas', e);
       }
     }
-    return [
-      {
-        id: 'inst-1',
-        project_id: 'proj-1',
-        cliente_nome: 'Dra. Camila Rocha Advocacia',
-        descricao: '50% Entrada (Início)',
-        valor: 900.0,
-        vencimento: '2026-10-20',
-        pago: true,
-        pago_em: '2026-10-20'
-      },
-      {
-        id: 'inst-2',
-        project_id: 'proj-1',
-        cliente_nome: 'Dra. Camila Rocha Advocacia',
-        descricao: '50% Final (Na Entrega)',
-        valor: 900.0,
-        vencimento: '2026-11-05',
-        pago: false
-      }
-    ];
+    return [];
   });
 
-  // Mensalidades (Cobranças MRR)
+  // Mensalidades (Cobranças MRR de clientes reais)
   const [invoices, setInvoices] = useState<MonthlyInvoice[]>(() => {
     const saved = localStorage.getItem(INVOICES_STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((inv: MonthlyInvoice) => 
+            !inv.cliente_nome.includes('Leticia') && 
+            !inv.cliente_nome.includes('Letícia') &&
+            !inv.cliente_nome.includes('Zen') &&
+            !inv.cliente_nome.includes('Sorriso')
+          );
+        }
       } catch (e) {
         console.error('Erro ao ler mensalidades', e);
       }
     }
-    return [
-      {
-        id: 'inv-1',
-        client_id: 'c-1',
-        cliente_nome: 'Studio Letícia Vieira Estética',
-        cliente_whatsapp: '11911300834',
-        competencia: '2026-10',
-        valor: 89.0,
-        vencimento: '2026-10-25',
-        pago: false
-      },
-      {
-        id: 'inv-2',
-        client_id: 'c-2',
-        cliente_nome: 'Espaço Zen Massoterapia',
-        cliente_whatsapp: '11977776666',
-        competencia: '2026-10',
-        valor: 79.0,
-        vencimento: '2026-10-28',
-        pago: true,
-        pago_em: '2026-10-26'
-      },
-      {
-        id: 'inv-3',
-        client_id: 'c-3',
-        cliente_nome: 'Clínica Sorriso Pleno',
-        cliente_whatsapp: '11966665555',
-        competencia: '2026-10',
-        valor: 99.0,
-        vencimento: '2026-10-30',
-        pago: false
-      }
-    ];
+    return [];
   });
 
   // Pedidos de Manutenção
@@ -148,20 +116,15 @@ export function App() {
     const saved = localStorage.getItem(MAINTENANCE_STORAGE_KEY);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((m: MaintenanceRequest) => m.client_id !== 'c-1');
+        }
       } catch (e) {
         console.error('Erro ao ler manutenções', e);
       }
     }
-    return [
-      {
-        id: 'req-1',
-        client_id: 'c-1',
-        titulo: 'Atualizar endereço da nova sala de atendimento no rodapé',
-        status: 'aberto',
-        created_at: '2026-10-24'
-      }
-    ];
+    return [];
   });
 
   // Propostas Públicas
@@ -677,27 +640,30 @@ export function App() {
 
   // Se a rota for pública de proposta (/p/:token ou ?p=token)
   if (pToken) {
+    const firstLead = leads[0];
+    const clientName = firstLead ? firstLead.nome : 'Cliente';
+    const clientNicho = firstLead ? firstLead.nicho : 'Negócios';
     const foundProposal = proposals.find(p => p.token === pToken) || {
       id: `prop-${pToken}`,
       token: pToken,
-      lead_id: 'lead-demo',
-      cliente_nome: 'Dra. Camila Rocha Advocacia',
-      cliente_whatsapp: '11911300834',
-      nicho: 'Advocacia',
-      titulo_proposta: 'Landing Page de Alta Conversão para Dra. Camila Rocha',
-      apresentacao: 'Apresentamos uma proposta completa para posicionar sua marca jurídica com máxima autoridade na web e atrair clientes qualificados diretamente para o seu WhatsApp.',
+      lead_id: firstLead?.id || 'lead-1',
+      cliente_nome: clientName,
+      cliente_whatsapp: firstLead?.whatsapp || '11911300834',
+      nicho: clientNicho,
+      titulo_proposta: `Landing Page de Alta Conversão para ${clientName}`,
+      apresentacao: `Apresentamos uma proposta completa para posicionar a marca ${clientName} com máxima autoridade na web e atrair clientes qualificados diretamente para o seu WhatsApp.`,
       itens: [
         { id: '1', titulo: 'Design Exclusivo no Figma', descricao: 'Layout sob medida criado para a sua identidade visual antes da programação.', incluso: true },
-        { id: '2', titulo: 'Copywriting Jurídico Persuasivo', descricao: 'Textos orientados a conversão e estruturados para quebrar objeções do cliente.', incluso: true },
+        { id: '2', titulo: 'Copywriting Estratégico Persuasivo', descricao: 'Textos orientados a conversão e estruturados para quebrar objeções do cliente.', incluso: true },
         { id: '3', titulo: 'Desenvolvimento Responsivo Ultra Rápido', descricao: 'Código limpo, seguro e com carregamento instantâneo em smartphones e PCs.', incluso: true },
         { id: '4', titulo: 'Botão Flutuante de WhatsApp Direto', descricao: 'Chamadas para ação integradas com mensagem de contato pré-formatada.', incluso: true },
         { id: '5', titulo: 'Otimização Técnica de SEO e Velocidade', descricao: 'Pontuação 90+ no Google PageSpeed para melhor posicionamento orgânico.', incluso: true },
         { id: '6', titulo: 'Instalação de Pixel Meta & Google Analytics', descricao: 'Tags configuradas para mensurar cliques e conversões de anúncios futuros.', incluso: true }
       ],
       prazo_dias: 7,
-      implantacao: 1800,
+      implantacao: firstLead?.implantacao || 1200,
       forma_pagamento_implantacao: '50% de entrada e 50% na aprovação final',
-      mensalidade: 89,
+      mensalidade: firstLead?.mensalidade || 89,
       beneficios_mensalidade: [
         'Hospedagem ultra rápida Cloudflare + SSL grátis',
         'Suporte técnico direto no WhatsApp e pequenos ajustes mensais',
@@ -712,20 +678,22 @@ export function App() {
 
   // Se a rota for pública de briefing (/b/:token ou ?b=token)
   if (bToken) {
+    const firstLead = leads[0];
+    const clientName = firstLead ? firstLead.nome : 'Cliente';
     const foundBriefing = briefings.find(b => b.token === bToken) || {
       id: `brief-${bToken}`,
       token: bToken,
-      lead_id: 'lead-demo',
-      cliente_nome: 'Dra. Camila Rocha Advocacia',
-      nome_empresa: 'Dra. Camila Rocha Advocacia',
-      slogan_posicionamento: 'Especialista em Direito de Família e Sucessões',
+      lead_id: firstLead?.id || 'lead-1',
+      cliente_nome: clientName,
+      nome_empresa: clientName,
+      slogan_posicionamento: '',
       publico_alvo: '',
       servicos_principais: '',
       diferenciais: '',
       cores_preferidas: '',
       sites_referencia: '',
-      whatsapp_atendimento: '11911300834',
-      instagram: '',
+      whatsapp_atendimento: firstLead?.whatsapp || '11911300834',
+      instagram: firstLead?.instagram || '',
       endereco_fisico: '',
       link_arquivos: '',
       observacoes_adicionais: '',
@@ -743,7 +711,7 @@ export function App() {
     hoje: leads.filter(l => l.fase === 'prospeccao' && (l.proximo_followup || l.status_id === 'previa_enviada')).length,
     prospeccao: leads.filter(l => l.fase === 'prospeccao').length,
     projetos: projects.length,
-    carteira: carteiraClients.length > 0 ? carteiraClients.length : 3
+    carteira: carteiraClients.length
   };
 
   return (
@@ -830,7 +798,7 @@ export function App() {
 
       {currentView === 'carteira' && (
         <CarteiraView
-          clients={carteiraClients.length > 0 ? carteiraClients : leads.slice(0, 4)}
+          clients={carteiraClients}
           maintenanceRequests={maintenanceRequests}
           onAddMaintenance={handleAddMaintenance}
           onToggleMaintenance={handleToggleMaintenance}
