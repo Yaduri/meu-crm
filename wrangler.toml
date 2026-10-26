@@ -1,12 +1,6 @@
-name = "meu-crm-yago"
+name = "meu-crm"
 compatibility_date = "2026-10-26"
-pages_build_output_dir = "./dist"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "crm-prod"
-database_id = "local-d1-id"
-
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "crm-files"
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
