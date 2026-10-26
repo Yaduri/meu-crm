@@ -523,9 +523,9 @@ export default {
 
       if (!isStaticAsset && !isPublicPage) {
         return new Response(
-          `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Yago Duarte · Portal do Cliente</title><style>body{background:#09090b;color:#f4f4f5;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}.box{background:#121215;border:1px solid #27272a;padding:32px;border-radius:16px;max-width:400px}h1{font-size:18px;margin:0 0 8px}p{font-size:13px;color:#a1a1aa;line-height:1.5;margin:0}</style></head><body><div class="box"><h1>Portal Exclusivo de Clientes</h1><p>Para visualizar sua proposta comercial ou preencher seu briefing, acesse utilizando o link exclusivo enviado no seu WhatsApp.</p></div></body></html>`,
+          `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><title>Yago Duarte · Portal do Cliente</title><style>body{background:#09090b;color:#f4f4f5;font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center}.box{background:#121215;border:1px solid #27272a;padding:36px 32px;border-radius:20px;max-width:400px;box-shadow:0 20px 40px rgba(0,0,0,0.5)}.logo{width:48px;height:48px;border-radius:12px;background:#18181b;border:1px solid #27272a;padding:6px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}.logo img{width:100%;height:100%;object-fit:contain}h1{font-size:18px;margin:0 0 8px}p{font-size:13px;color:#a1a1aa;line-height:1.5;margin:0}</style></head><body><div class="box"><div class="logo"><img src="/logo-yd-symbol.png" alt="Yago Duarte"></div><h1>Portal Exclusivo de Clientes</h1><p>Para visualizar sua proposta comercial ou preencher seu briefing, acesse utilizando o link exclusivo enviado no seu WhatsApp.</p></div></body></html>`,
           {
-            status: 403,
+            status: 200,
             headers: { 'Content-Type': 'text/html; charset=utf-8' }
           }
         );

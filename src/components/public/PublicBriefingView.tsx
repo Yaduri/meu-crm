@@ -26,6 +26,7 @@ export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({
   const yagoWhatsApp = '5511911300834';
 
   React.useEffect(() => {
+    document.title = `Briefing do Projeto · ${initialData.cliente_nome} | Yago Duarte`;
     fetch(`/api/briefings/${initialData.token}`)
       .then(r => r.json())
       .then(res => {

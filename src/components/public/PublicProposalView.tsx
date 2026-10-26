@@ -22,6 +22,7 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal
   const yagoWhatsApp = '5511911300834'; // WhatsApp de contato de Yago
 
   React.useEffect(() => {
+    document.title = `Proposta Comercial · ${proposal.cliente_nome} | Yago Duarte`;
     fetch(`/api/proposals/${initialProposal.token}`)
       .then(r => r.json())
       .then(res => {
