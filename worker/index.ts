@@ -84,6 +84,12 @@ app.get('/api/state', async (c) => {
       }
     }
 
+    // Carregar os leads individuais da tabela `leads` no D1
+    const leadsRows = await c.env.DB.prepare('SELECT data_json FROM leads').all<{ data_json: string }>();
+    if (leadsRows.results.length > 0) {
+      state.leads = leadsRows.results.map(r => JSON.parse(r.data_json));
+    }
+
     // Mesclar também propostas e briefings atualizados por clientes nas tabelas públicas
     const proposalsRows = await c.env.DB.prepare('SELECT data_json FROM proposals ORDER BY updated_at DESC').all<{ data_json: string }>();
     if (proposalsRows.results.length > 0) {
@@ -118,13 +124,10 @@ app.post('/api/state', async (c) => {
     const statements: D1PreparedStatement[] = [];
 
     const keys = [
-      'leads',
       'projects',
       'installments',
       'invoices',
       'maintenanceRequests',
-      'proposals',
-      'briefings',
       'settings',
       'telegram_config'
     ];
@@ -136,6 +139,39 @@ app.post('/api/state', async (c) => {
             'INSERT INTO crm_kv (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at'
           ).bind(key, JSON.stringify(body[key]), now)
         );
+      }
+    }
+
+    // Sincronizar leads individualmente na tabela `leads` (evitando limite de 100KB por linha do D1)
+    if (Array.isArray(body.leads)) {
+      const incomingLeads = body.leads as Array<Record<string, unknown>>;
+      const incomingIds = new Set(incomingLeads.map(l => String(l.id)));
+
+      // Remover leads excluídos
+      const existingRows = await c.env.DB.prepare('SELECT id FROM leads').all<{ id: string }>();
+      for (const row of existingRows.results) {
+        if (!incomingIds.has(row.id)) {
+          statements.push(c.env.DB.prepare('DELETE FROM leads WHERE id = ?').bind(row.id));
+        }
+      }
+
+      for (const lead of incomingLeads) {
+        if (lead.id) {
+          statements.push(
+            c.env.DB.prepare(
+              'INSERT INTO leads (id, nome, nicho, status_id, fase, proximo_followup, data_json, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET nome = excluded.nome, nicho = excluded.nicho, status_id = excluded.status_id, fase = excluded.fase, proximo_followup = excluded.proximo_followup, data_json = excluded.data_json, updated_at = excluded.updated_at'
+            ).bind(
+              String(lead.id),
+              String(lead.nome || ''),
+              String(lead.nicho || ''),
+              String(lead.status_id || 'abordar'),
+              String(lead.fase || 'prospeccao'),
+              lead.proximo_followup ? String(lead.proximo_followup) : null,
+              JSON.stringify(lead),
+              now
+            )
+          );
+        }
       }
     }
 
@@ -180,8 +216,9 @@ app.post('/api/state', async (c) => {
       }
     }
 
-    if (statements.length > 0) {
-      await c.env.DB.batch(statements);
+    // Executar em lotes seguros de 50 queries no D1
+    for (let i = 0; i < statements.length; i += 50) {
+      await c.env.DB.batch(statements.slice(i, i + 50));
     }
 
     return c.json({ success: true, updated_at: now });
@@ -401,11 +438,11 @@ async function sendTelegramDailySummary(env: Bindings, overrideToken?: string, o
   if (!text) {
     // Calcula os indicadores reais direto do banco D1
     const todayStr = new Date().toISOString().slice(0, 10);
-    const leadsRow = await env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'leads'").first<{ value: string }>();
+    const leadsRows = await env.DB.prepare('SELECT data_json FROM leads').all<{ data_json: string }>();
     const projectsRow = await env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'projects'").first<{ value: string }>();
     const invoicesRow = await env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'invoices'").first<{ value: string }>();
 
-    const leads = leadsRow ? (JSON.parse(leadsRow.value) as Array<Record<string, unknown>>) : [];
+    const leads = leadsRows.results.map(r => JSON.parse(r.data_json) as Record<string, unknown>);
     const projects = projectsRow ? (JSON.parse(projectsRow.value) as Array<Record<string, unknown>>) : [];
     const invoices = invoicesRow ? (JSON.parse(invoicesRow.value) as Array<Record<string, unknown>>) : [];
 

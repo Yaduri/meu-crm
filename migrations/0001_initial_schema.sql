@@ -5,6 +5,17 @@ CREATE TABLE IF NOT EXISTS crm_kv (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS leads (
+  id TEXT PRIMARY KEY,
+  nome TEXT NOT NULL,
+  nicho TEXT,
+  status_id TEXT,
+  fase TEXT,
+  proximo_followup TEXT,
+  data_json TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS proposals (
   token TEXT PRIMARY KEY,
   lead_id TEXT,
