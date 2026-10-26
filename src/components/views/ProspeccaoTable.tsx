@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { ClientLead } from '../../types/crm';
 import { DEFAULT_STATUSES } from '../../types/crm';
-import { Send, Search } from 'lucide-react';
+import { Send, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 interface ProspeccaoTableProps {
   leads: ClientLead[];
@@ -9,6 +9,18 @@ interface ProspeccaoTableProps {
   onOpenWhatsApp: (lead: ClientLead) => void;
   onMoveLeadStatus: (leadId: string, targetStatusId: string) => void;
 }
+
+type SortField = 
+  | 'nome' 
+  | 'nicho' 
+  | 'status_id' 
+  | 'presenca_digital' 
+  | 'whatsapp' 
+  | 'implantacao' 
+  | 'mensalidade' 
+  | 'proximo_followup';
+
+type SortOrder = 'asc' | 'desc';
 
 export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
   leads,
@@ -19,15 +31,61 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('todos');
   const [selectedNicho, setSelectedNicho] = useState<string>('todos');
+  const [sortField, setSortField] = useState<SortField>('nome');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  const filteredLeads = leads.filter(l => {
-    const matchSearch = l.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        l.nicho.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        (l.whatsapp && l.whatsapp.includes(searchTerm));
-    const matchStatus = selectedStatus === 'todos' || l.status_id === selectedStatus;
-    const matchNicho = selectedNicho === 'todos' || l.nicho === selectedNicho;
-    return matchSearch && matchStatus && matchNicho;
-  });
+  // Lista dinâmica de nichos presentes na base
+  const uniqueNichos = Array.from(new Set(leads.map(l => l.nicho).filter(Boolean))).sort();
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const renderSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown size={11} className="text-zinc-600 group-hover:text-zinc-400 transition-colors" />;
+    }
+    return sortOrder === 'asc' ? (
+      <ArrowUp size={11} className="text-emerald-400" />
+    ) : (
+      <ArrowDown size={11} className="text-emerald-400" />
+    );
+  };
+
+  const filteredLeads = leads
+    .filter(l => {
+      const matchSearch =
+        l.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        l.nicho.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (l.whatsapp && l.whatsapp.includes(searchTerm));
+      const matchStatus = selectedStatus === 'todos' || l.status_id === selectedStatus;
+      const matchNicho = selectedNicho === 'todos' || l.nicho === selectedNicho;
+      return matchSearch && matchStatus && matchNicho;
+    })
+    .sort((a, b) => {
+      const multiplier = sortOrder === 'asc' ? 1 : -1;
+
+      if (sortField === 'implantacao' || sortField === 'mensalidade') {
+        const valA = a[sortField] || 0;
+        const valB = b[sortField] || 0;
+        return (valA - valB) * multiplier;
+      }
+
+      if (sortField === 'proximo_followup') {
+        const dateA = a.proximo_followup || '9999-99-99';
+        const dateB = b.proximo_followup || '9999-99-99';
+        return dateA.localeCompare(dateB) * multiplier;
+      }
+
+      const strA = String(a[sortField] || '').toLowerCase();
+      const strB = String(b[sortField] || '').toLowerCase();
+      return strA.localeCompare(strB, 'pt-BR') * multiplier;
+    });
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#09090b]">
@@ -40,7 +98,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar em todos os campos..."
+              placeholder="Filtrar na tabela..."
               className="w-full bg-[#18181b] border border-[#27272a] rounded-lg pl-9 pr-3 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
             />
           </div>
@@ -48,7 +106,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-hidden focus:border-emerald-500"
+            className="bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
           >
             <option value="todos">Todos os status</option>
             {DEFAULT_STATUSES.map(s => (
@@ -59,38 +117,109 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
           <select
             value={selectedNicho}
             onChange={(e) => setSelectedNicho(e.target.value)}
-            className="bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-hidden focus:border-emerald-500"
+            className="bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
           >
             <option value="todos">Todos os nichos</option>
-            <option value="Estética">Estética</option>
-            <option value="Advogado">Advogado</option>
-            <option value="Massoterapia">Massoterapia</option>
-            <option value="Dentista">Dentista</option>
-            <option value="Psicólogo">Psicólogo</option>
+            {uniqueNichos.map(nicho => (
+              <option key={nicho} value={nicho}>{nicho}</option>
+            ))}
           </select>
         </div>
 
         <div className="text-xs text-zinc-400 font-medium">
-          Total: <span className="text-zinc-200 font-semibold">{filteredLeads.length}</span> leads
+          Exibindo: <span className="text-zinc-200 font-semibold">{filteredLeads.length}</span> leads
         </div>
       </div>
 
       {/* Table Content */}
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-left text-xs border-collapse">
+        <table className="w-full text-left text-xs border-collapse select-none">
           <thead className="bg-[#121215] text-zinc-400 font-semibold uppercase tracking-wider text-[10px] sticky top-0 border-b border-[#27272a] z-10">
             <tr>
-              <th className="py-3 px-4">Cliente / Nome</th>
-              <th className="py-3 px-4">Nicho</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4">Presença Digital</th>
-              <th className="py-3 px-4">WhatsApp</th>
-              <th className="py-3 px-4 text-right">Implantação</th>
-              <th className="py-3 px-4 text-right">Mensalidade</th>
-              <th className="py-3 px-4">Próximo Contato</th>
+              <th
+                onClick={() => handleSort('nome')}
+                className="py-3 px-4 cursor-pointer hover:bg-[#18181d] hover:text-zinc-200 transition-colors group"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={sortField === 'nome' ? 'text-emerald-400' : ''}>Cliente / Nome</span>
+                  {renderSortIcon('nome')}
+                </div>
+              </th>
+
+              <th
+                onClick={() => handleSort('nicho')}
+                className="py-3 px-4 cursor-pointer hover:bg-[#18181d] hover:text-zinc-200 transition-colors group"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={sortField === 'nicho' ? 'text-emerald-400' : ''}>Nicho</span>
+                  {renderSortIcon('nicho')}
+                </div>
+              </th>
+
+              <th
+                onClick={() => handleSort('status_id')}
+                className="py-3 px-4 cursor-pointer hover:bg-[#18181d] hover:text-zinc-200 transition-colors group"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={sortField === 'status_id' ? 'text-emerald-400' : ''}>Status</span>
+                  {renderSortIcon('status_id')}
+                </div>
+              </th>
+
+              <th
+                onClick={() => handleSort('presenca_digital')}
+                className="py-3 px-4 cursor-pointer hover:bg-[#18181d] hover:text-zinc-200 transition-colors group"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={sortField === 'presenca_digital' ? 'text-emerald-400' : ''}>Presença Digital</span>
+                  {renderSortIcon('presenca_digital')}
+                </div>
+              </th>
+
+              <th
+                onClick={() => handleSort('whatsapp')}
+                className="py-3 px-4 cursor-pointer hover:bg-[#18181d] hover:text-zinc-200 transition-colors group"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={sortField === 'whatsapp' ? 'text-emerald-400' : ''}>WhatsApp</span>
+                  {renderSortIcon('whatsapp')}
+                </div>
+              </th>
+
+              <th
+                onClick={() => handleSort('implantacao')}
+                className="py-3 px-4 text-right cursor-pointer hover:bg-[#18181d] hover:text-zinc-200 transition-colors group"
+              >
+                <div className="flex items-center justify-end gap-1.5">
+                  <span className={sortField === 'implantacao' ? 'text-emerald-400' : ''}>Implantação</span>
+                  {renderSortIcon('implantacao')}
+                </div>
+              </th>
+
+              <th
+                onClick={() => handleSort('mensalidade')}
+                className="py-3 px-4 text-right cursor-pointer hover:bg-[#18181d] hover:text-zinc-200 transition-colors group"
+              >
+                <div className="flex items-center justify-end gap-1.5">
+                  <span className={sortField === 'mensalidade' ? 'text-emerald-400' : ''}>Mensalidade</span>
+                  {renderSortIcon('mensalidade')}
+                </div>
+              </th>
+
+              <th
+                onClick={() => handleSort('proximo_followup')}
+                className="py-3 px-4 cursor-pointer hover:bg-[#18181d] hover:text-zinc-200 transition-colors group"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={sortField === 'proximo_followup' ? 'text-emerald-400' : ''}>Próximo Contato</span>
+                  {renderSortIcon('proximo_followup')}
+                </div>
+              </th>
+
               <th className="py-3 px-4 text-center">Ação</th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-[#1e1e24] text-zinc-300">
             {filteredLeads.map((lead) => {
               const status = DEFAULT_STATUSES.find(s => s.id === lead.status_id) || DEFAULT_STATUSES[0];
@@ -132,8 +261,8 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
                   <td className="py-3 px-4 text-right font-mono text-zinc-400">
                     {lead.mensalidade > 0 ? `R$ ${lead.mensalidade.toFixed(2)}` : '-'}
                   </td>
-                  <td className="py-3 px-4 text-zinc-400">
-                    {lead.proximo_followup || '-'}
+                  <td className="py-3 px-4 text-zinc-400 font-mono">
+                    {lead.proximo_followup ? lead.proximo_followup.split('-').reverse().join('/') : '-'}
                   </td>
                   <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                     <button
