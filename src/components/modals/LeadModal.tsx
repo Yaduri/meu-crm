@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
-import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2 } from 'lucide-react';
+import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste } from 'lucide-react';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -40,6 +40,42 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   const [msgAMandar, setMsgAMandar] = useState(initialLead?.msg_a_mandar || '');
   const [observacoes, setObservacoes] = useState(initialLead?.observacoes || '');
   const [aiLoadingIntent, setAiLoadingIntent] = useState<string | null>(null);
+  const [showMagicPaste, setShowMagicPaste] = useState(false);
+  const [rawPasteText, setRawPasteText] = useState('');
+  const [magicLoading, setMagicLoading] = useState(false);
+
+  const handleParseRawLeadAI = async () => {
+    if (!rawPasteText.trim()) return;
+    setMagicLoading(true);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'parse_raw_lead',
+          rawText: rawPasteText,
+        }),
+      });
+      const json = await res.json();
+      const parsed = json.result || json.data;
+      if (res.ok && parsed) {
+        if (parsed.nome) setNome(parsed.nome);
+        if (parsed.nicho) setNicho(parsed.nicho);
+        if (parsed.whatsapp) setWhatsapp(String(parsed.whatsapp).replace(/\D/g, ''));
+        if (parsed.instagram) setInstagram(parsed.instagram);
+        if (parsed.site_atual) setSiteAtual(parsed.site_atual);
+        if (parsed.presenca_digital) setPresencaDigital(parsed.presenca_digital as PresencaDigital);
+        if (parsed.origem) setOrigem(parsed.origem as LeadOrigem);
+        if (parsed.observacoes) setObservacoes(parsed.observacoes);
+        setShowMagicPaste(false);
+        setRawPasteText('');
+      }
+    } catch {
+      // ignore
+    } finally {
+      setMagicLoading(false);
+    }
+  };
 
   const handleGenerateLeadMsgAI = async (intent: string) => {
     setAiLoadingIntent(intent);
@@ -176,6 +212,52 @@ export const LeadModal: React.FC<LeadModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs">
+          {/* Magic Paste Box (Feature #6) */}
+          <div className="p-3 bg-[#18181b] border border-emerald-500/30 rounded-xl space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <ClipboardPaste size={14} className="text-emerald-400 shrink-0" />
+                <div>
+                  <span className="font-semibold text-zinc-100">Cadastro Mágico via Google Maps / Instagram (IA)</span>
+                  <span className="text-[11px] text-zinc-400 block">
+                    Cole o bloco de texto copiado do Google Maps ou da bio do Instagram e preencha tudo em 1 clique.
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMagicPaste(prev => !prev)}
+                className="min-h-[32px] px-3 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-semibold text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Sparkles size={12} />
+                <span>{showMagicPaste ? 'Fechar' : 'Colar Texto Bruto'}</span>
+              </button>
+            </div>
+
+            {showMagicPaste && (
+              <div className="space-y-2 pt-2 border-t border-[#27272a]">
+                <textarea
+                  rows={3}
+                  value={rawPasteText}
+                  onChange={(e) => setRawPasteText(e.target.value)}
+                  placeholder="Cole aqui o texto copiado do Google Maps (nome, avaliações, telefone, endereço, site) ou da bio do Instagram..."
+                  className="w-full bg-[#09090b] border border-[#27272a] rounded-lg p-2.5 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
+                />
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    disabled={magicLoading || !rawPasteText.trim()}
+                    onClick={handleParseRawLeadAI}
+                    className="min-h-[34px] px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {magicLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                    <span>Extrair e Preencher com IA</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {duplicateLead && (
             <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 flex items-center gap-2">
               <AlertCircle size={16} className="shrink-0" />

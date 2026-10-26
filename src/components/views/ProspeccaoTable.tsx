@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import type { ClientLead } from '../../types/crm';
 import { DEFAULT_STATUSES } from '../../types/crm';
-import { Send, Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
+import { Send, Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Trash2, Calendar, DollarSign, X } from 'lucide-react';
 
 interface ProspeccaoTableProps {
   leads: ClientLead[];
   onSelectLead: (lead: ClientLead) => void;
   onOpenWhatsApp: (lead: ClientLead) => void;
   onMoveLeadStatus: (leadId: string, targetStatusId: string) => void;
+  onBulkUpdateLeads?: (leadIds: string[], updates: Partial<ClientLead>) => void;
+  onBulkDeleteLeads?: (leadIds: string[]) => void;
 }
 
 type SortField = 
@@ -29,6 +31,8 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
   onSelectLead,
   onOpenWhatsApp,
   onMoveLeadStatus,
+  onBulkUpdateLeads,
+  onBulkDeleteLeads,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('todos');
@@ -36,6 +40,16 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
   const [sortField, setSortField] = useState<SortField>('nome');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_STEP);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelectOne = (leadId: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(leadId)) next.delete(leadId);
+      else next.add(leadId);
+      return next;
+    });
+  };
 
   // Lista dinâmica de nichos presentes na base
   const uniqueNichos = Array.from(new Set(leads.map(l => l.nicho).filter(Boolean))).sort();
@@ -92,9 +106,123 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
 
   const paginatedLeads = filteredLeads.slice(0, visibleCount);
   const hasMore = visibleCount < filteredLeads.length;
+  const allVisibleSelected = paginatedLeads.length > 0 && paginatedLeads.every(l => selectedIds.has(l.id));
+
+  const toggleSelectAllVisible = () => {
+    if (allVisibleSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedLeads.map(l => l.id)));
+    }
+  };
+
+  const handleBulkFollowupDays = (daysOffset: number) => {
+    if (!onBulkUpdateLeads || selectedIds.size === 0) return;
+    const d = new Date();
+    d.setDate(d.getDate() + daysOffset);
+    const dateStr = d.toISOString().slice(0, 10);
+    onBulkUpdateLeads(Array.from(selectedIds), { proximo_followup: dateStr });
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkStatusChange = (statusId: string) => {
+    if (!onBulkUpdateLeads || !statusId || selectedIds.size === 0) return;
+    onBulkUpdateLeads(Array.from(selectedIds), { status_id: statusId });
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkPriceChange = () => {
+    if (!onBulkUpdateLeads || selectedIds.size === 0) return;
+    const raw = window.prompt('Novo valor de Implantação (R$) para os leads selecionados:', '1200');
+    if (!raw) return;
+    const val = parseFloat(raw);
+    if (!isNaN(val) && val >= 0) {
+      onBulkUpdateLeads(Array.from(selectedIds), { implantacao: val });
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (!onBulkDeleteLeads || selectedIds.size === 0) return;
+    if (window.confirm(`Deseja realmente excluir os ${selectedIds.size} leads selecionados?`)) {
+      onBulkDeleteLeads(Array.from(selectedIds));
+      setSelectedIds(new Set());
+    }
+  };
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#09090b]">
+      {/* Bulk Action Bar (Feature #4) */}
+      {selectedIds.size > 0 && (
+        <div className="px-4 sm:px-6 py-2.5 bg-emerald-950/30 border-b border-emerald-500/30 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-bold text-emerald-400 font-mono bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
+              {selectedIds.size} {selectedIds.size === 1 ? 'selecionado' : 'selecionados'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="text-zinc-400 hover:text-zinc-200 flex items-center gap-1 text-[11px] cursor-pointer"
+            >
+              <X size={12} />
+              <span>Limpar seleção</span>
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <select
+              aria-label="Mudar status em lote"
+              defaultValue=""
+              onChange={(e) => {
+                handleBulkStatusChange(e.target.value);
+                e.target.value = '';
+              }}
+              className="min-h-[32px] bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1 text-xs text-zinc-200 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+            >
+              <option value="" disabled>Mudar Status em Lote...</option>
+              {DEFAULT_STATUSES.map(s => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => handleBulkFollowupDays(0)}
+              className="min-h-[32px] px-2.5 py-1 rounded-lg bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-200 flex items-center gap-1 cursor-pointer"
+            >
+              <Calendar size={12} className="text-sky-400" />
+              <span>Follow-up: Hoje</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleBulkFollowupDays(1)}
+              className="min-h-[32px] px-2.5 py-1 rounded-lg bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-200 flex items-center gap-1 cursor-pointer"
+            >
+              <Calendar size={12} className="text-emerald-400" />
+              <span>Amanhã (+1d)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBulkPriceChange}
+              className="min-h-[32px] px-2.5 py-1 rounded-lg bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-200 flex items-center gap-1 cursor-pointer"
+            >
+              <DollarSign size={12} className="text-emerald-400" />
+              <span>Definir Valor</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBulkDelete}
+              className="min-h-[32px] px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 flex items-center gap-1 font-medium cursor-pointer"
+            >
+              <Trash2 size={12} />
+              <span>Excluir ({selectedIds.size})</span>
+            </button>
+          </div>
+        </div>
+      )}
       {/* Table Filters */}
       <div className="px-4 sm:px-6 py-3 border-b border-[#27272a] bg-[#121215] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 flex-1 max-w-2xl">
@@ -153,6 +281,15 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
         <table className="w-full text-left text-xs border-collapse select-none">
           <thead className="bg-[#121215] text-zinc-300 font-semibold text-[11px] sticky top-0 border-b border-[#27272a] z-10">
             <tr>
+              <th className="py-3 pl-4 pr-2 w-8">
+                <input
+                  type="checkbox"
+                  aria-label="Selecionar todos os leads visíveis"
+                  checked={allVisibleSelected}
+                  onChange={toggleSelectAllVisible}
+                  className="w-3.5 h-3.5 rounded bg-zinc-800 border-zinc-700 text-emerald-500 focus:ring-0 cursor-pointer"
+                />
+              </th>
               <th
                 onClick={() => handleSort('nome')}
                 className="py-3 px-4 cursor-pointer hover:bg-[#18181d] hover:text-zinc-100 transition-colors group"
@@ -240,6 +377,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
           <tbody className="divide-y divide-[#1e1e24] text-zinc-300">
             {paginatedLeads.map((lead) => {
               const status = DEFAULT_STATUSES.find(s => s.id === lead.status_id) || DEFAULT_STATUSES[0];
+              const isChecked = selectedIds.has(lead.id);
               return (
                 <tr
                   key={lead.id}
@@ -251,8 +389,19 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
                       onSelectLead(lead);
                     }
                   }}
-                  className="hover:bg-[#15151a] focus-visible:bg-[#15151a] cursor-pointer transition-colors"
+                  className={`hover:bg-[#15151a] focus-visible:bg-[#15151a] cursor-pointer transition-colors ${
+                    isChecked ? 'bg-emerald-950/15' : ''
+                  }`}
                 >
+                  <td className="py-3 pl-4 pr-2" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      aria-label={`Selecionar ${lead.nome}`}
+                      checked={isChecked}
+                      onChange={() => toggleSelectOne(lead.id)}
+                      className="w-3.5 h-3.5 rounded bg-zinc-800 border-zinc-700 text-emerald-500 focus:ring-0 cursor-pointer"
+                    />
+                  </td>
                   <td className="py-3 px-4 font-semibold text-zinc-100">
                     <span>{lead.nome}</span>
                   </td>

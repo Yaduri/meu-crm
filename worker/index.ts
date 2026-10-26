@@ -280,6 +280,35 @@ app.post('/api/state', async (c) => {
   }
 });
 
+// Helper para disparar alertas em tempo real no Telegram de Yago
+async function sendTelegramRealtimeAlert(env: Bindings, text: string): Promise<void> {
+  try {
+    let botToken = env.TELEGRAM_BOT_TOKEN || '';
+    let chatId = '';
+
+    const tgRow = await env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'telegram_config'").first<{ value: string }>();
+    if (tgRow) {
+      const tg = JSON.parse(tgRow.value);
+      if (!botToken && tg.bot_token) botToken = tg.bot_token;
+      if (tg.chat_id) chatId = tg.chat_id;
+    }
+
+    if (!botToken || !chatId) return;
+
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: 'Markdown'
+      })
+    });
+  } catch {
+    // ignora erro de rede no alerta em tempo real
+  }
+}
+
 // Buscar Proposta Pública no D1
 app.get('/api/proposals/:token', async (c) => {
   const token = c.req.param('token');
@@ -291,6 +320,54 @@ app.get('/api/proposals/:token', async (c) => {
     success: true,
     proposal: JSON.parse(row.data_json)
   });
+});
+
+// Registrar Evento em Tempo Real na Proposta Pública (Visualizada ou Aceita) + Alerta Telegram
+app.post('/api/proposals/:token/event', async (c) => {
+  const token = c.req.param('token');
+  try {
+    const body = await c.req.json<Record<string, unknown>>();
+    const eventType = String(body.event || 'viewed');
+    const now = new Date().toISOString();
+
+    let clienteNome = String(body.cliente_nome || 'Cliente');
+    let nicho = String(body.nicho || 'Negócios');
+    let implantacao = Number(body.implantacao || 1200);
+    let mensalidade = Number(body.mensalidade || 89);
+
+    const row = await c.env.DB.prepare('SELECT data_json FROM proposals WHERE token = ?').bind(token).first<{ data_json: string }>();
+    if (row) {
+      const prop = JSON.parse(row.data_json) as Record<string, unknown>;
+      clienteNome = String(prop.cliente_nome || clienteNome);
+      nicho = String(prop.nicho || nicho);
+      implantacao = Number(prop.implantacao || implantacao);
+      mensalidade = Number(prop.mensalidade || mensalidade);
+
+      if (eventType === 'accepted') {
+        prop.status = 'aceita';
+        prop.accepted_at = now;
+        await c.env.DB.prepare('UPDATE proposals SET data_json = ?, status = ?, updated_at = ? WHERE token = ?')
+          .bind(JSON.stringify(prop), 'aceita', now, token)
+          .run();
+      }
+    }
+
+    if (eventType === 'accepted') {
+      await sendTelegramRealtimeAlert(
+        c.env,
+        `🎉 *Proposta Aprovada pelo Cliente!*\n\n👤 *Cliente:* ${clienteNome} (${nicho})\n💰 *Valor:* R$ ${implantacao.toFixed(2)} + R$ ${mensalidade.toFixed(2)}/mês\n\n🔥 O cliente acabou de clicar em *Aceitar Proposta*!`
+      );
+    } else {
+      await sendTelegramRealtimeAlert(
+        c.env,
+        `👀 *Proposta Sendo Visualizada Agora!*\n\n👤 *Cliente:* ${clienteNome} (${nicho})\n💰 *Proposta:* R$ ${implantacao.toFixed(2)}\n\n💡 _Timing perfeito para mandar um "Oi, conseguiu abrir?" no WhatsApp!_`
+      );
+    }
+
+    return c.json({ ok: true, success: true });
+  } catch {
+    return c.json({ ok: false, success: false }, 400);
+  }
 });
 
 // Buscar Briefing Público no D1
@@ -332,26 +409,11 @@ app.post('/api/briefings/:token', async (c) => {
       )
       .run();
 
-    // Notificar Yago no Telegram caso configurado
-    try {
-      const tgRow = await c.env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'telegram_config'").first<{ value: string }>();
-      if (tgRow) {
-        const tg = JSON.parse(tgRow.value);
-        if (tg.bot_token && tg.chat_id) {
-          await fetch(`https://api.telegram.org/bot${tg.bot_token}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: tg.chat_id,
-              text: `🎉 *Novo Briefing Preenchido!*\n\n👤 *Cliente:* ${data.cliente_nome || data.nome_empresa}\n🏢 *Marca:* ${data.nome_empresa || '-'}\n🎨 *Cores:* ${data.cores_preferidas || '-'}\n\n👉 Veja completo no seu painel: https://crm.yagoduarte.com.br`,
-              parse_mode: 'Markdown'
-            })
-          });
-        }
-      }
-    } catch {
-      // ignora erro de notificação
-    }
+    // Notificar Yago no Telegram em tempo real
+    await sendTelegramRealtimeAlert(
+      c.env,
+      `📋 *Novo Briefing Preenchido!*\n\n👤 *Cliente:* ${data.cliente_nome || data.nome_empresa}\n🏢 *Marca:* ${data.nome_empresa || '-'}\n🎯 *Serviços:* ${data.servicos_principais || '-'}\n🎨 *Cores:* ${data.cores_preferidas || '-'}\n\n👉 Veja completo e gere a Copy IA no painel: https://crm.yagoduarte.com.br`
+    );
 
     return c.json({
       success: true,
@@ -467,13 +529,13 @@ app.post('/api/ai/generate', async (c) => {
     if (action === 'whatsapp_message') {
       const lead = (body.lead || {}) as Record<string, unknown>;
       const intent = String(body.intent || 'primeiro_contato');
-      const objectionText = String(body.objectionText || '');
+      const objectionText = String(body.objection || body.objectionText || '');
 
       const intentInstructions: Record<string, string> = {
         primeiro_contato:
           'Crie uma mensagem de 1º contato frio no WhatsApp curta (3 a 4 frases curtas), cordial e sem cara de robô. Mencione o nome da empresa, o nicho e a presença digital atual, oferecendo mostrar sem compromisso uma ideia/prévia visual de site/landing page para atrair mais clientes pelo Google e anúncios.',
         envio_previa:
-          'Crie uma mensagem de WhatsApp avisando que você (Yago Duarte) acabou de preparar uma prévia visual exclusiva da Landing Page para a empresa deles e perguntando se pode mandar o link para darem uma olhada rápida.',
+          `Crie uma mensagem de WhatsApp avisando que você (Yago Duarte) acabou de preparar uma prévia visual exclusiva da Landing Page para a empresa deles${lead.link_previa ? ` (inclua o link: ${lead.link_previa})` : ''} e perguntando o que acham da estrutura.`,
         followup_resgate:
           'Crie uma mensagem curta e elegante de follow-up para um lead que recebeu contato/prévia/proposta há alguns dias e ainda não respondeu. Sem cobrança chata, gerando curiosidade e deixando fácil responder com "sim" ou "quero ver".',
         quebra_objecao:
@@ -498,7 +560,7 @@ Regras:
 - Use tom humano, profissional, próximo e direto (português do Brasil).`;
 
       const message = await callGemini(c.env, prompt, false);
-      return c.json({ success: true, message });
+      return c.json({ ok: true, success: true, result: message, message });
     }
 
     // 2. Raio-X Comercial & Roteiro de Áudio de 20s por Lead
@@ -527,7 +589,7 @@ Retorne um JSON válido exatamente com esta estrutura:
 
       const raw = await callGemini(c.env, prompt, true);
       const parsed = JSON.parse(raw);
-      return c.json({ success: true, data: parsed });
+      return c.json({ ok: true, success: true, result: parsed, data: parsed });
     }
 
     // 3. Personalizador Inteligente de Proposta Pública (/p/:token)
@@ -559,7 +621,7 @@ Retorne APENAS um JSON válido com a seguinte estrutura exata:
 
       const raw = await callGemini(c.env, prompt, true);
       const parsed = JSON.parse(raw);
-      return c.json({ success: true, data: parsed });
+      return c.json({ ok: true, success: true, result: parsed, data: parsed });
     }
 
     // 4. Gerador de Copy & Estrutura da Landing Page a partir do Briefing (/b/:token)
@@ -581,26 +643,50 @@ Retorne APENAS um JSON válido com esta estrutura exata:
   "headline": "Promessa principal magnética para a Dobra 1 (Hero)",
   "subheadline": "Subtítulo complementar quebrando a principal objeção e gerando desejo",
   "cta_texto": "Texto do botão principal de ação (WhatsApp)",
+  "paleta_sugerida": ["#10b981", "#09090b", "#f4f4f5"],
+  "tipografia_sugerida": "Sugestão de par de fontes Google Fonts",
   "secoes": [
-    { "dobra": "Dobra 2 · Identificação & Autoridade", "titulo": "Título da seção", "copy": "Texto persuasivo pronto para usar" },
-    { "dobra": "Dobra 3 · Serviços & Soluções", "titulo": "Título da seção", "copy": "Apresentação dos principais serviços em tópicos persuasivos" },
-    { "dobra": "Dobra 4 · Diferenciais & Prova", "titulo": "Título da seção", "copy": "Por que escolher a empresa" }
+    { "dobra": "Dobra 1 · Hero & Promessa", "objetivo": "Capturar atenção imediata", "copy_sugerida": "Texto persuasivo pronto para usar" },
+    { "dobra": "Dobra 2 · Identificação & Autoridade", "objetivo": "Gerar conexão e confiança", "copy_sugerida": "Texto persuasivo pronto para usar" },
+    { "dobra": "Dobra 3 · Serviços & Soluções", "objetivo": "Apresentar serviços com foco em benefício", "copy_sugerida": "Apresentação dos principais serviços" },
+    { "dobra": "Dobra 4 · Diferenciais & Prova Social", "objetivo": "Eliminar insegurança", "copy_sugerida": "Por que escolher a empresa" }
   ],
   "faq": [
     { "pergunta": "Pergunta frequente 1 do nicho", "resposta": "Resposta persuasiva 1" },
     { "pergunta": "Pergunta frequente 2 do nicho", "resposta": "Resposta persuasiva 2" },
     { "pergunta": "Pergunta frequente 3 do nicho", "resposta": "Resposta persuasiva 3" }
-  ],
-  "direcao_visual": {
-    "paleta_hex": ["#hex1", "#hex2", "#hex3"],
-    "tipografia": "Sugestão de par de fontes Google Fonts",
-    "estilo": "Resumo da direção estética para o Figma"
-  }
+  ]
 }`;
 
       const raw = await callGemini(c.env, prompt, true);
       const parsed = JSON.parse(raw);
-      return c.json({ success: true, data: parsed });
+      return c.json({ ok: true, success: true, result: parsed, data: parsed });
+    }
+
+    // 6. Cadastro Mágico via Texto Bruto do Google Maps / Instagram
+    if (action === 'parse_raw_lead') {
+      const rawText = String(body.rawText || '');
+      const prompt = `Extraia os dados estruturados de prospecção a partir do texto bruto abaixo (copiado do Google Maps, Instagram ou WhatsApp).
+Texto bruto:
+"""
+${rawText}
+"""
+
+Retorne APENAS um JSON válido com esta estrutura exata:
+{
+  "nome": "Nome da empresa ou profissional",
+  "nicho": "Nicho principal em português (ex: Estética, Odontologia, Advocacia, Barbearia, Academia, Imobiliária, Restaurante, Oficina, etc.)",
+  "whatsapp": "Apenas dígitos do telefone/WhatsApp com DDD (ex: 11999998888) ou vazio se não houver",
+  "instagram": "@usuario se encontrado ou vazio",
+  "site_atual": "domínio/URL do site se houver ou vazio",
+  "presenca_digital": "Escolha exatamente um: 'Sem site', 'Só Instagram', 'Só Google Meu Negócio', 'Site desatualizado/lento', 'Site bom'",
+  "origem": "Escolha exatamente um: 'Google Maps', 'Instagram', 'Indicação', 'Scraper', 'Outro'",
+  "observacoes": "Resumo curto de endereço, nota/avaliações, especialidades ou detalhes úteis encontrados no texto"
+}`;
+
+      const raw = await callGemini(c.env, prompt, true);
+      const parsed = JSON.parse(raw);
+      return c.json({ ok: true, success: true, result: parsed, data: parsed });
     }
 
     return c.json({ success: false, error: 'Ação de IA desconhecida' }, 400);

@@ -74,3 +74,15 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

@@ -522,6 +522,22 @@ export function App() {
     }
   };
 
+  const handleBulkUpdateLeads = (leadIds: string[], updates: Partial<ClientLead>) => {
+    const idSet = new Set(leadIds);
+    const todayStr = new Date().toISOString().slice(0, 10);
+    setLeads(prev =>
+      prev.map(l => (idSet.has(l.id) ? { ...l, ...updates, updated_at: todayStr } : l))
+    );
+  };
+
+  const handleBulkDeleteLeads = (leadIds: string[]) => {
+    const idSet = new Set(leadIds);
+    setLeads(prev => prev.filter(l => !idSet.has(l.id)));
+    if (selectedLeadId && idSet.has(selectedLeadId)) {
+      setSelectedLeadId(null);
+    }
+  };
+
   const handleExportFullBackup = () => {
     const backup = {
       version: '1.0',
@@ -720,14 +736,45 @@ export function App() {
   };
 
   const handleSendCobrancaWhatsApp = (invoice: MonthlyInvoice) => {
-    if (!invoice.cliente_whatsapp) {
+    const clientLead = leads.find(l => l.id === invoice.client_id || l.nome === invoice.cliente_nome);
+    const rawPhone = invoice.cliente_whatsapp || clientLead?.whatsapp || '';
+    if (!rawPhone) {
       alert('Cliente sem WhatsApp cadastrado.');
       return;
     }
-    const cleanPhone = invoice.cliente_whatsapp.replace(/\D/g, '');
+    const cleanPhone = rawPhone.replace(/\D/g, '');
     const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    const pixInfo = settings.chavePix ? ` Chave Pix: ${settings.chavePix}.` : '';
-    const msg = `Olá ${invoice.cliente_nome}, tudo bem? Me chamo ${settings.nomeProfissional || 'Yago Duarte'}. Passando para enviar o lembrete da mensalidade de hospedagem e manutenção do seu site referente ao mês de ${invoice.competencia} no valor de R$ ${invoice.valor.toFixed(2)}.${pixInfo} Qualquer dúvida, estou à disposição!`;
+    const pixInfo = settings.chavePix ? `\n\n💠 *Chave PIX:* ${settings.chavePix}` : '';
+    const msg = `Olá ${invoice.cliente_nome}, tudo bem? Me chamo ${settings.nomeProfissional || 'Yago Duarte'}. Passando para enviar o lembrete da mensalidade de hospedagem e manutenção do seu site referente a ${invoice.competencia} no valor de R$ ${invoice.valor.toFixed(2)} (vencimento ${invoice.vencimento.split('-').reverse().join('/')}).${pixInfo}\n\nQualquer dúvida, estou à disposição!`;
+    const url = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleSendCobrancaInstallment = (inst: Installment) => {
+    const proj = projects.find(p => p.id === inst.project_id);
+    const clientLead = leads.find(l => l.id === proj?.client_id || l.nome === inst.cliente_nome);
+    const rawPhone = proj?.cliente_whatsapp || clientLead?.whatsapp || '';
+    if (!rawPhone) {
+      alert('Cliente sem WhatsApp cadastrado.');
+      return;
+    }
+    const cleanPhone = rawPhone.replace(/\D/g, '');
+    const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    const pixInfo = settings.chavePix ? `\n\n💠 *Chave PIX:* ${settings.chavePix}` : '';
+    const msg = `Olá ${inst.cliente_nome}, tudo bem? Me chamo ${settings.nomeProfissional || 'Yago Duarte'}. Passando para enviar os dados referentes à parcela "${inst.descricao}" do seu projeto web, no valor de R$ ${inst.valor.toFixed(2)} (vencimento ${inst.vencimento.split('-').reverse().join('/')}).${pixInfo}\n\nAssim que realizar, pode me mandar o comprovante por aqui. Muito obrigado!`;
+    const url = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleCobrarPixClient = (client: ClientLead) => {
+    if (!client.whatsapp) {
+      alert('Cliente sem WhatsApp cadastrado.');
+      return;
+    }
+    const cleanPhone = client.whatsapp.replace(/\D/g, '');
+    const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    const pixInfo = settings.chavePix ? `\n\n💠 *Chave PIX:* ${settings.chavePix}` : '';
+    const msg = `Olá ${client.nome}, tudo bem? Me chamo ${settings.nomeProfissional || 'Yago Duarte'}. Passando para enviar o lembrete da mensalidade de hospedagem e manutenção do seu site no valor de R$ ${(client.mensalidade || 89).toFixed(2)}.${pixInfo}\n\nQualquer dúvida ou ajuste que precisar no site, estou por aqui!`;
     const url = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
   };
@@ -973,6 +1020,8 @@ export function App() {
             }}
             onMoveLeadStatus={handleMoveLeadStatus}
             onOpenWhatsApp={handleOpenWhatsApp}
+            onBulkUpdateLeads={handleBulkUpdateLeads}
+            onBulkDeleteLeads={handleBulkDeleteLeads}
             onNewLead={() => {
               setEditingLead(null);
               setIsModalOpen(true);
@@ -1016,6 +1065,7 @@ export function App() {
             onToggleInstallment={handleToggleInstallment}
             onToggleInvoice={handleToggleInvoice}
             onSendCobrançaWhatsApp={handleSendCobrancaWhatsApp}
+            onSendCobrancaInstallment={handleSendCobrancaInstallment}
           />
         )}
 
@@ -1027,6 +1077,7 @@ export function App() {
             onToggleMaintenance={handleToggleMaintenance}
             onNovaVenda={handleNovaVendaUpsell}
             onOpenWhatsApp={handleOpenWhatsApp}
+            onCobrarPixClient={handleCobrarPixClient}
           />
         )}
 

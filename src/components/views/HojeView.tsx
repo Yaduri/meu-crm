@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { ClientLead, Project, MonthlyInvoice, Installment } from '../../types/crm';
 import { DEFAULT_STATUSES } from '../../types/crm';
 import { 
@@ -14,7 +14,8 @@ import {
   Mic,
   Copy,
   Check,
-  Loader2
+  Loader2,
+  Zap
 } from 'lucide-react';
 
 interface LeadXRayData {
@@ -62,6 +63,8 @@ export const HojeView: React.FC<HojeViewProps> = ({
   const [xrayLoading, setXrayLoading] = useState(false);
   const [copiedAudioScript, setCopiedAudioScript] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [autoAdvance, setAutoAdvance] = useState(true);
+  const [actionToast, setActionToast] = useState<string | null>(null);
   const todayStr = new Date().toISOString().slice(0, 10);
   
   // Classificar followups
@@ -70,6 +73,82 @@ export const HojeView: React.FC<HojeViewProps> = ({
   const pendingQueue = [...overdueLeads, ...todayLeads];
 
   const selectedLead = leads.find((l) => l.id === selectedLeadId) || pendingQueue[0] || leads[0];
+
+  const showToast = (msg: string) => {
+    setActionToast(msg);
+    setTimeout(() => setActionToast(null), 3200);
+  };
+
+  const advanceToNextInQueue = (actionLabel: string) => {
+    if (!autoAdvance || !selectedLead || pendingQueue.length <= 1) {
+      showToast(actionLabel);
+      return;
+    }
+    const currentIdx = pendingQueue.findIndex(l => l.id === selectedLead.id);
+    const nextLead = currentIdx >= 0 && currentIdx + 1 < pendingQueue.length
+      ? pendingQueue[currentIdx + 1]
+      : pendingQueue.find(l => l.id !== selectedLead.id);
+    if (nextLead) {
+      onSelectLead(nextLead.id);
+      showToast(`${actionLabel} · Avançou para ${nextLead.nome}`);
+    } else {
+      showToast(actionLabel);
+    }
+  };
+
+  const handleDispatchWhatsApp = () => {
+    if (!selectedLead) return;
+    onOpenWhatsApp(selectedLead);
+    onRegistrarContato(selectedLead.id);
+    advanceToNextInQueue('WhatsApp aberto e contato registrado');
+  };
+
+  const handleQuickReagendar = (days: number) => {
+    if (!selectedLead) return;
+    onReagendar(selectedLead.id, days);
+    advanceToNextInQueue(`Reagendado para +${days} dias`);
+  };
+
+  const handleQuickRegistrar = () => {
+    if (!selectedLead) return;
+    onRegistrarContato(selectedLead.id);
+    advanceToNextInQueue('Contato registrado hoje');
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) {
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (pendingQueue.length === 0) return;
+        const idx = pendingQueue.findIndex(l => l.id === selectedLead?.id);
+        const next = pendingQueue[(idx + 1) % pendingQueue.length];
+        if (next) onSelectLead(next.id);
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (pendingQueue.length === 0) return;
+        const idx = pendingQueue.findIndex(l => l.id === selectedLead?.id);
+        const prev = pendingQueue[(idx - 1 + pendingQueue.length) % pendingQueue.length];
+        if (prev) onSelectLead(prev.id);
+      } else if (e.key.toLowerCase() === 'w' && selectedLead) {
+        e.preventDefault();
+        handleDispatchWhatsApp();
+      } else if (e.key.toLowerCase() === 'r' && selectedLead) {
+        e.preventDefault();
+        handleQuickReagendar(2);
+      } else if (e.key.toLowerCase() === 'e' && selectedLead && onEditLead) {
+        e.preventDefault();
+        onEditLead(selectedLead);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
 
   // Métricas dinâmicas reais
   const projetosAtivos = projects.filter(p => p.etapa !== 'No ar / Entregue').length;
@@ -233,9 +312,21 @@ export const HojeView: React.FC<HojeViewProps> = ({
             mobilePane === 'queue' ? 'flex flex-1 lg:flex-initial' : 'hidden lg:flex'
           }`}
         >
-          <div className="p-3 border-b border-[#27272a] flex items-center justify-between text-xs text-zinc-300 font-medium bg-[#121215]">
+          <div className="p-3 border-b border-[#27272a] flex items-center justify-between gap-2 text-xs text-zinc-300 font-medium bg-[#121215]">
             <span>Fila de Ação Prioritária ({pendingQueue.length})</span>
-            <span className="text-[11px] text-zinc-400">Ordenado por urgência</span>
+            <button
+              type="button"
+              onClick={() => setAutoAdvance(prev => !prev)}
+              className={`px-2 py-1 rounded-md text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer border ${
+                autoAdvance
+                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                  : 'bg-[#18181b] text-zinc-400 border-[#27272a]'
+              }`}
+              title="Avançar automaticamente para o próximo lead da fila após disparar WhatsApp ou reagendar"
+            >
+              <Zap size={11} />
+              <span>Fila Rápida: {autoAdvance ? 'ON' : 'OFF'}</span>
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto divide-y divide-[#1f1f23] p-2 space-y-1.5">
@@ -496,7 +587,7 @@ export const HojeView: React.FC<HojeViewProps> = ({
                 <div className="flex flex-wrap items-center gap-2.5 mt-4">
                   <button
                     type="button"
-                    onClick={() => onOpenWhatsApp(selectedLead)}
+                    onClick={handleDispatchWhatsApp}
                     className="w-full sm:flex-1 min-h-[42px] bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md shadow-emerald-600/20"
                   >
                     <Send size={15} />
@@ -517,7 +608,7 @@ export const HojeView: React.FC<HojeViewProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => onReagendar(selectedLead.id, 2)}
+                    onClick={() => handleQuickReagendar(2)}
                     className="min-h-[42px] bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-300 font-medium py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Clock size={14} />
@@ -526,12 +617,23 @@ export const HojeView: React.FC<HojeViewProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => onRegistrarContato(selectedLead.id)}
+                    onClick={handleQuickRegistrar}
                     className="min-h-[42px] bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-300 font-medium py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <CheckCircle2 size={14} />
                     <span>Registrar Contato</span>
                   </button>
+                </div>
+
+                {/* Keyboard Shortcuts Hint */}
+                <div className="hidden lg:flex items-center justify-between pt-3 mt-3 border-t border-[#222227] text-[11px] text-zinc-400">
+                  <span>Atalhos rápidos do teclado:</span>
+                  <div className="flex items-center gap-3 font-mono">
+                    <span><kbd className="px-1.5 py-0.5 bg-[#18181b] border border-[#27272a] rounded text-zinc-300">J</kbd>/<kbd className="px-1.5 py-0.5 bg-[#18181b] border border-[#27272a] rounded text-zinc-300">K</kbd> navegar</span>
+                    <span><kbd className="px-1.5 py-0.5 bg-[#18181b] border border-[#27272a] rounded text-zinc-300">W</kbd> WhatsApp</span>
+                    <span><kbd className="px-1.5 py-0.5 bg-[#18181b] border border-[#27272a] rounded text-zinc-300">R</kbd> +2 dias</span>
+                    <span><kbd className="px-1.5 py-0.5 bg-[#18181b] border border-[#27272a] rounded text-zinc-300">E</kbd> editar</span>
+                  </div>
                 </div>
               </div>
 
@@ -654,6 +756,14 @@ export const HojeView: React.FC<HojeViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Floating Action Toast */}
+      {actionToast && (
+        <div className="fixed bottom-5 right-5 z-50 bg-[#18181b] border border-emerald-500/40 text-zinc-100 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-medium">
+          <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+          <span>{actionToast}</span>
+        </div>
+      )}
     </div>
   );
 };

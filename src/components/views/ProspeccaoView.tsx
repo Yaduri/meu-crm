@@ -23,6 +23,8 @@ interface ProspeccaoViewProps {
   onOpenWhatsApp: (lead: ClientLead) => void;
   onNewLead: () => void;
   onNewLeadWithStatus: (statusId: string) => void;
+  onBulkUpdateLeads?: (leadIds: string[], updates: Partial<ClientLead>) => void;
+  onBulkDeleteLeads?: (leadIds: string[]) => void;
 }
 
 type FilterPill = 'todos' | 'hoje' | 'atrasado' | 'negociacao' | 'semsite' | 'abordar';
@@ -34,6 +36,8 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
   onOpenWhatsApp,
   onNewLead,
   onNewLeadWithStatus,
+  onBulkUpdateLeads,
+  onBulkDeleteLeads,
 }) => {
   const [viewMode, setViewMode] = useState<'kanban' | 'tabela'>('kanban');
   const [filterPill, setFilterPill] = useState<FilterPill>('todos');
@@ -285,6 +289,8 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
             onSelectLead={onSelectLead}
             onOpenWhatsApp={onOpenWhatsApp}
             onMoveLeadStatus={onMoveLeadStatus}
+            onBulkUpdateLeads={onBulkUpdateLeads}
+            onBulkDeleteLeads={onBulkDeleteLeads}
           />
         )}
       </div>

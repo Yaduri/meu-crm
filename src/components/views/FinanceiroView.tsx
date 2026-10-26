@@ -5,7 +5,8 @@ import {
   TrendingUp, 
   Clock, 
   CheckCircle2, 
-  Send
+  Send,
+  RotateCcw
 } from 'lucide-react';
 
 interface FinanceiroViewProps {
@@ -14,6 +15,7 @@ interface FinanceiroViewProps {
   onToggleInstallment: (id: string) => void;
   onToggleInvoice: (id: string) => void;
   onSendCobrançaWhatsApp: (invoice: MonthlyInvoice) => void;
+  onSendCobrancaInstallment?: (installment: Installment) => void;
 }
 
 export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
@@ -22,8 +24,30 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
   onToggleInstallment,
   onToggleInvoice,
   onSendCobrançaWhatsApp,
+  onSendCobrancaInstallment,
 }) => {
   const [activeTab, setActiveTab] = useState<'mensalidades' | 'implantacao'>('mensalidades');
+  const [undoToast, setUndoToast] = useState<{ label: string; type: 'invoice' | 'installment'; id: string } | null>(null);
+
+  const handleToggleInvoiceWithUndo = (inv: MonthlyInvoice) => {
+    onToggleInvoice(inv.id);
+    setUndoToast({
+      label: inv.pago ? `Mensalidade de ${inv.cliente_nome} reaberta` : `Mensalidade de ${inv.cliente_nome} baixada como paga`,
+      type: 'invoice',
+      id: inv.id,
+    });
+    setTimeout(() => setUndoToast(prev => (prev?.id === inv.id ? null : prev)), 5000);
+  };
+
+  const handleToggleInstallmentWithUndo = (inst: Installment) => {
+    onToggleInstallment(inst.id);
+    setUndoToast({
+      label: inst.pago ? `Parcela de ${inst.cliente_nome} reaberta` : `Parcela de ${inst.cliente_nome} baixada como recebida`,
+      type: 'installment',
+      id: inst.id,
+    });
+    setTimeout(() => setUndoToast(prev => (prev?.id === inst.id ? null : prev)), 5000);
+  };
 
   const todayStr = new Date().toISOString().slice(0, 10);
 
@@ -206,7 +230,7 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                         <td className="py-3 px-4 text-center">
                           <button
                             type="button"
-                            onClick={() => onToggleInvoice(inv.id)}
+                            onClick={() => handleToggleInvoiceWithUndo(inv)}
                             className={`min-h-[32px] px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
                               inv.pago
                                 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
@@ -224,7 +248,7 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                               className="min-h-[34px] text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
                               <Send size={12} />
-                              <span>Lembrete WhatsApp</span>
+                              <span>Cobrar PIX no Zap</span>
                             </button>
                           )}
                         </td>
@@ -251,6 +275,7 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                     <th className="py-3 px-4">Vencimento</th>
                     <th className="py-3 px-4 text-right">Valor</th>
                     <th className="py-3 px-4 text-center">Situação</th>
+                    <th className="py-3 px-4 text-right">Ação Rápida</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#1e1e24] text-zinc-300">
@@ -271,7 +296,7 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                       <td className="py-3 px-4 text-center">
                         <button
                           type="button"
-                          onClick={() => onToggleInstallment(inst.id)}
+                          onClick={() => handleToggleInstallmentWithUndo(inst)}
                           className={`min-h-[32px] px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
                             inst.pago
                               ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
@@ -281,6 +306,18 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                           {inst.pago ? '✓ Recebido' : 'Pendente (Clique p/ Quitar)'}
                         </button>
                       </td>
+                      <td className="py-3 px-4 text-right">
+                        {!inst.pago && onSendCobrancaInstallment && (
+                          <button
+                            type="button"
+                            onClick={() => onSendCobrancaInstallment(inst)}
+                            className="min-h-[34px] text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <Send size={12} />
+                            <span>Cobrar PIX no Zap</span>
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -289,6 +326,26 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
           )}
         </div>
       </div>
+
+      {/* Toast com botão Desfazer (Feature #5) */}
+      {undoToast && (
+        <div className="fixed bottom-5 right-5 z-50 bg-[#18181b] border border-emerald-500/40 text-zinc-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs">
+          <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+          <span>{undoToast.label}</span>
+          <button
+            type="button"
+            onClick={() => {
+              if (undoToast.type === 'invoice') onToggleInvoice(undoToast.id);
+              else onToggleInstallment(undoToast.id);
+              setUndoToast(null);
+            }}
+            className="min-h-[30px] px-2.5 py-1 rounded-lg bg-[#27272a] hover:bg-zinc-700 text-emerald-300 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            <RotateCcw size={12} />
+            <span>Desfazer</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 };

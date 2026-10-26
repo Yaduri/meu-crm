@@ -9,7 +9,8 @@ import {
   Zap, 
   Server, 
   Layers,
-  ArrowRight
+  ArrowRight,
+  Printer
 } from 'lucide-react';
 
 interface PublicProposalViewProps {
@@ -31,12 +32,45 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal
         }
       })
       .catch(() => {});
-  }, [initialProposal.token]);
+
+    // Dispara notificação silenciosa de visualização em tempo real (1x por sessão)
+    const viewKey = `viewed_prop_${initialProposal.token}`;
+    if (!sessionStorage.getItem(viewKey)) {
+      sessionStorage.setItem(viewKey, '1');
+      fetch(`/api/proposals/${initialProposal.token}/event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'viewed',
+          cliente_nome: initialProposal.cliente_nome,
+          nicho: initialProposal.nicho,
+          implantacao: initialProposal.implantacao,
+          mensalidade: initialProposal.mensalidade,
+        }),
+      }).catch(() => {});
+    }
+  }, [initialProposal.token, initialProposal.cliente_nome, initialProposal.nicho, initialProposal.implantacao, initialProposal.mensalidade, proposal.cliente_nome]);
 
   const handleAceitarProposta = () => {
+    fetch(`/api/proposals/${proposal.token}/event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event: 'accepted',
+        cliente_nome: proposal.cliente_nome,
+        nicho: proposal.nicho,
+        implantacao: proposal.implantacao,
+        mensalidade: proposal.mensalidade,
+      }),
+    }).catch(() => {});
+
     const msg = `Olá Yago Duarte! Vi a proposta comercial para "${proposal.cliente_nome}" no valor de R$ ${proposal.implantacao.toFixed(2)} e aprovei os termos! Como podemos dar início?`;
     const url = `https://wa.me/${yagoWhatsApp}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
+  };
+
+  const handlePrintProposal = () => {
+    window.print();
   };
 
   return (
@@ -57,13 +91,26 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal
           </div>
         </div>
 
-        <button
-          onClick={handleAceitarProposta}
-          className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md shadow-emerald-500/10 flex items-center gap-2 cursor-pointer"
-        >
-          <Send size={13} />
-          <span>Aceitar Proposta</span>
-        </button>
+        <div className="flex items-center gap-2 no-print">
+          <button
+            type="button"
+            onClick={handlePrintProposal}
+            className="min-h-[36px] bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-200 font-medium text-xs px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+            title="Salvar como PDF ou Imprimir Proposta"
+          >
+            <Printer size={13} />
+            <span className="hidden sm:inline">Baixar PDF / Imprimir</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleAceitarProposta}
+            className="min-h-[36px] bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all shadow-md shadow-emerald-500/10 flex items-center gap-2 cursor-pointer"
+          >
+            <Send size={13} />
+            <span>Aceitar Proposta</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Container */}

@@ -16,6 +16,7 @@ interface CarteiraViewProps {
   onToggleMaintenance: (requestId: string) => void;
   onNovaVenda: (client: ClientLead) => void;
   onOpenWhatsApp: (client: ClientLead) => void;
+  onCobrarPixClient?: (client: ClientLead) => void;
 }
 
 export const CarteiraView: React.FC<CarteiraViewProps> = ({
@@ -25,6 +26,7 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
   onToggleMaintenance,
   onNovaVenda,
   onOpenWhatsApp,
+  onCobrarPixClient,
 }) => {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(clients[0]?.id || null);
   const [newRequestTitle, setNewRequestTitle] = useState('');
@@ -137,6 +139,21 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2">
+                        {onCobrarPixClient && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCobrarPixClient(client);
+                            }}
+                            className="min-h-[34px] text-amber-300 hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-medium cursor-pointer"
+                            title="Enviar cobrança da mensalidade com Chave PIX no WhatsApp"
+                          >
+                            <Send size={11} />
+                            <span>Cobrar PIX</span>
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           onClick={(e) => {
