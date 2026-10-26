@@ -52,6 +52,47 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
 }) => {
   const [formData, setFormData] = useState<CrmSettings>(settings);
   const [savedFeedback, setSavedFeedback] = useState(false);
+  const [cloudFiles, setCloudFiles] = useState<Array<{ key: string; filename: string; size: number; created_at: string }>>([]);
+  const [uploadingCloud, setUploadingCloud] = useState(false);
+
+  React.useEffect(() => {
+    fetch('/api/state')
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && Array.isArray(res.state?.files)) {
+          setCloudFiles(res.state.files);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleCloudUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingCloud(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.success) {
+        setCloudFiles(prev => [
+          { key: data.key, filename: data.name, size: data.size, created_at: new Date().toISOString() },
+          ...prev
+        ]);
+      }
+    } catch {
+      alert('Falha no upload para a nuvem.');
+    } finally {
+      setUploadingCloud(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteCloudFile = async (key: string) => {
+    await fetch(`/api/files/${key}`, { method: 'DELETE' });
+    setCloudFiles(prev => prev.filter(f => f.key !== key));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -244,6 +285,53 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
                 />
               </label>
             </div>
+          </div>
+
+          {/* Arquivos na Nuvem (Logos, Contratos e Comprovantes) */}
+          <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#27272a] pb-3">
+              <div className="flex items-center gap-2 text-sm font-bold text-zinc-100">
+                <Upload size={16} className="text-emerald-400" />
+                <span>Arquivos na Nuvem (Logos, Contratos & Comprovantes)</span>
+              </div>
+              <label className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl cursor-pointer transition-colors">
+                <span>{uploadingCloud ? 'Enviando...' : '+ Enviar Arquivo'}</span>
+                <input type="file" onChange={handleCloudUpload} disabled={uploadingCloud} className="hidden" />
+              </label>
+            </div>
+
+            {cloudFiles.length === 0 ? (
+              <div className="text-xs text-zinc-500 py-4 text-center">
+                Nenhum arquivo salvo na nuvem ainda. Os arquivos anexados nos briefings ou enviados aqui ficam disponíveis em qualquer dispositivo.
+              </div>
+            ) : (
+              <div className="divide-y divide-[#1e1e24] text-xs">
+                {cloudFiles.map(f => (
+                  <div key={f.key} className="py-2.5 flex items-center justify-between">
+                    <div>
+                      <a
+                        href={`/api/files/${f.key}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-emerald-400 hover:underline"
+                      >
+                        {f.filename}
+                      </a>
+                      <span className="text-[11px] text-zinc-500 ml-2 font-mono">
+                        ({(f.size / 1024).toFixed(1)} KB)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteCloudFile(f.key)}
+                      className="text-rose-400 hover:text-rose-300 text-[11px] cursor-pointer"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Status de Segurança Cloudflare */}

@@ -21,8 +21,21 @@ export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({
 }) => {
   const [formData, setFormData] = useState<BriefingData>(initialData);
   const [submitted, setSubmitted] = useState(initialData.preenchido || false);
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   const yagoWhatsApp = '5511911300834';
+
+  React.useEffect(() => {
+    fetch(`/api/briefings/${initialData.token}`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.success && res.briefing) {
+          setFormData(res.briefing);
+          if (res.briefing.preenchido) setSubmitted(true);
+        }
+      })
+      .catch(() => {});
+  }, [initialData.token]);
 
   const handleChange = (field: keyof BriefingData, value: string) => {
     setFormData(prev => ({
@@ -31,7 +44,30 @@ export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingFile(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.success && data.url) {
+        const fullUrl = `${window.location.origin}${data.url}`;
+        setFormData(prev => ({
+          ...prev,
+          link_arquivos: prev.link_arquivos ? `${prev.link_arquivos} | ${fullUrl}` : fullUrl
+        }));
+      }
+    } catch {
+      alert('Erro ao enviar arquivo.');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const updated: BriefingData = {
       ...formData,
@@ -39,6 +75,15 @@ export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({
       preenchido_em: new Date().toISOString()
     };
     onSaveBriefing(updated);
+    try {
+      await fetch(`/api/briefings/${formData.token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+    } catch {
+      // Salvo localmente caso offline
+    }
     setSubmitted(true);
   };
 
@@ -266,12 +311,24 @@ export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Link do Google Drive / Dropbox com logo e fotos</label>
+              <label className="block text-xs font-medium text-zinc-400 mb-1">Enviar Logo / Fotos direto por aqui (ou colar link abaixo)</label>
+              <div className="flex items-center gap-3 mb-2">
+                <label className="px-3.5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs font-semibold cursor-pointer transition-colors">
+                  <span>{uploadingFile ? 'Enviando arquivo para a nuvem...' : '+ Anexar Logo / Arquivo'}</span>
+                  <input
+                    type="file"
+                    onChange={handleFileUpload}
+                    disabled={uploadingFile}
+                    className="hidden"
+                  />
+                </label>
+                <span className="text-[11px] text-zinc-500">Salvo direto na nuvem do CRM</span>
+              </div>
               <input
                 type="text"
                 value={formData.link_arquivos}
                 onChange={(e) => handleChange('link_arquivos', e.target.value)}
-                placeholder="Cole o link da pasta compartilhada (Google Drive, Dropbox, WeTransfer)"
+                placeholder="Ou cole o link da pasta compartilhada (Google Drive, Dropbox, WeTransfer)"
                 className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-hidden focus:border-emerald-500"
               />
               <span className="text-[11px] text-zinc-500 mt-1 block">

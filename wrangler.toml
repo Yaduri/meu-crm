@@ -1,7 +1,21 @@
 name = "meu-crm"
+main = "worker/index.ts"
 compatibility_date = "2026-10-26"
 workers_dev = true
+routes = [
+  { pattern = "crm.yagoduarte.com.br", custom_domain = true }
+]
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "meu-crm-db"
+database_id = "ba62e791-a637-41c2-883c-07078f80018a"
+
+[triggers]
+crons = ["0 11 * * *"]

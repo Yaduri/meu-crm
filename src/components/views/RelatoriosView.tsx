@@ -87,19 +87,20 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
       `👉 Acesse seu painel: https://crm.yagoduarte.com.br`;
 
     try {
-      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      // Salva no Worker + D1 (para o Cron das 08:00 funcionar com PC desligado) e dispara o resumo
+      const res = await fetch('/api/telegram/summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          bot_token: token,
           chat_id: telegramChatId.trim(),
-          text: texto,
-          parse_mode: 'Markdown'
+          text: texto
         })
       });
 
       const data = await res.json();
       if (data.ok) {
-        setTelegramStatus('✓ Resumo diário enviado com sucesso para seu Telegram!');
+        setTelegramStatus('✓ Resumo enviado e Cron Diário (08:00) ativado no Cloudflare D1!');
       } else {
         setTelegramStatus(`Erro ao enviar: ${data.description}`);
       }

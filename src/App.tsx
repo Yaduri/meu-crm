@@ -208,7 +208,51 @@ export function App() {
   const pToken = urlParams.get('p') || (window.location.hash.startsWith('#p=') ? window.location.hash.replace('#p=', '') : null);
   const bToken = urlParams.get('b') || (window.location.hash.startsWith('#b=') ? window.location.hash.replace('#b=', '') : null);
 
-  // Persistência
+  // Persistência Local + Sincronização Automática em Nuvem (Cloudflare D1)
+  const [d1Hydrated, setD1Hydrated] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/state')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.hasData && data.state) {
+          if (Array.isArray(data.state.leads) && data.state.leads.length > 0) setLeads(data.state.leads);
+          if (Array.isArray(data.state.projects)) setProjects(data.state.projects);
+          if (Array.isArray(data.state.installments)) setInstallments(data.state.installments);
+          if (Array.isArray(data.state.invoices)) setInvoices(data.state.invoices);
+          if (Array.isArray(data.state.maintenanceRequests)) setMaintenanceRequests(data.state.maintenanceRequests);
+          if (Array.isArray(data.state.proposals)) setProposals(data.state.proposals);
+          if (Array.isArray(data.state.briefings)) setBriefings(data.state.briefings);
+          if (data.state.settings) setSettings(prev => ({ ...prev, ...data.state.settings }));
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        setD1Hydrated(true);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!d1Hydrated) return;
+    const timer = setTimeout(() => {
+      fetch('/api/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leads,
+          projects,
+          installments,
+          invoices,
+          maintenanceRequests,
+          proposals,
+          briefings,
+          settings
+        })
+      }).catch(() => {});
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [d1Hydrated, leads, projects, installments, invoices, maintenanceRequests, proposals, briefings, settings]);
+
   useEffect(() => {
     localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(leads));
     if (!selectedLeadId && leads.length > 0) {
