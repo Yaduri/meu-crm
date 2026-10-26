@@ -46,7 +46,6 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
 
   const cleanQuery = query.toLowerCase().trim();
 
-  // Resultados
   const filteredLeads = cleanQuery
     ? leads.filter(l => 
         l.nome.toLowerCase().includes(cleanQuery) || 
@@ -71,8 +70,11 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   ].filter(a => !cleanQuery || a.label.toLowerCase().includes(cleanQuery));
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-start justify-center pt-24 p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-150"
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Paleta de comandos e busca rápida"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div 
@@ -88,11 +90,16 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por cliente, nicho, WhatsApp ou ação rápida..."
-            className="w-full bg-transparent text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-hidden"
+            className="w-full bg-transparent text-sm text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden"
           />
-          <kbd className="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded border border-zinc-700 font-mono">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar busca"
+            className="text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded border border-zinc-700 font-mono cursor-pointer"
+          >
             ESC
-          </kbd>
+          </button>
         </div>
 
         {/* Results List */}
@@ -100,11 +107,12 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           {/* Ação Rápida: Novo Lead */}
           <div className="px-2">
             <button
+              type="button"
               onClick={() => {
                 onClose();
                 onNewLead();
               }}
-              className="w-full p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-semibold flex items-center justify-between transition-colors cursor-pointer"
+              className="w-full min-h-[40px] p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-semibold flex items-center justify-between transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <Plus size={15} />
@@ -117,18 +125,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           {/* Seção Leads */}
           {filteredLeads.length > 0 && (
             <div>
-              <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              <div className="px-3 py-1 text-[11px] font-semibold text-zinc-400">
                 Leads & Contatos
               </div>
               <div className="space-y-1 mt-1">
                 {filteredLeads.map((lead) => (
-                  <div
+                  <button
                     key={lead.id}
+                    type="button"
                     onClick={() => {
                       onClose();
                       onSelectLead(lead);
                     }}
-                    className="p-2.5 rounded-xl hover:bg-[#18181b] flex items-center justify-between cursor-pointer transition-colors group"
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-[#18181b] flex items-center justify-between cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-300 font-bold text-[11px]">
@@ -139,17 +148,17 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                           {lead.nome}
                         </div>
                         <div className="text-[11px] text-zinc-400">
-                          {lead.nicho} · {lead.whatsapp || 'Sem WhatsApp'}
+                          {lead.nicho} · <span className="font-mono">{lead.whatsapp || 'Sem WhatsApp'}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-400">
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">
                         {lead.status_id}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -158,18 +167,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           {/* Seção Projetos */}
           {filteredProjects.length > 0 && (
             <div>
-              <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              <div className="px-3 py-1 text-[11px] font-semibold text-zinc-400">
                 Projetos em Andamento
               </div>
               <div className="space-y-1 mt-1">
                 {filteredProjects.map((project) => (
-                  <div
+                  <button
                     key={project.id}
+                    type="button"
                     onClick={() => {
                       onClose();
                       onSelectProject(project);
                     }}
-                    className="p-2.5 rounded-xl hover:bg-[#18181b] flex items-center justify-between cursor-pointer transition-colors group"
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-[#18181b] flex items-center justify-between cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center font-bold text-[11px]">
@@ -184,7 +194,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -193,27 +203,28 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
           {/* Navegação Rápida */}
           {navigationActions.length > 0 && (
             <div>
-              <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+              <div className="px-3 py-1 text-[11px] font-semibold text-zinc-400">
                 Telas & Navegação
               </div>
               <div className="space-y-1 mt-1">
                 {navigationActions.map((action) => {
                   const Icon = action.icon;
                   return (
-                    <div
+                    <button
                       key={action.id}
+                      type="button"
                       onClick={() => {
                         onClose();
                         onNavigateView(action.id);
                       }}
-                      className="p-2.5 rounded-xl hover:bg-[#18181b] flex items-center justify-between cursor-pointer transition-colors group text-zinc-300"
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-[#18181b] flex items-center justify-between cursor-pointer transition-colors group text-zinc-300"
                     >
                       <div className="flex items-center gap-2.5">
                         <Icon size={14} className="text-zinc-400 group-hover:text-emerald-400 transition-colors" />
                         <span>{action.label}</span>
                       </div>
-                      <ArrowRight size={13} className="text-zinc-600 group-hover:text-zinc-300" />
-                    </div>
+                      <ArrowRight size={13} className="text-zinc-400 group-hover:text-zinc-200" />
+                    </button>
                   );
                 })}
               </div>
@@ -222,14 +233,14 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         </div>
 
         {/* Footer Shortcut Helper */}
-        <div className="p-3 bg-[#0d0d10] border-t border-[#27272a] text-[11px] text-zinc-500 flex items-center justify-between">
+        <div className="p-3 bg-[#0d0d10] border-t border-[#27272a] text-[11px] text-zinc-400 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span>Dica: Pressione</span>
-            <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 font-mono text-[10px]">Ctrl+K</kbd>
-            <span>a qualquer momento para pesquisar</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono text-[10px]">Ctrl+K</kbd>
+            <span>para pesquisar</span>
           </div>
           <div className="flex items-center gap-2">
-            <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 font-mono text-[10px]">N</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 font-mono text-[10px]">N</kbd>
             <span>Novo Lead</span>
           </div>
         </div>

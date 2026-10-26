@@ -50,14 +50,12 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
 
   // Filtragem dos leads em tempo real
   const filteredLeads = leads.filter(l => {
-    // Filtro por pílula ativa
     if (filterPill === 'hoje' && l.proximo_followup !== todayStr) return false;
     if (filterPill === 'atrasado' && !(l.proximo_followup && l.proximo_followup < todayStr && l.fase === 'prospeccao')) return false;
     if (filterPill === 'negociacao' && l.status_id !== 'negociacao' && l.status_id !== 'proposta_enviada') return false;
     if (filterPill === 'semsite' && l.presenca_digital !== 'Sem site' && l.site_atual) return false;
     if (filterPill === 'abordar' && l.status_id !== 'abordar') return false;
 
-    // Filtro por texto de busca
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       const matchNome = l.nome.toLowerCase().includes(q);
@@ -70,13 +68,13 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
   });
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#09090b]">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#09090b]">
       {/* Top Header of Prospecção */}
-      <header className="px-8 py-4 border-b border-[#27272a] bg-[#0d0d10] flex items-center justify-between">
+      <header className="px-4 sm:px-8 py-4 border-b border-[#27272a] bg-[#0d0d10] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div>
-          <h1 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+          <h1 className="text-lg sm:text-xl font-bold text-zinc-100 flex flex-wrap items-center gap-2">
             <span>Pipeline de Prospecção</span>
-            <span className="text-xs font-normal text-zinc-400 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700/50">
+            <span className="text-xs font-normal text-zinc-300 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700/50 font-mono">
               {filteredLeads.length} de {leads.length} leads
             </span>
           </h1>
@@ -89,8 +87,9 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
           {/* Switch Kanban vs Tabela */}
           <div className="bg-[#18181b] border border-[#27272a] p-1 rounded-xl flex items-center gap-1">
             <button
+              type="button"
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+              className={`min-h-[34px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 viewMode === 'kanban'
                   ? 'bg-[#27272a] text-zinc-100 shadow-sm'
                   : 'text-zinc-400 hover:text-zinc-200'
@@ -101,8 +100,9 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
             </button>
 
             <button
+              type="button"
               onClick={() => setViewMode('tabela')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+              className={`min-h-[34px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                 viewMode === 'tabela'
                   ? 'bg-[#27272a] text-zinc-100 shadow-sm'
                   : 'text-zinc-400 hover:text-zinc-200'
@@ -114,8 +114,9 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={onNewLead}
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition-colors shadow-sm cursor-pointer"
+            className="min-h-[38px] flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition-colors shadow-sm cursor-pointer"
           >
             <Plus size={15} />
             <span>Novo Lead</span>
@@ -124,22 +125,23 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
       </header>
 
       {/* Pills & Search Filter Bar */}
-      <div className="px-8 py-3.5 border-b border-[#27272a] bg-[#0c0c0f] space-y-3">
+      <div className="px-4 sm:px-8 py-3 border-b border-[#27272a] bg-[#0c0c0f] space-y-2.5 shrink-0">
         {/* Pills Row */}
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-1 select-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 select-none">
           {/* Todos */}
           <button
+            type="button"
             onClick={() => setFilterPill('todos')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               filterPill === 'todos'
                 ? 'bg-white text-zinc-950 shadow-md shadow-white/10 ring-1 ring-white'
-                : 'bg-[#141418] text-zinc-400 hover:text-zinc-200 hover:bg-[#18181d] border border-[#27272a]'
+                : 'bg-[#141418] text-zinc-300 hover:text-zinc-100 hover:bg-[#18181d] border border-[#27272a]'
             }`}
           >
             <Sparkles size={14} className={filterPill === 'todos' ? 'text-zinc-950' : 'text-zinc-400'} />
             <span>Todos</span>
-            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ml-0.5 ${
-              filterPill === 'todos' ? 'bg-zinc-200 text-zinc-900' : 'bg-zinc-800 text-zinc-400'
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono ml-0.5 ${
+              filterPill === 'todos' ? 'bg-zinc-200 text-zinc-900' : 'bg-zinc-800 text-zinc-300'
             }`}>
               {leads.length}
             </span>
@@ -147,8 +149,9 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
 
           {/* Para Contatar Hoje */}
           <button
+            type="button"
             onClick={() => setFilterPill('hoje')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               filterPill === 'hoje'
                 ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25 ring-1 ring-sky-400'
                 : 'bg-[#141418] text-sky-400 hover:bg-sky-500/10 border border-sky-500/30'
@@ -157,7 +160,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
             <Calendar size={14} />
             <span>Para Contatar Hoje</span>
             {countHoje > 0 && (
-              <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ml-0.5 ${
+              <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono ml-0.5 ${
                 filterPill === 'hoje' ? 'bg-sky-400 text-white' : 'bg-sky-500/20 text-sky-300'
               }`}>
                 {countHoje}
@@ -167,8 +170,9 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
 
           {/* Follow-up Atrasado */}
           <button
+            type="button"
             onClick={() => setFilterPill('atrasado')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               filterPill === 'atrasado'
                 ? 'bg-rose-600 text-white shadow-md shadow-rose-600/25 ring-1 ring-rose-500'
                 : 'bg-[#141418] text-rose-400 hover:bg-rose-500/10 border border-rose-500/30'
@@ -176,7 +180,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
           >
             <AlertCircle size={14} />
             <span>Follow-up Atrasado</span>
-            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ml-0.5 ${
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono ml-0.5 ${
               filterPill === 'atrasado' ? 'bg-rose-500 text-white' : 'bg-rose-500/20 text-rose-300'
             }`}>
               {countAtrasados}
@@ -185,8 +189,9 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
 
           {/* Em Negociação */}
           <button
+            type="button"
             onClick={() => setFilterPill('negociacao')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               filterPill === 'negociacao'
                 ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25 ring-1 ring-purple-500'
                 : 'bg-[#141418] text-purple-400 hover:bg-purple-500/10 border border-purple-500/30'
@@ -194,7 +199,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
           >
             <Flame size={14} />
             <span>Em Negociação</span>
-            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ml-0.5 ${
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono ml-0.5 ${
               filterPill === 'negociacao' ? 'bg-purple-500 text-white' : 'bg-purple-500/20 text-purple-300'
             }`}>
               {countNegociacao}
@@ -203,8 +208,9 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
 
           {/* Sem Site */}
           <button
+            type="button"
             onClick={() => setFilterPill('semsite')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               filterPill === 'semsite'
                 ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25 ring-1 ring-amber-500'
                 : 'bg-[#141418] text-amber-400 hover:bg-amber-500/10 border border-amber-500/30'
@@ -212,7 +218,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
           >
             <Globe size={14} />
             <span>Sem Site (Oportunidade)</span>
-            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ml-0.5 ${
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono ml-0.5 ${
               filterPill === 'semsite' ? 'bg-amber-500 text-white' : 'bg-amber-500/20 text-amber-300'
             }`}>
               {countSemSite}
@@ -221,8 +227,9 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
 
           {/* A Abordar */}
           <button
+            type="button"
             onClick={() => setFilterPill('abordar')}
-            className={`px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
               filterPill === 'abordar'
                 ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/25 ring-1 ring-emerald-500'
                 : 'bg-[#141418] text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30'
@@ -230,7 +237,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
           >
             <UserPlus size={14} />
             <span>A Abordar</span>
-            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ml-0.5 ${
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono ml-0.5 ${
               filterPill === 'abordar' ? 'bg-emerald-500 text-white' : 'bg-emerald-500/20 text-emerald-300'
             }`}>
               {countAAbordar}
@@ -240,18 +247,20 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
 
         {/* Real-time Search Input Row */}
         <div className="relative max-w-xl w-full">
-          <Search size={15} className="absolute left-3.5 top-2.5 text-zinc-500" />
+          <Search size={15} className="absolute left-3.5 top-2.5 text-zinc-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar por nome ou WhatsApp..."
-            className="w-full bg-[#121215] border border-[#27272a] rounded-xl pl-10 pr-9 py-2 text-xs text-zinc-100 placeholder:text-zinc-500 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all"
+            placeholder="Buscar por nome, nicho ou WhatsApp..."
+            className="w-full bg-[#121215] border border-[#27272a] rounded-xl pl-10 pr-9 py-2 text-xs text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all"
           />
           {searchQuery && (
             <button
+              type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-300 cursor-pointer"
+              aria-label="Limpar busca"
+              className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-200 cursor-pointer"
               title="Limpar busca"
             >
               <X size={14} />

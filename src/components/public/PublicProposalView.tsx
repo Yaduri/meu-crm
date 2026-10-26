@@ -235,9 +235,9 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#27272a] py-6 text-center text-xs text-zinc-500">
+      <footer className="border-t border-[#27272a] py-6 text-center text-xs text-zinc-400">
         <div>Yago Duarte · Desenvolvedor e Designer Web</div>
-        <div className="text-[11px] text-zinc-600 mt-1">Todos os direitos reservados · {new Date().getFullYear()}</div>
+        <div className="text-[11px] text-zinc-400 mt-1">Todos os direitos reservados · {new Date().getFullYear()}</div>
       </footer>
     </div>
   );

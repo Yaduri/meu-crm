@@ -323,28 +323,28 @@ export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({
                     className="hidden"
                   />
                 </label>
-                <span className="text-[11px] text-zinc-500">Salvo direto na nuvem do CRM</span>
+                <span className="text-[11px] text-zinc-400">Salvo direto na nuvem do CRM</span>
               </div>
               <input
                 type="text"
                 value={formData.link_arquivos}
                 onChange={(e) => handleChange('link_arquivos', e.target.value)}
                 placeholder="Ou cole o link da pasta compartilhada (Google Drive, Dropbox, WeTransfer)"
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
               />
-              <span className="text-[11px] text-zinc-500 mt-1 block">
+              <span className="text-[11px] text-zinc-400 mt-1 block">
                 Pode incluir logo em PNG/vetor, fotos da clínica/escritório e fotos dos profissionais. Se não tiver agora, pode enviar pelo WhatsApp depois.
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-400 mb-1">Observações ou solicitações extras</label>
+              <label className="block text-xs font-medium text-zinc-300 mb-1">Observações ou solicitações extras</label>
               <textarea
                 rows={2}
                 value={formData.observacoes_adicionais}
                 onChange={(e) => handleChange('observacoes_adicionais', e.target.value)}
                 placeholder="Ex: Gostaria de ter um mapa do Google no rodapé e seção para dúvidas frequentes (FAQ)..."
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl p-3 text-xs text-zinc-100 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl p-3 text-xs text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
               />
             </div>
           </div>
@@ -363,7 +363,7 @@ export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#27272a] py-6 text-center text-xs text-zinc-500">
+      <footer className="border-t border-[#27272a] py-6 text-center text-xs text-zinc-400">
         <div>Yago Duarte · Desenvolvimento Web & Design Estratégico</div>
       </footer>
     </div>

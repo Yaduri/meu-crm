@@ -11,24 +11,9 @@ import {
   Database,
   ShieldCheck
 } from 'lucide-react';
-
-export interface CrmSettings {
-  nomeProfissional: string;
-  whatsappComercial: string;
-  chavePix: string;
-  implantacaoPadrao: number;
-  mensalidadePadrao: number;
-  diaVencimentoPadrao: number;
-}
-
-export const DEFAULT_CRM_SETTINGS: CrmSettings = {
-  nomeProfissional: 'Yago Duarte',
-  whatsappComercial: '5511911300834',
-  chavePix: '',
-  implantacaoPadrao: 1200,
-  mensalidadePadrao: 89,
-  diaVencimentoPadrao: 10,
-};
+import type { CrmSettings } from '../../types/crm';
+export { DEFAULT_CRM_SETTINGS } from '../../types/crm';
+export type { CrmSettings };
 
 interface ConfiguracoesViewProps {
   settings: CrmSettings;
@@ -110,11 +95,11 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#09090b]">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#09090b]">
       {/* Top Header */}
-      <header className="px-8 py-5 border-b border-[#27272a] bg-[#0d0d10] flex items-center justify-between">
+      <header className="px-4 sm:px-8 py-4 sm:py-5 border-b border-[#27272a] bg-[#0d0d10] flex items-center justify-between shrink-0">
         <div>
-          <h1 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+          <h1 className="text-lg sm:text-xl font-bold text-zinc-100 flex items-center gap-2">
             <Settings size={20} className="text-emerald-400" />
             <span>Configurações do Sistema</span>
           </h1>
@@ -125,11 +110,11 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Dados Comerciais e Pix */}
-            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-6 space-y-4">
+            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4 sm:p-6 space-y-4">
               <div className="flex items-center gap-2 text-sm font-bold text-zinc-100 border-b border-[#27272a] pb-3">
                 <KeyRound size={16} className="text-emerald-400" />
                 <span>Dados de Cobrança & Atendimento</span>
@@ -137,37 +122,37 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                 <div>
-                  <label className="block text-zinc-400 font-medium mb-1">Seu Nome / Marca</label>
+                  <label className="block text-zinc-300 font-medium mb-1">Seu Nome / Marca</label>
                   <input
                     type="text"
                     value={formData.nomeProfissional}
                     onChange={(e) => setFormData({ ...formData, nomeProfissional: e.target.value })}
                     placeholder="Yago Duarte"
-                    className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-zinc-100 focus:outline-hidden focus:border-emerald-500"
+                    className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-zinc-400 font-medium mb-1">
+                  <label className="block text-zinc-300 font-medium mb-1">
                     Seu WhatsApp Oficial (com DDI 55)
                   </label>
                   <div className="relative">
-                    <Smartphone size={14} className="absolute left-3 top-2.5 text-zinc-500" />
+                    <Smartphone size={14} className="absolute left-3 top-2.5 text-zinc-400" />
                     <input
                       type="text"
                       value={formData.whatsappComercial}
                       onChange={(e) => setFormData({ ...formData, whatsappComercial: e.target.value })}
                       placeholder="5511911300834"
-                      className="w-full bg-[#18181b] border border-[#27272a] rounded-xl pl-9 pr-3 py-2 text-zinc-100 font-mono focus:outline-hidden focus:border-emerald-500"
+                      className="w-full bg-[#18181b] border border-[#27272a] rounded-xl pl-9 pr-3 py-2 text-zinc-100 placeholder:text-zinc-400 font-mono focus:outline-hidden focus:border-emerald-500"
                     />
                   </div>
-                  <span className="text-[10px] text-zinc-500 mt-1 block">
+                  <span className="text-[11px] text-zinc-400 mt-1 block">
                     Usado no botão "Aceitar Proposta" das páginas públicas.
                   </span>
                 </div>
 
                 <div>
-                  <label className="block text-zinc-400 font-medium mb-1">
+                  <label className="block text-zinc-300 font-medium mb-1">
                     Sua Chave Pix (Para Cobranças)
                   </label>
                   <input
@@ -175,9 +160,9 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
                     value={formData.chavePix}
                     onChange={(e) => setFormData({ ...formData, chavePix: e.target.value })}
                     placeholder="CPF, CNPJ, E-mail ou Celular"
-                    className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-emerald-400 font-mono focus:outline-hidden focus:border-emerald-500"
+                    className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-emerald-400 placeholder:text-zinc-400 font-mono focus:outline-hidden focus:border-emerald-500"
                   />
-                  <span className="text-[10px] text-zinc-500 mt-1 block">
+                  <span className="text-[11px] text-zinc-400 mt-1 block">
                     Inserida automaticamente nos lembretes de mensalidade via WhatsApp.
                   </span>
                 </div>
@@ -185,7 +170,7 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
             </div>
 
             {/* Valores Padrão */}
-            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-6 space-y-4">
+            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4 sm:p-6 space-y-4">
               <div className="flex items-center gap-2 text-sm font-bold text-zinc-100 border-b border-[#27272a] pb-3">
                 <DollarSign size={16} className="text-emerald-400" />
                 <span>Valores Padrão de Novos Negócios</span>
@@ -193,7 +178,7 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                 <div>
-                  <label className="block text-zinc-400 font-medium mb-1">Implantação Padrão (R$)</label>
+                  <label className="block text-zinc-300 font-medium mb-1">Implantação Padrão (R$)</label>
                   <input
                     type="number"
                     step="50"
@@ -204,7 +189,7 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-zinc-400 font-medium mb-1">Mensalidade MRR Padrão (R$)</label>
+                  <label className="block text-zinc-300 font-medium mb-1">Mensalidade MRR Padrão (R$)</label>
                   <input
                     type="number"
                     step="5"
@@ -215,7 +200,7 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-zinc-400 font-medium mb-1">Dia de Vencimento Padrão</label>
+                  <label className="block text-zinc-300 font-medium mb-1">Dia de Vencimento Padrão</label>
                   <input
                     type="number"
                     min="1"
@@ -227,7 +212,7 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-between">
+              <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
                 {savedFeedback ? (
                   <div className="text-xs text-emerald-400 flex items-center gap-1.5 font-medium">
                     <CheckCircle2 size={15} />
@@ -239,7 +224,7 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
 
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
+                  className="min-h-[40px] px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl flex items-center gap-2 transition-colors cursor-pointer shadow-sm"
                 >
                   <Save size={14} />
                   <span>Salvar Configurações</span>
@@ -249,8 +234,8 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
           </form>
 
           {/* Backup Completo JSON & Segurança */}
-          <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#27272a] pb-3">
+          <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4 sm:p-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#27272a] pb-3">
               <div className="flex items-center gap-2 text-sm font-bold text-zinc-100">
                 <Database size={16} className="text-emerald-400" />
                 <span>Backup Completo do Sistema (JSON)</span>
@@ -268,13 +253,13 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
               <button
                 type="button"
                 onClick={onExportFullBackup}
-                className="px-4 py-2.5 bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-200 font-semibold text-xs rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
+                className="min-h-[40px] px-4 py-2.5 bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-200 font-semibold text-xs rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
               >
                 <Download size={14} className="text-emerald-400" />
                 <span>Baixar Backup Completo (.JSON)</span>
               </button>
 
-              <label className="px-4 py-2.5 bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-200 font-semibold text-xs rounded-xl flex items-center gap-2 transition-colors cursor-pointer">
+              <label className="min-h-[40px] px-4 py-2.5 bg-[#18181b] hover:bg-[#27272a] border border-[#27272a] text-zinc-200 font-semibold text-xs rounded-xl flex items-center gap-2 transition-colors cursor-pointer">
                 <Upload size={14} className="text-sky-400" />
                 <span>Restaurar Backup (.JSON)</span>
                 <input
@@ -288,27 +273,27 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
           </div>
 
           {/* Arquivos na Nuvem (Logos, Contratos e Comprovantes) */}
-          <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#27272a] pb-3">
+          <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4 sm:p-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#27272a] pb-3">
               <div className="flex items-center gap-2 text-sm font-bold text-zinc-100">
                 <Upload size={16} className="text-emerald-400" />
                 <span>Arquivos na Nuvem (Logos, Contratos & Comprovantes)</span>
               </div>
-              <label className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl cursor-pointer transition-colors">
+              <label className="min-h-[36px] inline-flex items-center px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl cursor-pointer transition-colors">
                 <span>{uploadingCloud ? 'Enviando...' : '+ Enviar Arquivo'}</span>
                 <input type="file" onChange={handleCloudUpload} disabled={uploadingCloud} className="hidden" />
               </label>
             </div>
 
             {cloudFiles.length === 0 ? (
-              <div className="text-xs text-zinc-500 py-4 text-center">
+              <div className="text-xs text-zinc-400 py-4 text-center">
                 Nenhum arquivo salvo na nuvem ainda. Os arquivos anexados nos briefings ou enviados aqui ficam disponíveis em qualquer dispositivo.
               </div>
             ) : (
               <div className="divide-y divide-[#1e1e24] text-xs">
                 {cloudFiles.map(f => (
-                  <div key={f.key} className="py-2.5 flex items-center justify-between">
-                    <div>
+                  <div key={f.key} className="py-2.5 flex items-center justify-between gap-2">
+                    <div className="truncate">
                       <a
                         href={`/api/files/${f.key}`}
                         target="_blank"
@@ -317,14 +302,14 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
                       >
                         {f.filename}
                       </a>
-                      <span className="text-[11px] text-zinc-500 ml-2 font-mono">
+                      <span className="text-[11px] text-zinc-400 ml-2 font-mono">
                         ({(f.size / 1024).toFixed(1)} KB)
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleDeleteCloudFile(f.key)}
-                      className="text-rose-400 hover:text-rose-300 text-[11px] cursor-pointer"
+                      className="min-h-[32px] px-2 text-rose-400 hover:text-rose-300 text-[11px] cursor-pointer"
                     >
                       Remover
                     </button>
@@ -335,9 +320,9 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
           </div>
 
           {/* Status de Segurança Cloudflare */}
-          <div className="bg-emerald-950/15 border border-emerald-500/25 rounded-2xl p-5 flex items-center justify-between">
+          <div className="bg-emerald-950/15 border border-emerald-500/25 rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
                 <ShieldCheck size={20} />
               </div>
               <div>

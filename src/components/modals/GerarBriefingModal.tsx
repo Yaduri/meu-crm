@@ -59,7 +59,12 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="briefing-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs"
+    >
       <div className="bg-[#121215] border border-[#27272a] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="p-5 border-b border-[#27272a] flex items-center justify-between bg-[#16161a]">
@@ -68,8 +73,8 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
               <Building2 size={16} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-zinc-100">Briefing do Projeto</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 id="briefing-modal-title" className="text-base font-bold text-zinc-100">Briefing do Projeto</h2>
                 {briefing.preenchido ? (
                   <span className="text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
                     <CheckCircle2 size={11} /> Preenchido pelo Cliente
@@ -85,15 +90,17 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
+            aria-label="Fechar"
+            className="min-h-[34px] min-w-[34px] flex items-center justify-center text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-5 flex-1 text-xs">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs">
           {/* Link Box */}
           <div className="p-3 bg-[#18181b] border border-[#27272a] rounded-xl flex items-center justify-between gap-3">
             <div className="truncate font-mono text-[11px] text-zinc-400">
@@ -104,7 +111,7 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                className="min-h-[34px] px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
               >
                 {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                 <span>{copied ? 'Copiado' : 'Copiar Link'}</span>
@@ -113,7 +120,8 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
               <button
                 type="button"
                 onClick={handleOpenPreview}
-                className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg transition-colors cursor-pointer"
+                aria-label="Abrir formulário de briefing em nova aba"
+                className="min-h-[34px] min-w-[34px] flex items-center justify-center p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg transition-colors cursor-pointer"
                 title="Abrir Formulário"
               >
                 <ExternalLink size={13} />
@@ -129,26 +137,26 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
                   <Building2 size={14} className="text-emerald-400" />
                   <span>1. Dados da Empresa</span>
                 </div>
-                <div className="grid grid-cols-2 gap-3 text-zinc-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-zinc-300">
                   <div>
-                    <span className="text-zinc-500 block text-[11px]">Nome da Empresa / Marca:</span>
+                    <span className="text-zinc-400 block text-[11px]">Nome da Empresa / Marca:</span>
                     <span className="font-medium text-zinc-100">{briefing.nome_empresa || '-'}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 block text-[11px]">Slogan / Posicionamento:</span>
+                    <span className="text-zinc-400 block text-[11px]">Slogan / Posicionamento:</span>
                     <span>{briefing.slogan_posicionamento || '-'}</span>
                   </div>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block text-[11px]">Público-Alvo:</span>
+                  <span className="text-zinc-400 block text-[11px]">Público-Alvo:</span>
                   <p className="mt-0.5 text-zinc-200">{briefing.publico_alvo || '-'}</p>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block text-[11px]">Principais Serviços:</span>
+                  <span className="text-zinc-400 block text-[11px]">Principais Serviços:</span>
                   <p className="mt-0.5 text-zinc-200">{briefing.servicos_principais || '-'}</p>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block text-[11px]">Diferenciais:</span>
+                  <span className="text-zinc-400 block text-[11px]">Diferenciais:</span>
                   <p className="mt-0.5 text-zinc-200">{briefing.diferenciais || '-'}</p>
                 </div>
               </div>
@@ -159,11 +167,11 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
                   <span>2. Visual & Estilo</span>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block text-[11px]">Cores Preferidas:</span>
+                  <span className="text-zinc-400 block text-[11px]">Cores Preferidas:</span>
                   <span className="text-zinc-200 font-medium">{briefing.cores_preferidas || '-'}</span>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block text-[11px]">Sites de Referência:</span>
+                  <span className="text-zinc-400 block text-[11px]">Sites de Referência:</span>
                   <span className="text-zinc-200">{briefing.sites_referencia || '-'}</span>
                 </div>
               </div>
@@ -173,18 +181,18 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
                   <PhoneCall size={14} className="text-emerald-400" />
                   <span>3. Contatos & Redes</span>
                 </div>
-                <div className="grid grid-cols-2 gap-3 text-zinc-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-zinc-300">
                   <div>
-                    <span className="text-zinc-500 block text-[11px]">WhatsApp Oficial:</span>
-                    <span className="text-zinc-100 font-medium">{briefing.whatsapp_atendimento || '-'}</span>
+                    <span className="text-zinc-400 block text-[11px]">WhatsApp Oficial:</span>
+                    <span className="text-zinc-100 font-medium font-mono">{briefing.whatsapp_atendimento || '-'}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 block text-[11px]">Instagram:</span>
+                    <span className="text-zinc-400 block text-[11px]">Instagram:</span>
                     <span className="text-zinc-100">{briefing.instagram || '-'}</span>
                   </div>
                 </div>
                 <div>
-                  <span className="text-zinc-500 block text-[11px]">Endereço:</span>
+                  <span className="text-zinc-400 block text-[11px]">Endereço:</span>
                   <span>{briefing.endereco_fisico || '-'}</span>
                 </div>
               </div>
@@ -196,7 +204,7 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
                 </div>
                 {briefing.link_arquivos ? (
                   <div>
-                    <span className="text-zinc-500 block text-[11px]">Link do Google Drive / Dropbox:</span>
+                    <span className="text-zinc-400 block text-[11px]">Link do Google Drive / Dropbox:</span>
                     <a
                       href={briefing.link_arquivos.startsWith('http') ? briefing.link_arquivos : `https://${briefing.link_arquivos}`}
                       target="_blank"
@@ -208,11 +216,11 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
                     </a>
                   </div>
                 ) : (
-                  <span className="text-zinc-500">Nenhum link de arquivos informado.</span>
+                  <span className="text-zinc-400">Nenhum link de arquivos informado.</span>
                 )}
                 {briefing.observacoes_adicionais && (
                   <div>
-                    <span className="text-zinc-500 block text-[11px]">Observações Extras:</span>
+                    <span className="text-zinc-400 block text-[11px]">Observações Extras:</span>
                     <p className="mt-0.5 text-zinc-300">{briefing.observacoes_adicionais}</p>
                   </div>
                 )}
@@ -230,7 +238,7 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-[#27272a] bg-[#16161a] flex items-center justify-between">
+        <div className="p-4 border-t border-[#27272a] bg-[#16161a] flex flex-wrap items-center justify-between gap-3">
           <div>
             {briefing.preenchido && (
               <button
@@ -244,7 +252,7 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
                     });
                   }
                 }}
-                className="text-zinc-500 hover:text-zinc-400 text-[11px] underline cursor-pointer"
+                className="text-zinc-400 hover:text-zinc-200 text-[11px] underline cursor-pointer"
               >
                 Resetar respostas
               </button>
@@ -255,7 +263,7 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+              className="min-h-[38px] px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
             >
               Fechar
             </button>
@@ -263,7 +271,7 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
             <button
               type="button"
               onClick={handleSendWhatsApp}
-              className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+              className="min-h-[38px] px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
             >
               <Send size={13} />
               <span>Enviar no WhatsApp</span>

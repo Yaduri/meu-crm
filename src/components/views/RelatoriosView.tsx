@@ -87,7 +87,6 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
       `👉 Acesse seu painel: https://crm.yagoduarte.com.br`;
 
     try {
-      // Salva no Worker + D1 (para o Cron das 08:00 funcionar com PC desligado) e dispara o resumo
       const res = await fetch('/api/telegram/summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -113,11 +112,11 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#09090b]">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#09090b]">
       {/* Top Header */}
-      <header className="px-8 py-5 border-b border-[#27272a] bg-[#0d0d10] flex items-center justify-between">
+      <header className="px-4 sm:px-8 py-4 sm:py-5 border-b border-[#27272a] bg-[#0d0d10] flex items-center justify-between shrink-0">
         <div>
-          <h1 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+          <h1 className="text-lg sm:text-xl font-bold text-zinc-100 flex items-center gap-2">
             <BarChart3 size={20} className="text-emerald-400" />
             <span>Relatórios & Inteligência de Negócio</span>
           </h1>
@@ -128,10 +127,10 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-8 space-y-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
         {/* Top KPIs */}
-        <div className="grid grid-cols-4 gap-4">
-          <div className="p-4.5 bg-[#121215] border border-[#27272a] rounded-2xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+          <div className="p-4 bg-[#121215] border border-[#27272a] rounded-2xl">
             <div className="flex items-center justify-between text-[11px] text-zinc-400">
               <span>Total de Leads na Base</span>
               <Target size={14} className="text-emerald-400" />
@@ -139,10 +138,10 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
             <div className="text-2xl font-bold font-mono text-zinc-100 mt-1">
               {totalLeads}
             </div>
-            <div className="text-[10px] text-zinc-500 mt-1">Leads cadastrados/importados</div>
+            <div className="text-[11px] text-zinc-400 mt-1">Leads cadastrados/importados</div>
           </div>
 
-          <div className="p-4.5 bg-[#121215] border border-emerald-500/30 rounded-2xl">
+          <div className="p-4 bg-[#121215] border border-emerald-500/30 rounded-2xl">
             <div className="flex items-center justify-between text-[11px] text-emerald-400 font-semibold">
               <span>Taxa de Conversão</span>
               <TrendingUp size={14} className="text-emerald-400" />
@@ -150,10 +149,10 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
             <div className="text-2xl font-bold font-mono text-emerald-400 mt-1">
               {taxaConversao}%
             </div>
-            <div className="text-[10px] text-zinc-500 mt-1">{fechados} vendas fechadas</div>
+            <div className="text-[11px] text-zinc-400 mt-1">{fechados} vendas fechadas</div>
           </div>
 
-          <div className="p-4.5 bg-[#121215] border border-[#27272a] rounded-2xl">
+          <div className="p-4 bg-[#121215] border border-[#27272a] rounded-2xl">
             <div className="flex items-center justify-between text-[11px] text-zinc-400">
               <span>Faturamento Fechado</span>
               <DollarSign size={14} className="text-emerald-400" />
@@ -161,10 +160,10 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
             <div className="text-2xl font-bold font-mono text-zinc-100 mt-1">
               R$ {faturamentoFechado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-[10px] text-zinc-500 mt-1">Em implantações concluídas</div>
+            <div className="text-[11px] text-zinc-400 mt-1">Em implantações concluídas</div>
           </div>
 
-          <div className="p-4.5 bg-[#121215] border border-sky-500/30 rounded-2xl">
+          <div className="p-4 bg-[#121215] border border-sky-500/30 rounded-2xl">
             <div className="flex items-center justify-between text-[11px] text-sky-400 font-semibold">
               <span>Pipeline em Negociação</span>
               <Sparkles size={14} className="text-sky-400" />
@@ -172,54 +171,54 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
             <div className="text-2xl font-bold font-mono text-sky-300 mt-1">
               R$ {faturamentoEmPotencial.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-[10px] text-zinc-500 mt-1">{negociacao} propostas ativas</div>
+            <div className="text-[11px] text-zinc-400 mt-1">{negociacao} propostas ativas</div>
           </div>
         </div>
 
         {/* Funil Visual de Conversão */}
-        <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-6">
-          <div className="text-sm font-bold text-zinc-100 mb-4 flex items-center justify-between">
+        <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4 sm:p-6">
+          <div className="text-sm font-bold text-zinc-100 mb-4 flex flex-wrap items-center justify-between gap-2">
             <span>Funil de Conversão Comercial</span>
             <span className="text-xs font-normal text-zinc-400">Distribuição por etapa</span>
           </div>
 
-          <div className="grid grid-cols-5 gap-3 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-center">
             <div className="p-4 bg-[#18181b] rounded-xl border border-zinc-800">
               <div className="text-[11px] text-zinc-400 font-medium">A Abordar</div>
               <div className="text-xl font-bold font-mono text-zinc-200 mt-1">{aAbordar}</div>
-              <div className="text-[10px] text-zinc-500 mt-1">Novos contatos</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Novos contatos</div>
             </div>
 
             <div className="p-4 bg-[#18181b] rounded-xl border border-zinc-800">
               <div className="text-[11px] text-zinc-400 font-medium">Em Contato / Prévia</div>
               <div className="text-xl font-bold font-mono text-zinc-200 mt-1">{abordados}</div>
-              <div className="text-[10px] text-zinc-500 mt-1">Aguardando retorno</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Aguardando retorno</div>
             </div>
 
             <div className="p-4 bg-[#18181b] rounded-xl border border-amber-500/20">
               <div className="text-[11px] text-amber-400 font-medium">Negociação Ativa</div>
               <div className="text-xl font-bold font-mono text-amber-300 mt-1">{negociacao}</div>
-              <div className="text-[10px] text-zinc-500 mt-1">Proposta enviada</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Proposta enviada</div>
             </div>
 
             <div className="p-4 bg-[#18181b] rounded-xl border border-emerald-500/30">
               <div className="text-[11px] text-emerald-400 font-medium">Fechados (Ganhos)</div>
               <div className="text-xl font-bold font-mono text-emerald-400 mt-1">{fechados}</div>
-              <div className="text-[10px] text-zinc-500 mt-1">Clientes na carteira</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Clientes na carteira</div>
             </div>
 
             <div className="p-4 bg-[#18181b] rounded-xl border border-rose-500/20">
               <div className="text-[11px] text-rose-400 font-medium">Perdidos / Recusados</div>
               <div className="text-xl font-bold font-mono text-rose-300 mt-1">{perdidos}</div>
-              <div className="text-[10px] text-zinc-500 mt-1">Sem interesse / preço</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Sem interesse / preço</div>
             </div>
           </div>
         </div>
 
         {/* Linha 2: Nichos + Telegram Automation */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Nichos com mais leads */}
-          <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-6">
+          <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4 sm:p-6">
             <h3 className="text-sm font-bold text-zinc-100 mb-4">Volume de Leads por Nicho</h3>
             <div className="space-y-3">
               {nichosOrdenados.slice(0, 6).map(([nicho, count]) => {
@@ -243,7 +242,7 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
           </div>
 
           {/* Automação Telegram */}
-          <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-6 flex flex-col justify-between">
+          <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4 sm:p-6 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center">
@@ -270,33 +269,34 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
                     value={telegramBotToken}
                     onChange={(e) => setTelegramBotToken(e.target.value)}
                     placeholder="Cole o token do @BotFather aqui..."
-                    className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-hidden focus:border-emerald-500 font-mono"
+                    className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500 font-mono"
                   />
-                  <span className="text-[10px] text-zinc-500 mt-0.5 block">
-                    🔒 Salvo de forma segura e privada apenas no armazenamento local do seu navegador.
+                  <span className="text-[11px] text-zinc-400 mt-1 block">
+                    🔒 Salvo de forma segura e privada no seu ambiente Cloudflare.
                   </span>
                 </div>
 
                 <div>
                   <label className="block text-[11px] text-zinc-300 font-medium mb-1">Seu Chat ID do Telegram:</label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       value={telegramChatId}
                       onChange={(e) => setTelegramChatId(e.target.value)}
                       placeholder="Ex: 123456789"
-                      className="flex-1 bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 focus:outline-hidden focus:border-emerald-500 font-mono"
+                      className="flex-1 bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500 font-mono"
                     />
                     <button
+                      type="button"
                       onClick={handleTestTelegram}
                       disabled={telegramSending}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+                      className="min-h-[38px] px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shrink-0"
                     >
                       <Send size={13} />
                       <span>{telegramSending ? 'Enviando...' : 'Testar Agora'}</span>
                     </button>
                   </div>
-                  <p className="text-[10px] text-zinc-500 leading-normal mt-1">
+                  <p className="text-[11px] text-zinc-400 leading-normal mt-1.5">
                     💡 Para descobrir seu Chat ID: abra o Telegram, mande <code>/start</code> para o bot <strong>@userinfobot</strong> ou procure seu ID e cole aqui.
                   </p>
                 </div>

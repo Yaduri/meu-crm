@@ -40,7 +40,6 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   const [msgAMandar, setMsgAMandar] = useState(initialLead?.msg_a_mandar || '');
   const [observacoes, setObservacoes] = useState(initialLead?.observacoes || '');
 
-  // Sincroniza os campos sempre que o modal abre ou o lead selecionado muda
   useEffect(() => {
     if (initialLead) {
       setNome(initialLead.nome || '');
@@ -79,7 +78,6 @@ export const LeadModal: React.FC<LeadModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Lista combinada de nichos padrão + nichos existentes na base
   const allNichos = Array.from(
     new Set([
       ...NICHOS_PADRAO,
@@ -88,7 +86,6 @@ export const LeadModal: React.FC<LeadModalProps> = ({
     ])
   ).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
-  // Checagem de WhatsApp duplicado
   const cleanPhone = whatsapp.replace(/\D/g, '');
   const duplicateLead = cleanPhone && cleanPhone.length >= 8
     ? existingLeads.find(l => l.id !== initialLead?.id && l.whatsapp?.replace(/\D/g, '').includes(cleanPhone))
@@ -119,23 +116,30 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-[#121215] border border-[#27272a] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="lead-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto"
+    >
+      <div className="bg-[#121215] border border-[#27272a] rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#27272a] flex items-center justify-between bg-[#141418]">
-          <h2 className="text-base font-bold text-zinc-100">
+        <div className="px-5 sm:px-6 py-4 border-b border-[#27272a] flex items-center justify-between bg-[#141418]">
+          <h2 id="lead-modal-title" className="text-base font-bold text-zinc-100">
             {initialLead?.nome ? 'Editar Cliente / Lead' : 'Novo Lead para Prospecção'}
           </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 p-1 rounded-lg hover:bg-[#27272a] transition-colors"
+            aria-label="Fechar"
+            className="min-h-[34px] min-w-[34px] flex items-center justify-center text-zinc-400 hover:text-zinc-200 p-1 rounded-lg hover:bg-[#27272a] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs">
           {duplicateLead && (
             <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 flex items-center gap-2">
               <AlertCircle size={16} className="shrink-0" />
@@ -145,21 +149,21 @@ export const LeadModal: React.FC<LeadModalProps> = ({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Nome do Cliente / Empresa *</label>
+              <label className="block text-zinc-300 font-medium mb-1">Nome do Cliente / Empresa *</label>
               <input
                 type="text"
                 required
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Ex: Studio Letícia Vieira"
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
               />
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Nicho</label>
+              <label className="block text-zinc-300 font-medium mb-1">Nicho</label>
               <select
                 value={nicho}
                 onChange={(e) => setNicho(e.target.value)}
@@ -172,31 +176,31 @@ export const LeadModal: React.FC<LeadModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">WhatsApp</label>
+              <label className="block text-zinc-300 font-medium mb-1">WhatsApp</label>
               <input
                 type="text"
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder="Ex: 11999998888"
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500 font-mono"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500 font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Instagram</label>
+              <label className="block text-zinc-300 font-medium mb-1">Instagram</label>
               <input
                 type="text"
                 value={instagram}
                 onChange={(e) => setInstagram(e.target.value)}
                 placeholder="@perfil"
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
               />
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Origem do Lead</label>
+              <label className="block text-zinc-300 font-medium mb-1">Origem do Lead</label>
               <select
                 value={origem}
                 onChange={(e) => setOrigem(e.target.value as LeadOrigem)}
@@ -211,9 +215,9 @@ export const LeadModal: React.FC<LeadModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Presença Digital Atual</label>
+              <label className="block text-zinc-300 font-medium mb-1">Presença Digital Atual</label>
               <select
                 value={presencaDigital}
                 onChange={(e) => setPresencaDigital(e.target.value as PresencaDigital)}
@@ -228,31 +232,31 @@ export const LeadModal: React.FC<LeadModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Site Atual (se houver)</label>
+              <label className="block text-zinc-300 font-medium mb-1">Site Atual (se houver)</label>
               <input
                 type="text"
                 value={siteAtual}
                 onChange={(e) => setSiteAtual(e.target.value)}
                 placeholder="exemplo.com.br"
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-zinc-400 font-medium mb-1">Perfil Google Meu Negócio / Maps</label>
+            <label className="block text-zinc-300 font-medium mb-1">Perfil Google Meu Negócio / Maps</label>
             <input
               type="url"
               value={googleUrl}
               onChange={(e) => setGoogleUrl(e.target.value)}
               placeholder="https://maps.google.com/..."
-              className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
+              className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Status Inicial</label>
+              <label className="block text-zinc-300 font-medium mb-1">Status Inicial</label>
               <select
                 value={statusId}
                 onChange={(e) => setStatusId(e.target.value)}
@@ -265,7 +269,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Implantação (R$)</label>
+              <label className="block text-zinc-300 font-medium mb-1">Implantação (R$)</label>
               <input
                 type="number"
                 step="50"
@@ -276,7 +280,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Mensalidade (R$)</label>
+              <label className="block text-zinc-300 font-medium mb-1">Mensalidade (R$)</label>
               <input
                 type="number"
                 step="10"
@@ -287,55 +291,55 @@ export const LeadModal: React.FC<LeadModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Link da Prévia (Figma / Web)</label>
+              <label className="block text-zinc-300 font-medium mb-1">Link da Prévia (Figma / Web)</label>
               <input
                 type="url"
                 value={linkPrevia}
                 onChange={(e) => setLinkPrevia(e.target.value)}
                 placeholder="https://..."
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
               />
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Link da Proposta Comercial</label>
+              <label className="block text-zinc-300 font-medium mb-1">Link da Proposta Comercial</label>
               <input
                 type="url"
                 value={linkProposta}
                 onChange={(e) => setLinkProposta(e.target.value)}
                 placeholder="https://..."
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-zinc-400 font-medium mb-1">Mensagem a Mandar no WhatsApp</label>
+            <label className="block text-zinc-300 font-medium mb-1">Mensagem a Mandar no WhatsApp</label>
             <textarea
               rows={2}
               value={msgAMandar}
               onChange={(e) => setMsgAMandar(e.target.value)}
               placeholder="Script personalizado para abordagem ou follow-up..."
-              className="w-full bg-[#18181b] border border-[#27272a] rounded-lg p-2.5 text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
+              className="w-full bg-[#18181b] border border-[#27272a] rounded-lg p-2.5 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
             />
           </div>
 
           <div>
-            <label className="block text-zinc-400 font-medium mb-1">Observações Internas</label>
+            <label className="block text-zinc-300 font-medium mb-1">Observações Internas</label>
             <textarea
               rows={2}
               value={observacoes}
               onChange={(e) => setObservacoes(e.target.value)}
               placeholder="Notas importantes sobre as necessidades do cliente..."
-              className="w-full bg-[#18181b] border border-[#27272a] rounded-lg p-2.5 text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
+              className="w-full bg-[#18181b] border border-[#27272a] rounded-lg p-2.5 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
             />
           </div>
 
           {/* Footer */}
-          <div className="pt-4 border-t border-[#27272a] flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+          <div className="pt-4 border-t border-[#27272a] flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               {initialLead?.id && onDelete && (
                 <button
                   type="button"
@@ -345,7 +349,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
                       onClose();
                     }
                   }}
-                  className="px-3 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="min-h-[38px] px-3 py-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Trash2 size={14} />
                   <span>Excluir</span>
@@ -359,7 +363,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
                     onClose();
                     onOpenProposta(initialLead);
                   }}
-                  className="px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="min-h-[38px] px-3 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <FileText size={14} />
                   <span>Gerar Proposta (/p/)</span>
@@ -371,13 +375,13 @@ export const LeadModal: React.FC<LeadModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg bg-[#27272a] hover:bg-zinc-700 text-zinc-300 font-medium transition-colors cursor-pointer"
+                className="min-h-[38px] px-4 py-2 rounded-lg bg-[#27272a] hover:bg-zinc-700 text-zinc-200 font-medium transition-colors cursor-pointer"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors cursor-pointer"
+                className="min-h-[38px] px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors cursor-pointer"
               >
                 {initialLead?.nome ? 'Salvar Alterações' : 'Cadastrar Lead'}
               </button>

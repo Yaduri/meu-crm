@@ -1,22 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { Menu, Plus, Search } from 'lucide-react';
 import { Sidebar } from './components/layout/Sidebar';
 import { HojeView } from './components/views/HojeView';
-import { ProspeccaoView } from './components/views/ProspeccaoView';
-import { ProjetosView } from './components/views/ProjetosView';
-import { FinanceiroView } from './components/views/FinanceiroView';
-import { CarteiraView } from './components/views/CarteiraView';
-import { RelatoriosView } from './components/views/RelatoriosView';
-import { ConfiguracoesView, DEFAULT_CRM_SETTINGS } from './components/views/ConfiguracoesView';
-import type { CrmSettings } from './components/views/ConfiguracoesView';
 import { LeadModal } from './components/modals/LeadModal';
-import { MigrationModal } from './components/modals/MigrationModal';
-import { FechamentoVendaModal } from './components/modals/FechamentoVendaModal';
-import { GerarPropostaModal } from './components/modals/GerarPropostaModal';
-import { GerarBriefingModal } from './components/modals/GerarBriefingModal';
-import { CommandPaletteModal } from './components/modals/CommandPaletteModal';
-import { PublicProposalView } from './components/public/PublicProposalView';
-import { PublicBriefingView } from './components/public/PublicBriefingView';
 import { exportLeadsToCsv } from './lib/csvMigration';
+
+const ProspeccaoView = lazy(() => import('./components/views/ProspeccaoView').then(m => ({ default: m.ProspeccaoView })));
+const ProjetosView = lazy(() => import('./components/views/ProjetosView').then(m => ({ default: m.ProjetosView })));
+const FinanceiroView = lazy(() => import('./components/views/FinanceiroView').then(m => ({ default: m.FinanceiroView })));
+const CarteiraView = lazy(() => import('./components/views/CarteiraView').then(m => ({ default: m.CarteiraView })));
+const RelatoriosView = lazy(() => import('./components/views/RelatoriosView').then(m => ({ default: m.RelatoriosView })));
+const ConfiguracoesView = lazy(() => import('./components/views/ConfiguracoesView').then(m => ({ default: m.ConfiguracoesView })));
+
+const MigrationModal = lazy(() => import('./components/modals/MigrationModal').then(m => ({ default: m.MigrationModal })));
+const FechamentoVendaModal = lazy(() => import('./components/modals/FechamentoVendaModal').then(m => ({ default: m.FechamentoVendaModal })));
+const GerarPropostaModal = lazy(() => import('./components/modals/GerarPropostaModal').then(m => ({ default: m.GerarPropostaModal })));
+const GerarBriefingModal = lazy(() => import('./components/modals/GerarBriefingModal').then(m => ({ default: m.GerarBriefingModal })));
+const CommandPaletteModal = lazy(() => import('./components/modals/CommandPaletteModal').then(m => ({ default: m.CommandPaletteModal })));
+const PublicProposalView = lazy(() => import('./components/public/PublicProposalView').then(m => ({ default: m.PublicProposalView })));
+const PublicBriefingView = lazy(() => import('./components/public/PublicBriefingView').then(m => ({ default: m.PublicBriefingView })));
 import initialRealLeads from './data/initialLeads.json';
 import type { 
   ClientLead, 
@@ -27,9 +29,10 @@ import type {
   MonthlyInvoice,
   MaintenanceRequest,
   Proposal,
-  BriefingData
+  BriefingData,
+  CrmSettings
 } from './types/crm';
-import { DEFAULT_STATUSES } from './types/crm';
+import { DEFAULT_STATUSES, DEFAULT_CRM_SETTINGS } from './types/crm';
 
 const LEADS_STORAGE_KEY = 'crm_yago_leads';
 const PROJECTS_STORAGE_KEY = 'crm_yago_projects';
@@ -177,13 +180,26 @@ export function App() {
   const [selectedProposalLead, setSelectedProposalLead] = useState<ClientLead | null>(null);
   const [selectedBriefingProject, setSelectedBriefingProject] = useState<Project | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Atalhos Globais (Ctrl+K, N)
+  // Atalhos Globais (Ctrl+K, N, Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen(prev => !prev);
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        setIsCommandPaletteOpen(false);
+        setIsModalOpen(false);
+        setEditingLead(null);
+        setClosingLead(null);
+        setIsMigrationOpen(false);
+        setSelectedProposalLead(null);
+        setSelectedBriefingProject(null);
+        setIsMobileMenuOpen(false);
         return;
       }
 
@@ -797,7 +813,11 @@ export function App() {
       created_at: new Date().toISOString()
     };
 
-    return <PublicProposalView proposal={foundProposal} />;
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-[#09090b] flex items-center justify-center text-zinc-400 text-sm">Carregando proposta...</div>}>
+        <PublicProposalView proposal={foundProposal} />
+      </Suspense>
+    );
   }
 
   // Se a rota for pública de briefing (/b/:token ou ?b=token)
@@ -825,7 +845,11 @@ export function App() {
       created_at: new Date().toISOString()
     };
 
-    return <PublicBriefingView initialData={foundBriefing} onSaveBriefing={handleUpdateBriefing} />;
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-[#09090b] flex items-center justify-center text-zinc-400 text-sm">Carregando briefing...</div>}>
+        <PublicBriefingView initialData={foundBriefing} onSaveBriefing={handleUpdateBriefing} />
+      </Suspense>
+    );
   }
 
   // Clientes na Carteira são os que têm fase 'carteira' ou projeto 'No ar'
@@ -838,8 +862,58 @@ export function App() {
     carteira: carteiraClients.length
   };
 
+  const viewTitles: Record<string, string> = {
+    hoje: 'Hoje',
+    prospeccao: 'Prospecção',
+    projetos: 'Projetos',
+    carteira: 'Carteira',
+    financeiro: 'Financeiro',
+    relatorios: 'Relatórios',
+    configuracoes: 'Configurações',
+  };
+
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#09090b] text-zinc-100 font-sans">
+    <div className="flex flex-col lg:flex-row h-screen w-screen overflow-hidden bg-[#09090b] text-zinc-100 font-sans">
+      {/* Mobile Top Bar */}
+      <header className="lg:hidden flex items-center justify-between px-4 py-2.5 bg-[#121215] border-b border-[#27272a] shrink-0">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Abrir menu"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg bg-[#18181b] border border-[#27272a] text-zinc-200 hover:bg-[#27272a] transition-colors cursor-pointer"
+          >
+            <Menu size={18} />
+          </button>
+          <div className="flex items-center gap-2">
+            <img src="/logo-yd-symbol.png" alt="" className="w-6 h-6 object-contain" />
+            <span className="font-semibold text-sm text-zinc-100">{viewTitles[currentView] || 'CRM'}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsCommandPaletteOpen(true)}
+            aria-label="Buscar lead"
+            className="min-h-[38px] min-w-[38px] flex items-center justify-center rounded-lg bg-[#18181b] border border-[#27272a] text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer"
+          >
+            <Search size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setEditingLead(null);
+              setIsModalOpen(true);
+            }}
+            className="min-h-[38px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors cursor-pointer"
+          >
+            <Plus size={15} />
+            <span>Lead</span>
+          </button>
+        </div>
+      </header>
+
       <Sidebar
         currentView={currentView}
         onSelectView={setCurrentView}
@@ -851,116 +925,120 @@ export function App() {
         onOpenMigration={() => setIsMigrationOpen(true)}
         onExportCsv={handleExportCsv}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        isOpenMobile={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
-      {currentView === 'hoje' && (
-        <HojeView
-          leads={leads}
-          projects={projects}
-          invoices={invoices}
-          installments={installments}
-          selectedLeadId={selectedLeadId}
-          onSelectLead={setSelectedLeadId}
-          onOpenWhatsApp={handleOpenWhatsApp}
-          onReagendar={handleReagendar}
-          onRegistrarContato={handleRegistrarContato}
-          onMudarStatus={handleMoveLeadStatus}
-          onOpenProposta={(lead) => setSelectedProposalLead(lead)}
-          onEditLead={(lead) => {
-            setEditingLead(lead);
-            setIsModalOpen(true);
-          }}
-        />
-      )}
+      <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-[#09090b] text-zinc-400 text-xs">Carregando módulo...</div>}>
+        {currentView === 'hoje' && (
+          <HojeView
+            leads={leads}
+            projects={projects}
+            invoices={invoices}
+            installments={installments}
+            selectedLeadId={selectedLeadId}
+            onSelectLead={setSelectedLeadId}
+            onOpenWhatsApp={handleOpenWhatsApp}
+            onReagendar={handleReagendar}
+            onRegistrarContato={handleRegistrarContato}
+            onMudarStatus={handleMoveLeadStatus}
+            onOpenProposta={(lead) => setSelectedProposalLead(lead)}
+            onEditLead={(lead) => {
+              setEditingLead(lead);
+              setIsModalOpen(true);
+            }}
+          />
+        )}
 
-      {currentView === 'prospeccao' && (
-        <ProspeccaoView
-          leads={leads}
-          onSelectLead={(lead) => {
-            setEditingLead(lead);
-            setIsModalOpen(true);
-          }}
-          onMoveLeadStatus={handleMoveLeadStatus}
-          onOpenWhatsApp={handleOpenWhatsApp}
-          onNewLead={() => {
-            setEditingLead(null);
-            setIsModalOpen(true);
-          }}
-          onNewLeadWithStatus={(statusId) => {
-            setEditingLead({
-              id: '',
-              nome: '',
-              nicho: 'Estética',
-              whatsapp: '',
-              presenca_digital: 'Sem site',
-              origem: 'Google Maps',
-              status_id: statusId,
-              implantacao: 1200,
-              mensalidade: 89,
-              followups_sem_resposta: 0,
-              fase: 'prospeccao',
-              created_at: '',
-              updated_at: ''
-            });
-            setIsModalOpen(true);
-          }}
-        />
-      )}
+        {currentView === 'prospeccao' && (
+          <ProspeccaoView
+            leads={leads}
+            onSelectLead={(lead) => {
+              setEditingLead(lead);
+              setIsModalOpen(true);
+            }}
+            onMoveLeadStatus={handleMoveLeadStatus}
+            onOpenWhatsApp={handleOpenWhatsApp}
+            onNewLead={() => {
+              setEditingLead(null);
+              setIsModalOpen(true);
+            }}
+            onNewLeadWithStatus={(statusId) => {
+              setEditingLead({
+                id: '',
+                nome: '',
+                nicho: 'Estética',
+                whatsapp: '',
+                presenca_digital: 'Sem site',
+                origem: 'Google Maps',
+                status_id: statusId,
+                implantacao: 1200,
+                mensalidade: 89,
+                followups_sem_resposta: 0,
+                fase: 'prospeccao',
+                created_at: '',
+                updated_at: ''
+              });
+              setIsModalOpen(true);
+            }}
+          />
+        )}
 
-      {currentView === 'projetos' && (
-        <ProjetosView
-          projects={projects}
-          onMoveProjectStage={handleMoveProjectStage}
-          onToggleTask={handleToggleTask}
-          onAddTask={handleAddTask}
-          onUpdateProjectLinks={handleUpdateProjectLinks}
-          onOpenBriefing={(project) => setSelectedBriefingProject(project)}
-        />
-      )}
+        {currentView === 'projetos' && (
+          <ProjetosView
+            projects={projects}
+            onMoveProjectStage={handleMoveProjectStage}
+            onToggleTask={handleToggleTask}
+            onAddTask={handleAddTask}
+            onUpdateProjectLinks={handleUpdateProjectLinks}
+            onOpenBriefing={(project) => setSelectedBriefingProject(project)}
+          />
+        )}
 
-      {currentView === 'financeiro' && (
-        <FinanceiroView
-          installments={installments}
-          invoices={invoices}
-          onToggleInstallment={handleToggleInstallment}
-          onToggleInvoice={handleToggleInvoice}
-          onSendCobrançaWhatsApp={handleSendCobrancaWhatsApp}
-        />
-      )}
+        {currentView === 'financeiro' && (
+          <FinanceiroView
+            installments={installments}
+            invoices={invoices}
+            onToggleInstallment={handleToggleInstallment}
+            onToggleInvoice={handleToggleInvoice}
+            onSendCobrançaWhatsApp={handleSendCobrancaWhatsApp}
+          />
+        )}
 
-      {currentView === 'carteira' && (
-        <CarteiraView
-          clients={carteiraClients}
-          maintenanceRequests={maintenanceRequests}
-          onAddMaintenance={handleAddMaintenance}
-          onToggleMaintenance={handleToggleMaintenance}
-          onNovaVenda={handleNovaVendaUpsell}
-          onOpenWhatsApp={handleOpenWhatsApp}
-        />
-      )}
+        {currentView === 'carteira' && (
+          <CarteiraView
+            clients={carteiraClients}
+            maintenanceRequests={maintenanceRequests}
+            onAddMaintenance={handleAddMaintenance}
+            onToggleMaintenance={handleToggleMaintenance}
+            onNovaVenda={handleNovaVendaUpsell}
+            onOpenWhatsApp={handleOpenWhatsApp}
+          />
+        )}
 
-      {currentView === 'relatorios' && (
-        <RelatoriosView
-          leads={leads}
-          projects={projects}
-          invoices={invoices}
-        />
-      )}
+        {currentView === 'relatorios' && (
+          <RelatoriosView
+            leads={leads}
+            projects={projects}
+            invoices={invoices}
+          />
+        )}
 
-      {currentView === 'configuracoes' && (
-        <ConfiguracoesView
-          settings={settings}
-          onSaveSettings={setSettings}
-          onExportFullBackup={handleExportFullBackup}
-          onImportFullBackup={handleImportFullBackup}
-          counts={{
-            leads: leads.length,
-            projects: projects.length,
-            invoices: invoices.length,
-            installments: installments.length,
-          }}
-        />
-      )}
+        {currentView === 'configuracoes' && (
+          <ConfiguracoesView
+            settings={settings}
+            onSaveSettings={setSettings}
+            onExportFullBackup={handleExportFullBackup}
+            onImportFullBackup={handleImportFullBackup}
+            counts={{
+              leads: leads.length,
+              projects: projects.length,
+              invoices: invoices.length,
+              installments: installments.length,
+            }}
+          />
+        )}
+      </Suspense>
 
       {/* Modal de Lead */}
       <LeadModal
@@ -976,87 +1054,97 @@ export function App() {
         existingLeads={leads}
       />
 
-      {/* Modal de Fechamento de Venda */}
-      <FechamentoVendaModal
-        isOpen={!!closingLead}
-        onClose={() => setClosingLead(null)}
-        lead={closingLead}
-        onConfirmVenda={handleConfirmVenda}
-      />
+      <Suspense fallback={null}>
+        {/* Modal de Fechamento de Venda */}
+        {closingLead && (
+          <FechamentoVendaModal
+            isOpen={!!closingLead}
+            onClose={() => setClosingLead(null)}
+            lead={closingLead}
+            onConfirmVenda={handleConfirmVenda}
+          />
+        )}
 
-      {/* Modal de Migração CSV */}
-      <MigrationModal
-        isOpen={isMigrationOpen}
-        onClose={() => setIsMigrationOpen(false)}
-        onImportLeads={handleImportMigratedLeads}
-        onClearAllLeads={handleClearAllLeads}
-        currentCount={leads.length}
-      />
+        {/* Modal de Migração CSV */}
+        {isMigrationOpen && (
+          <MigrationModal
+            isOpen={isMigrationOpen}
+            onClose={() => setIsMigrationOpen(false)}
+            onImportLeads={handleImportMigratedLeads}
+            onClearAllLeads={handleClearAllLeads}
+            currentCount={leads.length}
+          />
+        )}
 
-      {/* Modal de Gerar Proposta */}
-      <GerarPropostaModal
-        isOpen={!!selectedProposalLead}
-        onClose={() => setSelectedProposalLead(null)}
-        lead={selectedProposalLead}
-        onSaveProposal={handleSaveProposal}
-      />
+        {/* Modal de Gerar Proposta */}
+        {selectedProposalLead && (
+          <GerarPropostaModal
+            isOpen={!!selectedProposalLead}
+            onClose={() => setSelectedProposalLead(null)}
+            lead={selectedProposalLead}
+            onSaveProposal={handleSaveProposal}
+          />
+        )}
 
-      {/* Modal de Gerar Briefing */}
-      {selectedBriefingProject && (
-        <GerarBriefingModal
-          isOpen={!!selectedBriefingProject}
-          onClose={() => setSelectedBriefingProject(null)}
-          clientName={selectedBriefingProject.cliente_nome}
-          clientWhatsApp={selectedBriefingProject.cliente_whatsapp}
-          briefing={
-            briefings.find(b => b.project_id === selectedBriefingProject.id || b.token === `brief-${selectedBriefingProject.id}`) || {
-              id: `brief-${selectedBriefingProject.id}`,
-              token: `brief-${selectedBriefingProject.id}`,
-              project_id: selectedBriefingProject.id,
-              lead_id: selectedBriefingProject.client_id,
-              cliente_nome: selectedBriefingProject.cliente_nome,
-              nome_empresa: selectedBriefingProject.cliente_nome,
-              slogan_posicionamento: '',
-              publico_alvo: '',
-              servicos_principais: '',
-              diferenciais: '',
-              cores_preferidas: '',
-              sites_referencia: '',
-              whatsapp_atendimento: selectedBriefingProject.cliente_whatsapp || '',
-              instagram: '',
-              endereco_fisico: '',
-              link_arquivos: '',
-              observacoes_adicionais: '',
-              preenchido: false,
-              created_at: new Date().toISOString()
+        {/* Modal de Gerar Briefing */}
+        {selectedBriefingProject && (
+          <GerarBriefingModal
+            isOpen={!!selectedBriefingProject}
+            onClose={() => setSelectedBriefingProject(null)}
+            clientName={selectedBriefingProject.cliente_nome}
+            clientWhatsApp={selectedBriefingProject.cliente_whatsapp}
+            briefing={
+              briefings.find(b => b.project_id === selectedBriefingProject.id || b.token === `brief-${selectedBriefingProject.id}`) || {
+                id: `brief-${selectedBriefingProject.id}`,
+                token: `brief-${selectedBriefingProject.id}`,
+                project_id: selectedBriefingProject.id,
+                lead_id: selectedBriefingProject.client_id,
+                cliente_nome: selectedBriefingProject.cliente_nome,
+                nome_empresa: selectedBriefingProject.cliente_nome,
+                slogan_posicionamento: '',
+                publico_alvo: '',
+                servicos_principais: '',
+                diferenciais: '',
+                cores_preferidas: '',
+                sites_referencia: '',
+                whatsapp_atendimento: selectedBriefingProject.cliente_whatsapp || '',
+                instagram: '',
+                endereco_fisico: '',
+                link_arquivos: '',
+                observacoes_adicionais: '',
+                preenchido: false,
+                created_at: new Date().toISOString()
+              }
             }
-          }
-          onUpdateBriefing={handleUpdateBriefing}
-        />
-      )}
+            onUpdateBriefing={handleUpdateBriefing}
+          />
+        )}
 
-      {/* Paleta de Comandos Global (Ctrl+K) */}
-      <CommandPaletteModal
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-        leads={leads}
-        projects={projects}
-        onSelectLead={(lead) => {
-          setSelectedLeadId(lead.id);
-          setEditingLead(lead);
-          setIsModalOpen(true);
-        }}
-        onSelectProject={() => {
-          setCurrentView('projetos');
-        }}
-        onNavigateView={(view) => {
-          setCurrentView(view);
-        }}
-        onNewLead={() => {
-          setEditingLead(null);
-          setIsModalOpen(true);
-        }}
-      />
+        {/* Paleta de Comandos Global (Ctrl+K) */}
+        {isCommandPaletteOpen && (
+          <CommandPaletteModal
+            isOpen={isCommandPaletteOpen}
+            onClose={() => setIsCommandPaletteOpen(false)}
+            leads={leads}
+            projects={projects}
+            onSelectLead={(lead) => {
+              setSelectedLeadId(lead.id);
+              setEditingLead(lead);
+              setIsModalOpen(true);
+            }}
+            onSelectProject={() => {
+              setCurrentView('projetos');
+            }}
+            onNavigateView={(view) => {
+              setCurrentView(view);
+            }}
+            onNewLead={() => {
+              setEditingLead(null);
+              setIsModalOpen(true);
+            }}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

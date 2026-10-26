@@ -42,14 +42,14 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
   const totalMRR = clients.reduce((acc, c) => acc + (c.mensalidade || 0), 0);
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#09090b]">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#09090b]">
       {/* Top Header */}
-      <header className="px-8 py-5 border-b border-[#27272a] bg-[#0d0d10] flex items-center justify-between">
+      <header className="px-4 sm:px-8 py-4 sm:py-5 border-b border-[#27272a] bg-[#0d0d10] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div>
-          <h1 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+          <h1 className="text-lg sm:text-xl font-bold text-zinc-100 flex flex-wrap items-center gap-2">
             <Wallet size={20} className="text-emerald-400" />
             <span>Carteira de Clientes Ativos & Recorrência</span>
-            <span className="text-xs font-normal text-zinc-400 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700/50">
+            <span className="text-xs font-normal text-zinc-300 bg-zinc-800/80 px-2 py-0.5 rounded-md border border-zinc-700/50 font-mono">
               {clients.length} ativos
             </span>
           </h1>
@@ -58,20 +58,20 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
           </p>
         </div>
 
-        <div className="bg-[#18181b] border border-[#27272a] px-4 py-2 rounded-xl text-xs flex items-center gap-2">
+        <div className="bg-[#18181b] border border-[#27272a] px-4 py-2 rounded-xl text-xs flex items-center gap-2 self-start sm:self-auto">
           <span className="text-zinc-400">MRR da Carteira:</span>
-          <span className="font-mono font-bold text-lg text-emerald-400">
+          <span className="font-mono font-bold text-base sm:text-lg text-emerald-400">
             R$ {totalMRR.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês
           </span>
         </div>
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
         {/* Left: Lista de Clientes Ativos */}
-        <div className="flex-1 overflow-auto p-6 border-r border-[#27272a]">
+        <div className="flex-1 lg:overflow-auto p-4 sm:p-6 border-b lg:border-b-0 lg:border-r border-[#27272a]">
           {clients.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-zinc-500">
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-zinc-400">
               <div className="w-14 h-14 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center text-zinc-400 mb-3">
                 <Wallet size={24} />
               </div>
@@ -81,7 +81,7 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
               {clients.map((client) => {
                 const isSelected = selectedClient?.id === client.id;
                 const pendingRequestsCount = maintenanceRequests.filter(r => r.client_id === client.id && r.status !== 'concluido').length;
@@ -89,17 +89,25 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
                 return (
                   <div
                     key={client.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setSelectedClientId(client.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedClientId(client.id);
+                      }
+                    }}
                     className={`p-4 bg-[#121215] border rounded-2xl cursor-pointer transition-all ${
                       isSelected
                         ? 'border-emerald-500/70 bg-[#16161b] shadow-md shadow-emerald-500/5 ring-1 ring-emerald-500/20'
                         : 'border-[#27272a] hover:border-zinc-700 hover:bg-[#141418]'
                     }`}
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between gap-2">
                       <div>
                         <h3 className="font-semibold text-sm text-zinc-100">{client.nome}</h3>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
                           <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-medium">
                             {client.nicho}
                           </span>
@@ -112,40 +120,42 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
                         </div>
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-right shrink-0">
                         <div className="text-xs font-mono font-bold text-emerald-400">
                           R$ {client.mensalidade?.toFixed(2)}/mês
                         </div>
-                        <div className="text-[10px] text-zinc-500 mt-0.5">
+                        <div className="text-[11px] text-zinc-400 mt-0.5 font-mono">
                           Venc: dia {client.dia_vencimento || 10}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-800/60 text-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-3 border-t border-zinc-800/60 text-xs">
                       <div className="flex items-center gap-1.5 text-zinc-400 text-[11px]">
-                        <Wrench size={12} className={pendingRequestsCount > 0 ? 'text-amber-400' : 'text-zinc-500'} />
+                        <Wrench size={12} className={pendingRequestsCount > 0 ? 'text-amber-400' : 'text-zinc-400'} />
                         <span>{pendingRequestsCount} manutenção pendente</span>
                       </div>
 
                       <div className="flex items-center gap-2">
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             onOpenWhatsApp(client);
                           }}
-                          className="text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 rounded transition-colors flex items-center gap-1 text-[11px]"
+                          className="min-h-[34px] text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-medium cursor-pointer"
                         >
                           <Send size={11} />
                           <span>Zap</span>
                         </button>
 
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             onNovaVenda(client);
                           }}
-                          className="text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded transition-colors flex items-center gap-1 text-[11px] font-medium"
+                          className="min-h-[34px] text-indigo-300 hover:text-indigo-200 bg-indigo-500/10 hover:bg-indigo-500/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-medium cursor-pointer"
                           title="Reabrir lead para novo escopo ou novo site"
                         >
                           <Sparkles size={11} />
@@ -162,13 +172,13 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
 
         {/* Right: Painel de Manutenção & Detalhes */}
         {selectedClient ? (
-          <div className="w-96 bg-[#0e0e11] flex flex-col h-full overflow-y-auto p-5 space-y-5">
+          <div className="w-full lg:w-96 bg-[#0e0e11] flex flex-col lg:h-full lg:overflow-y-auto p-4 sm:p-5 space-y-5 shrink-0">
             <div>
               <div className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 inline-block">
                 Cliente Ativo na Carteira
               </div>
               <h2 className="text-lg font-bold text-zinc-100 mt-2">{selectedClient.nome}</h2>
-              <div className="text-xs text-zinc-400">{selectedClient.nicho} · WhatsApp: {selectedClient.whatsapp || '-'}</div>
+              <div className="text-xs text-zinc-400 font-mono">{selectedClient.nicho} · WhatsApp: {selectedClient.whatsapp || '-'}</div>
             </div>
 
             {/* Pedidos de Alteração / Manutenção */}
@@ -185,7 +195,7 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
 
               <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                 {clientRequests.length === 0 ? (
-                  <div className="text-zinc-500 text-xs py-3 text-center">
+                  <div className="text-zinc-400 text-xs py-3 text-center">
                     Nenhum pedido aberto no momento.
                   </div>
                 ) : (
@@ -200,7 +210,7 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
                         onChange={() => onToggleMaintenance(req.id)}
                         className="mt-0.5 w-4 h-4 rounded bg-zinc-800 border-zinc-700 text-emerald-500 focus:ring-0 focus:ring-offset-0 cursor-pointer"
                       />
-                      <span className={req.status === 'concluido' ? 'line-through text-zinc-500' : 'text-zinc-200'}>
+                      <span className={req.status === 'concluido' ? 'line-through text-zinc-400' : 'text-zinc-200'}>
                         {req.titulo}
                       </span>
                     </label>
@@ -215,11 +225,12 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
                   value={newRequestTitle}
                   onChange={(e) => setNewRequestTitle(e.target.value)}
                   placeholder="Ex: Trocar foto do banner..."
-                  className="flex-1 bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-hidden focus:border-emerald-500"
+                  className="flex-1 bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
                 />
                 <button
                   type="submit"
-                  className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 p-1.5 rounded-lg transition-colors cursor-pointer"
+                  aria-label="Registrar pedido de manutenção"
+                  className="min-h-[34px] min-w-[34px] flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-zinc-200 p-1.5 rounded-lg transition-colors cursor-pointer"
                   title="Registrar Pedido"
                 >
                   <Plus size={14} />
@@ -237,15 +248,16 @@ export const CarteiraView: React.FC<CarteiraViewProps> = ({
                 Quer vender um novo sistema web, tráfego ou reformulação para este cliente? Clique abaixo para abrir um novo ciclo de negociação sem perder o histórico atual.
               </p>
               <button
+                type="button"
                 onClick={() => onNovaVenda(selectedClient)}
-                className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shadow-sm"
+                className="w-full min-h-[38px] py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shadow-sm"
               >
                 Iniciar Nova Negociação com {selectedClient.nome}
               </button>
             </div>
           </div>
         ) : (
-          <div className="w-96 bg-[#0e0e11] flex items-center justify-center text-zinc-500 text-xs">
+          <div className="w-full lg:w-96 bg-[#0e0e11] p-8 flex items-center justify-center text-zinc-400 text-xs shrink-0">
             Nenhum cliente selecionado.
           </div>
         )}

@@ -116,7 +116,12 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="proposta-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs"
+    >
       <div className="bg-[#121215] border border-[#27272a] rounded-2xl w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="p-5 border-b border-[#27272a] flex items-center justify-between bg-[#16161a]">
@@ -125,21 +130,23 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
               <Sparkles size={16} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-zinc-100">Gerador de Proposta Pública (/p/:token)</h2>
+              <h2 id="proposta-modal-title" className="text-base font-bold text-zinc-100">Gerador de Proposta Pública (/p/:token)</h2>
               <p className="text-xs text-zinc-400">Link interativo para enviar ao cliente aprovar</p>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
+            aria-label="Fechar"
+            className="min-h-[34px] min-w-[34px] flex items-center justify-center text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <div className="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs">
           <div>
             <label className="block font-medium text-zinc-300 mb-1">Título da Proposta</label>
             <input
@@ -150,16 +157,16 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-medium text-zinc-300 mb-1">Valor de Implantação (R$)</label>
               <div className="relative">
-                <DollarSign size={14} className="absolute left-3 top-2.5 text-zinc-500" />
+                <DollarSign size={14} className="absolute left-3 top-2.5 text-zinc-400" />
                 <input
                   type="number"
                   value={implantacao}
                   onChange={(e) => setImplantacao(Number(e.target.value))}
-                  className="w-full bg-[#18181b] border border-[#27272a] rounded-lg pl-8 pr-3 py-2 text-zinc-100 focus:outline-hidden focus:border-emerald-500"
+                  className="w-full bg-[#18181b] border border-[#27272a] rounded-lg pl-8 pr-3 py-2 text-zinc-100 font-mono focus:outline-hidden focus:border-emerald-500"
                 />
               </div>
             </div>
@@ -167,25 +174,25 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
             <div>
               <label className="block font-medium text-zinc-300 mb-1">Mensalidade Hospedagem (R$)</label>
               <div className="relative">
-                <DollarSign size={14} className="absolute left-3 top-2.5 text-zinc-500" />
+                <DollarSign size={14} className="absolute left-3 top-2.5 text-zinc-400" />
                 <input
                   type="number"
                   value={mensalidade}
                   onChange={(e) => setMensalidade(Number(e.target.value))}
-                  className="w-full bg-[#18181b] border border-[#27272a] rounded-lg pl-8 pr-3 py-2 text-zinc-100 focus:outline-hidden focus:border-emerald-500"
+                  className="w-full bg-[#18181b] border border-[#27272a] rounded-lg pl-8 pr-3 py-2 text-zinc-100 font-mono focus:outline-hidden focus:border-emerald-500"
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-medium text-zinc-300 mb-1">Prazo de Entrega (Dias Úteis)</label>
               <input
                 type="number"
                 value={prazoDias}
                 onChange={(e) => setPrazoDias(Number(e.target.value))}
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 font-mono focus:outline-hidden focus:border-emerald-500"
               />
             </div>
 
@@ -220,7 +227,7 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                className="min-h-[34px] px-2.5 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
               >
                 {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                 <span>{copied ? 'Copiado' : 'Copiar'}</span>
@@ -229,7 +236,8 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
               <button
                 type="button"
                 onClick={handleOpenPreview}
-                className="p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg transition-colors cursor-pointer"
+                aria-label="Abrir prévia da proposta em nova aba"
+                className="min-h-[34px] min-w-[34px] flex items-center justify-center p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg transition-colors cursor-pointer"
                 title="Abrir Prévia em Nova Aba"
               >
                 <ExternalLink size={13} />
@@ -243,7 +251,7 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
           <button
             type="button"
             onClick={handleSaveOnly}
-            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+            className="min-h-[38px] px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
           >
             Salvar
           </button>
@@ -251,7 +259,7 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
           <button
             type="button"
             onClick={handleSendWhatsApp}
-            className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+            className="min-h-[38px] px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
           >
             <Send size={13} />
             <span>Enviar no WhatsApp</span>

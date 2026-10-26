@@ -22,7 +22,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
 }) => {
   const [summary, setSummary] = useState<MigrationSummary | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [replaceAll, setReplaceAll] = useState(true); // Padrão: limpar dados de teste e substituir
+  const [replaceAll, setReplaceAll] = useState(true);
 
   if (!isOpen) return null;
 
@@ -57,12 +57,17 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="migration-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 overflow-y-auto"
+    >
       <div className="bg-[#121215] border border-[#27272a] rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#27272a] flex items-center justify-between bg-[#141418]">
+        <div className="px-5 sm:px-6 py-4 border-b border-[#27272a] flex items-center justify-between bg-[#141418]">
           <div>
-            <h2 className="text-base font-bold text-zinc-100 flex items-center gap-2">
+            <h2 id="migration-modal-title" className="text-base font-bold text-zinc-100 flex items-center gap-2">
               <UploadCloud size={18} className="text-emerald-400" />
               <span>Importar e Gerenciar Base</span>
             </h2>
@@ -71,18 +76,20 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 p-1 rounded-lg hover:bg-[#27272a] transition-colors cursor-pointer"
+            aria-label="Fechar"
+            className="min-h-[34px] min-w-[34px] flex items-center justify-center text-zinc-400 hover:text-zinc-200 p-1 rounded-lg hover:bg-[#27272a] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 flex-1 overflow-y-auto space-y-5 text-xs">
+        <div className="p-5 sm:p-6 flex-1 overflow-y-auto space-y-5 text-xs">
           {/* Botão de Limpar Base Atual */}
           {currentCount > 0 && !summary && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/25 rounded-xl flex items-center justify-between">
+            <div className="p-4 bg-rose-500/10 border border-rose-500/25 rounded-xl flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <AlertTriangle size={18} className="text-rose-400 shrink-0" />
                 <div>
@@ -95,7 +102,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
               <button
                 type="button"
                 onClick={handleClear}
-                className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs transition-colors cursor-pointer shrink-0"
+                className="min-h-[36px] px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium text-xs transition-colors cursor-pointer shrink-0"
               >
                 Apagar Tudo
               </button>
@@ -104,14 +111,14 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
 
           {!summary ? (
             <div className="border-2 border-dashed border-[#27272a] hover:border-emerald-500/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all bg-[#0e0e11]">
-              <UploadCloud size={40} className="text-zinc-500 mb-3" />
+              <UploadCloud size={40} className="text-zinc-400 mb-3" />
               <div className="text-sm font-semibold text-zinc-200">
                 Arraste o arquivo CSV ou clique para selecionar
               </div>
-              <p className="text-zinc-500 text-xs mt-1 max-w-sm">
+              <p className="text-zinc-400 text-xs mt-1 max-w-sm">
                 Selecione o arquivo <strong>Leads.csv</strong> ou <strong>LED - Leads.csv</strong>.
               </p>
-              <label className="mt-4 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl cursor-pointer transition-colors">
+              <label className="mt-4 min-h-[38px] inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl cursor-pointer transition-colors">
                 <span>Escolher Arquivo</span>
                 <input
                   type="file"
@@ -124,23 +131,23 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
           ) : (
             <div className="space-y-4">
               {/* Relatório de Prévia */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="bg-[#18181b] border border-[#27272a] rounded-xl p-3.5">
                   <div className="text-zinc-400 text-[11px]">Total de Linhas</div>
-                  <div className="text-lg font-bold text-zinc-100 mt-0.5">{summary.totalRows}</div>
+                  <div className="text-lg font-bold font-mono text-zinc-100 mt-0.5">{summary.totalRows}</div>
                 </div>
                 <div className="bg-[#18181b] border border-emerald-500/30 rounded-xl p-3.5">
                   <div className="text-emerald-400 text-[11px] font-semibold">Leads Válidos Mapeados</div>
-                  <div className="text-lg font-bold text-emerald-400 mt-0.5">{summary.validLeads}</div>
+                  <div className="text-lg font-bold font-mono text-emerald-400 mt-0.5">{summary.validLeads}</div>
                 </div>
                 <div className="bg-[#18181b] border border-amber-500/30 rounded-xl p-3.5">
                   <div className="text-amber-400 text-[11px]">Telefones Duplicados</div>
-                  <div className="text-lg font-bold text-amber-400 mt-0.5">{summary.duplicatePhones}</div>
+                  <div className="text-lg font-bold font-mono text-amber-400 mt-0.5">{summary.duplicatePhones}</div>
                 </div>
               </div>
 
               {/* Opção de Substituir Tudo ou Apenas Somar */}
-              <div className="p-3.5 bg-[#18181b] border border-[#27272a] rounded-xl flex items-center justify-between">
+              <div className="p-3.5 bg-[#18181b] border border-[#27272a] rounded-xl flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <div className="font-semibold text-zinc-200">Como deseja importar?</div>
                   <div className="text-[11px] text-zinc-400 mt-0.5">
@@ -165,7 +172,7 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
                 <div className="text-xs font-semibold text-zinc-200 mb-2">
                   Distribuição para o Novo Funil:
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   {Object.entries(summary.statusBreakdown).map(([statusId, count]) => {
                     const statusCfg = DEFAULT_STATUSES.find(s => s.id === statusId);
                     return (
@@ -202,17 +209,19 @@ export const MigrationModal: React.FC<MigrationModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#27272a] flex items-center justify-end gap-3 bg-[#141418]">
+        <div className="px-5 sm:px-6 py-4 border-t border-[#27272a] flex items-center justify-end gap-3 bg-[#141418]">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-[#27272a] hover:bg-zinc-700 text-zinc-300 font-medium transition-colors cursor-pointer"
+            className="min-h-[38px] px-4 py-2 rounded-xl bg-[#27272a] hover:bg-zinc-700 text-zinc-200 font-medium transition-colors cursor-pointer"
           >
             Cancelar
           </button>
           <button
+            type="button"
             disabled={!summary || summary.validLeads === 0 || isProcessing}
             onClick={handleConfirm}
-            className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold transition-colors cursor-pointer flex items-center gap-2"
+            className="min-h-[38px] px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold transition-colors cursor-pointer flex items-center gap-2"
           >
             {isProcessing ? (
               <span>Importando...</span>

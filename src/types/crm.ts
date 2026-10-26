@@ -247,3 +247,21 @@ export const NICHOS_PADRAO = [
   'Nutricionista',
   'Outro',
 ];
+
+export interface CrmSettings {
+  nomeProfissional: string;
+  whatsappComercial: string;
+  chavePix: string;
+  implantacaoPadrao: number;
+  mensalidadePadrao: number;
+  diaVencimentoPadrao: number;
+}
+
+export const DEFAULT_CRM_SETTINGS: CrmSettings = {
+  nomeProfissional: 'Yago Duarte',
+  whatsappComercial: '5511911300834',
+  chavePix: '',
+  implantacaoPadrao: 1200,
+  mensalidadePadrao: 89,
+  diaVencimentoPadrao: 10,
+};

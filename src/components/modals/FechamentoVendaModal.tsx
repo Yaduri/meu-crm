@@ -48,12 +48,13 @@ export const FechamentoVendaModal: React.FC<FechamentoVendaModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Disparar efeito comemorativo de confetti
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }
 
     const defaultTasks = CHECKLIST_PADRAO_LP.map((t, idx) => ({
       id: `task-${Date.now()}-${idx}`,
@@ -74,18 +75,23 @@ export const FechamentoVendaModal: React.FC<FechamentoVendaModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 overflow-y-auto">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="fechamento-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 overflow-y-auto"
+    >
       <div className="bg-[#121215] border border-emerald-500/40 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header Comemorativo */}
-        <div className="px-6 py-5 border-b border-[#27272a] bg-gradient-to-r from-emerald-950/40 to-[#141418] flex items-center justify-between">
+        <div className="px-5 sm:px-6 py-5 border-b border-[#27272a] bg-gradient-to-r from-emerald-950/40 to-[#141418] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
               <Sparkles size={20} />
             </div>
             <div>
-              <h2 className="text-base font-bold text-zinc-100 flex items-center gap-2">
+              <h2 id="fechamento-modal-title" className="text-base font-bold text-zinc-100 flex items-center gap-2">
                 <span>Venda Fechada!</span>
-                <span className="text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.2 rounded-full">
+                <span className="text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                   Novo Projeto
                 </span>
               </h2>
@@ -95,17 +101,19 @@ export const FechamentoVendaModal: React.FC<FechamentoVendaModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-[#27272a] transition-colors cursor-pointer"
+            aria-label="Fechar"
+            className="min-h-[34px] min-w-[34px] flex items-center justify-center text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-[#27272a] transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 text-xs">
           <div>
-            <label className="block text-zinc-400 font-medium mb-1.5">Tipo de Escopo / Projeto</label>
+            <label className="block text-zinc-300 font-medium mb-1.5">Tipo de Escopo / Projeto</label>
             <select
               value={tipo}
               onChange={(e) => setTipo(e.target.value as TipoProjeto)}
@@ -120,9 +128,9 @@ export const FechamentoVendaModal: React.FC<FechamentoVendaModalProps> = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Valor de Implantação (R$)</label>
+              <label className="block text-zinc-300 font-medium mb-1">Valor de Implantação (R$)</label>
               <input
                 type="number"
                 step="50"
@@ -134,7 +142,7 @@ export const FechamentoVendaModal: React.FC<FechamentoVendaModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Mensalidade / MRR (R$)</label>
+              <label className="block text-zinc-300 font-medium mb-1">Mensalidade / MRR (R$)</label>
               <input
                 type="number"
                 step="10"
@@ -145,26 +153,26 @@ export const FechamentoVendaModal: React.FC<FechamentoVendaModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Início do Projeto</label>
+              <label className="block text-zinc-300 font-medium mb-1">Início do Projeto</label>
               <input
                 type="date"
                 required
                 value={inicio}
                 onChange={(e) => setInicio(e.target.value)}
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-zinc-200 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-zinc-200 focus:outline-hidden focus:border-emerald-500 font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-zinc-400 font-medium mb-1">Prazo Prometido de Entrega</label>
+              <label className="block text-zinc-300 font-medium mb-1">Prazo Prometido de Entrega</label>
               <input
                 type="date"
                 required
                 value={prazo}
                 onChange={(e) => setPrazo(e.target.value)}
-                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-zinc-200 focus:outline-hidden focus:border-emerald-500"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-zinc-200 focus:outline-hidden focus:border-emerald-500 font-mono"
               />
             </div>
           </div>
@@ -177,13 +185,13 @@ export const FechamentoVendaModal: React.FC<FechamentoVendaModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-[#27272a] hover:bg-zinc-700 text-zinc-300 font-medium transition-colors cursor-pointer"
+              className="min-h-[38px] px-4 py-2 rounded-xl bg-[#27272a] hover:bg-zinc-700 text-zinc-200 font-medium transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all cursor-pointer shadow-lg shadow-emerald-600/30 flex items-center gap-2"
+              className="min-h-[38px] px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-all cursor-pointer shadow-lg shadow-emerald-600/30 flex items-center gap-2"
             >
               <CheckCircle size={15} />
               <span>Confirmar e Iniciar Projeto</span>

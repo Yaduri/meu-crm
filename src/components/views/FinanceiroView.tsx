@@ -38,11 +38,11 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
   const implantacaoPendente = installments.filter(inst => !inst.pago).reduce((acc, inst) => acc + inst.valor, 0);
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#09090b]">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto bg-[#09090b]">
       {/* Top Header */}
-      <header className="px-8 py-5 border-b border-[#27272a] bg-[#0d0d10] flex items-center justify-between">
+      <header className="px-4 sm:px-8 py-4 sm:py-5 border-b border-[#27272a] bg-[#0d0d10] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div>
-          <h1 className="text-xl font-bold text-zinc-100 flex items-center gap-2">
+          <h1 className="text-lg sm:text-xl font-bold text-zinc-100 flex items-center gap-2">
             <DollarSign size={20} className="text-emerald-400" />
             <span>Painel Financeiro & Mensalidades (MRR)</span>
           </h1>
@@ -52,10 +52,11 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
         </div>
 
         {/* Alternador de Abas */}
-        <div className="bg-[#18181b] border border-[#27272a] p-1 rounded-xl flex items-center gap-1">
+        <div className="bg-[#18181b] border border-[#27272a] p-1 rounded-xl flex items-center gap-1 self-start sm:self-auto">
           <button
+            type="button"
             onClick={() => setActiveTab('mensalidades')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+            className={`min-h-[34px] px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               activeTab === 'mensalidades'
                 ? 'bg-[#27272a] text-zinc-100 shadow-sm'
                 : 'text-zinc-400 hover:text-zinc-200'
@@ -64,8 +65,9 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
             Mensalidades (Hospedagem)
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('implantacao')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+            className={`min-h-[34px] px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               activeTab === 'implantacao'
                 ? 'bg-[#27272a] text-zinc-100 shadow-sm'
                 : 'text-zinc-400 hover:text-zinc-200'
@@ -77,10 +79,10 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
       </header>
 
       {/* KPI Cards Row */}
-      <div className="p-8 pb-4 grid grid-cols-4 gap-4">
+      <div className="p-4 sm:p-8 pb-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 shrink-0">
         {activeTab === 'mensalidades' ? (
           <>
-            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4.5">
+            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4">
               <div className="text-[11px] text-zinc-400 font-medium flex items-center justify-between">
                 <span>MRR Total Ativo</span>
                 <TrendingUp size={14} className="text-emerald-400" />
@@ -88,10 +90,10 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
               <div className="text-xl font-bold font-mono text-zinc-100 mt-1">
                 R$ {totalMRR.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-1">Receita recorrente contratada</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Receita recorrente contratada</div>
             </div>
 
-            <div className="bg-[#121215] border border-emerald-500/30 rounded-2xl p-4.5">
+            <div className="bg-[#121215] border border-emerald-500/30 rounded-2xl p-4">
               <div className="text-[11px] text-emerald-400 font-semibold flex items-center justify-between">
                 <span>Recebido Este Mês</span>
                 <CheckCircle2 size={14} className="text-emerald-400" />
@@ -99,10 +101,10 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
               <div className="text-xl font-bold font-mono text-emerald-400 mt-1">
                 R$ {mrrRecebido.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-1">Já quitado pelos clientes</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Já quitado pelos clientes</div>
             </div>
 
-            <div className="bg-[#121215] border border-amber-500/30 rounded-2xl p-4.5">
+            <div className="bg-[#121215] border border-amber-500/30 rounded-2xl p-4">
               <div className="text-[11px] text-amber-400 font-medium flex items-center justify-between">
                 <span>A Receber / Pendente</span>
                 <Clock size={14} className="text-amber-400" />
@@ -110,41 +112,41 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
               <div className="text-xl font-bold font-mono text-amber-300 mt-1">
                 R$ {mrrPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </div>
-              <div className="text-[10px] text-zinc-500 mt-1">Vencendo nos próximos dias</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Vencendo nos próximos dias</div>
             </div>
 
-            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4.5">
+            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4">
               <div className="text-[11px] text-zinc-400 font-medium">Assinaturas Ativas</div>
               <div className="text-xl font-bold font-mono text-zinc-100 mt-1">
                 {invoices.length} clientes
               </div>
-              <div className="text-[10px] text-zinc-500 mt-1">Hospedagem & suporte</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Hospedagem & suporte</div>
             </div>
           </>
         ) : (
           <>
-            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4.5">
+            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4">
               <div className="text-[11px] text-zinc-400 font-medium">Total de Implantações</div>
               <div className="text-xl font-bold font-mono text-zinc-100 mt-1">
                 R$ {totalImplantacao.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </div>
             </div>
 
-            <div className="bg-[#121215] border border-emerald-500/30 rounded-2xl p-4.5">
+            <div className="bg-[#121215] border border-emerald-500/30 rounded-2xl p-4">
               <div className="text-[11px] text-emerald-400 font-semibold">Total Recebido (Entradas)</div>
               <div className="text-xl font-bold font-mono text-emerald-400 mt-1">
                 R$ {implantacaoRecebida.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </div>
             </div>
 
-            <div className="bg-[#121215] border border-amber-500/30 rounded-2xl p-4.5">
+            <div className="bg-[#121215] border border-amber-500/30 rounded-2xl p-4">
               <div className="text-[11px] text-amber-400 font-medium">A Receber (Na Entrega)</div>
               <div className="text-xl font-bold font-mono text-amber-300 mt-1">
                 R$ {implantacaoPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </div>
             </div>
 
-            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4.5">
+            <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4">
               <div className="text-[11px] text-zinc-400 font-medium">Parcelas Cadastradas</div>
               <div className="text-xl font-bold font-mono text-zinc-100 mt-1">
                 {installments.length} parcelas
@@ -155,19 +157,19 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
       </div>
 
       {/* Tabela de Lançamentos */}
-      <div className="flex-1 overflow-auto px-8 py-4">
-        <div className="bg-[#121215] border border-[#27272a] rounded-2xl overflow-hidden shadow-xl">
+      <div className="flex-1 px-4 sm:px-8 py-4">
+        <div className="bg-[#121215] border border-[#27272a] rounded-2xl overflow-x-auto shadow-xl">
           {activeTab === 'mensalidades' ? (
             invoices.length === 0 ? (
-              <div className="p-12 text-center text-zinc-500 text-xs space-y-2">
-                <p className="font-semibold text-zinc-300 text-sm">Nenhuma mensalidade registrada ainda</p>
+              <div className="p-10 sm:p-12 text-center text-zinc-400 text-xs space-y-2">
+                <p className="font-semibold text-zinc-200 text-sm">Nenhuma mensalidade registrada ainda</p>
                 <p className="max-w-md mx-auto text-zinc-400">
                   As faturas mensais de hospedagem e suporte são geradas automaticamente assim que um projeto tem seu site entregue e entra na etapa "No ar / Entregue".
                 </p>
               </div>
             ) : (
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-[#16161b] text-zinc-400 font-semibold uppercase tracking-wider text-[10px] border-b border-[#27272a]">
+                <thead className="bg-[#16161b] text-zinc-300 font-semibold text-[11px] border-b border-[#27272a]">
                   <tr>
                     <th className="py-3 px-4">Cliente</th>
                     <th className="py-3 px-4">Competência</th>
@@ -193,7 +195,7 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                             {inv.vencimento.split('-').reverse().join('/')}
                           </span>
                           {isLate && (
-                            <span className="ml-2 text-[10px] bg-rose-500/15 text-rose-400 px-1.5 py-0.2 rounded font-semibold">
+                            <span className="ml-2 text-[10px] bg-rose-500/15 text-rose-400 px-1.5 py-0.5 rounded font-semibold font-sans">
                               Atrasado
                             </span>
                           )}
@@ -203,11 +205,12 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                         </td>
                         <td className="py-3 px-4 text-center">
                           <button
+                            type="button"
                             onClick={() => onToggleInvoice(inv.id)}
-                            className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                            className={`min-h-[32px] px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
                               inv.pago
                                 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                                : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-700'
+                                : 'bg-zinc-800 text-zinc-300 hover:text-zinc-100 border border-zinc-700'
                             }`}
                           >
                             {inv.pago ? '✓ Pago' : 'Pendente (Clique p/ Quitar)'}
@@ -216,8 +219,9 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                         <td className="py-3 px-4 text-right">
                           {!inv.pago && (
                             <button
+                              type="button"
                               onClick={() => onSendCobrançaWhatsApp(inv)}
-                              className="text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                              className="min-h-[34px] text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
                               <Send size={12} />
                               <span>Lembrete WhatsApp</span>
@@ -232,15 +236,15 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
             )
           ) : (
             installments.length === 0 ? (
-              <div className="p-12 text-center text-zinc-500 text-xs space-y-2">
-                <p className="font-semibold text-zinc-300 text-sm">Nenhuma parcela de implantação cadastrada</p>
+              <div className="p-10 sm:p-12 text-center text-zinc-400 text-xs space-y-2">
+                <p className="font-semibold text-zinc-200 text-sm">Nenhuma parcela de implantação cadastrada</p>
                 <p className="max-w-md mx-auto text-zinc-400">
                   Quando você fecha uma venda no funil de prospecção, as parcelas de entrada (50% no início) e entrega (50% no término) são criadas automaticamente aqui para controle financeiro.
                 </p>
               </div>
             ) : (
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-[#16161b] text-zinc-400 font-semibold uppercase tracking-wider text-[10px] border-b border-[#27272a]">
+                <thead className="bg-[#16161b] text-zinc-300 font-semibold text-[11px] border-b border-[#27272a]">
                   <tr>
                     <th className="py-3 px-4">Cliente</th>
                     <th className="py-3 px-4">Parcela / Descrição</th>
@@ -258,7 +262,7 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                       <td className="py-3 px-4 text-zinc-300 font-medium">
                         {inst.descricao}
                       </td>
-                      <td className="py-3 px-4 font-mono text-zinc-400">
+                      <td className="py-3 px-4 font-mono text-zinc-300">
                         {inst.vencimento.split('-').reverse().join('/')}
                       </td>
                       <td className="py-3 px-4 text-right font-mono font-bold text-emerald-400">
@@ -266,11 +270,12 @@ export const FinanceiroView: React.FC<FinanceiroViewProps> = ({
                       </td>
                       <td className="py-3 px-4 text-center">
                         <button
+                          type="button"
                           onClick={() => onToggleInstallment(inst.id)}
-                          className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                          className={`min-h-[32px] px-3 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
                             inst.pago
                               ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                              : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-700'
+                              : 'bg-zinc-800 text-zinc-300 hover:text-zinc-100 border border-zinc-700'
                           }`}
                         >
                           {inst.pago ? '✓ Recebido' : 'Pendente (Clique p/ Quitar)'}
