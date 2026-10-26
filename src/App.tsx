@@ -463,6 +463,19 @@ export function App() {
     }));
   };
 
+  const handleUpdateLeadMessage = (leadId: string, newMessage: string) => {
+    setLeads(prev => prev.map(l => {
+      if (l.id === leadId) {
+        return {
+          ...l,
+          msg_a_mandar: newMessage,
+          updated_at: new Date().toISOString().slice(0, 10)
+        };
+      }
+      return l;
+    }));
+  };
+
   const handleSaveLead = (leadData: Partial<ClientLead>) => {
     if (editingLead && editingLead.id) {
       setLeads(prev => prev.map(l => {
@@ -942,6 +955,7 @@ export function App() {
             onReagendar={handleReagendar}
             onRegistrarContato={handleRegistrarContato}
             onMudarStatus={handleMoveLeadStatus}
+            onUpdateLeadMessage={handleUpdateLeadMessage}
             onOpenProposta={(lead) => setSelectedProposalLead(lead)}
             onEditLead={(lead) => {
               setEditingLead(lead);

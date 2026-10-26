@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
-import { X, AlertCircle, Trash2, FileText } from 'lucide-react';
+import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2 } from 'lucide-react';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -39,6 +39,42 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   const [linkProposta, setLinkProposta] = useState(initialLead?.link_proposta || '');
   const [msgAMandar, setMsgAMandar] = useState(initialLead?.msg_a_mandar || '');
   const [observacoes, setObservacoes] = useState(initialLead?.observacoes || '');
+  const [aiLoadingIntent, setAiLoadingIntent] = useState<string | null>(null);
+
+  const handleGenerateLeadMsgAI = async (intent: string) => {
+    setAiLoadingIntent(intent);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'whatsapp_message',
+          intent,
+          lead: {
+            nome: nome || 'Cliente',
+            nicho,
+            presenca_digital: presencaDigital,
+            origem,
+            site_atual: siteAtual,
+            instagram,
+            implantacao: parseFloat(implantacao) || 1200,
+            mensalidade: parseFloat(mensalidade) || 89,
+            link_previa: linkPrevia,
+            link_proposta: linkProposta,
+            observacoes,
+          },
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.ok && json.result) {
+        setMsgAMandar(String(json.result).trim());
+      }
+    } catch {
+      // fallback silencioso
+    } finally {
+      setAiLoadingIntent(null);
+    }
+  };
 
   useEffect(() => {
     if (initialLead) {
@@ -316,9 +352,40 @@ export const LeadModal: React.FC<LeadModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-zinc-300 font-medium mb-1">Mensagem a Mandar no WhatsApp</label>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+              <label className="block text-zinc-300 font-medium">Mensagem a Mandar no WhatsApp</label>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={!!aiLoadingIntent}
+                  onClick={() => handleGenerateLeadMsgAI('primeiro_contato')}
+                  className="px-2 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {aiLoadingIntent === 'primeiro_contato' ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+                  <span>1º Contato IA</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={!!aiLoadingIntent}
+                  onClick={() => handleGenerateLeadMsgAI('envio_previa')}
+                  className="px-2 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {aiLoadingIntent === 'envio_previa' ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+                  <span>Prévia IA</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={!!aiLoadingIntent}
+                  onClick={() => handleGenerateLeadMsgAI('followup_resgate')}
+                  className="px-2 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {aiLoadingIntent === 'followup_resgate' ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+                  <span>Follow-up IA</span>
+                </button>
+              </div>
+            </div>
             <textarea
-              rows={2}
+              rows={3}
               value={msgAMandar}
               onChange={(e) => setMsgAMandar(e.target.value)}
               placeholder="Script personalizado para abordagem ou follow-up..."

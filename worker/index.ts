@@ -32,11 +32,62 @@ type Bindings = {
   BUCKET?: R2Bucket;
   ASSETS: Fetcher;
   TELEGRAM_BOT_TOKEN?: string;
+  GEMINI_API_KEY?: string;
+  GEMINI_MODEL?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.use('/api/*', cors());
+
+// Helper para consultar o Google Gemini (gemini-3.5-flash-lite)
+async function callGemini(env: Bindings, prompt: string, jsonMode = false): Promise<string> {
+  let apiKey = env.GEMINI_API_KEY || '';
+  let model = env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+
+  if (!apiKey) {
+    try {
+      const row = await env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'gemini_config'").first<{ value: string }>();
+      if (row) {
+        const parsed = JSON.parse(row.value);
+        if (parsed.api_key) apiKey = parsed.api_key;
+        if (parsed.model) model = parsed.model;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY não configurada no servidor.');
+  }
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.65,
+        ...(jsonMode ? { responseMimeType: 'application/json' } : {})
+      }
+    })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Erro Gemini (${res.status}): ${errText.slice(0, 200)}`);
+  }
+
+  const data = (await res.json()) as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  };
+
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  const textPart = parts.find(p => typeof p.text === 'string' && p.text.trim().length > 0);
+  return textPart?.text?.trim() || '';
+}
 
 // Health check das 5 peças da arquitetura Cloudflare
 app.get('/api/health', async (c) => {
@@ -61,7 +112,8 @@ app.get('/api/health', async (c) => {
       d1_database: d1Status,
       cloud_storage: c.env.BUCKET ? 'connected (R2 + D1)' : `connected (D1 Cloud Storage · ${filesCount} files)`,
       access_security: 'active',
-      cron_telegram: 'active (0 11 * * * -> 08:00 BRT)'
+      cron_telegram: 'active (0 11 * * * -> 08:00 BRT)',
+      gemini_ai: `active (${c.env.GEMINI_MODEL || 'gemini-3.5-flash-lite'})`
     }
   });
 });
@@ -405,6 +457,159 @@ app.delete('/api/files/:key', async (c) => {
   return c.json({ success: true });
 });
 
+// Endpoint de Inteligência Artificial (Google Gemini gemini-3.5-flash-lite)
+app.post('/api/ai/generate', async (c) => {
+  try {
+    const body = await c.req.json<Record<string, unknown>>();
+    const action = String(body.action || '');
+
+    // 1. Copiloto de WhatsApp & Quebra de Objeções
+    if (action === 'whatsapp_message') {
+      const lead = (body.lead || {}) as Record<string, unknown>;
+      const intent = String(body.intent || 'primeiro_contato');
+      const objectionText = String(body.objectionText || '');
+
+      const intentInstructions: Record<string, string> = {
+        primeiro_contato:
+          'Crie uma mensagem de 1º contato frio no WhatsApp curta (3 a 4 frases curtas), cordial e sem cara de robô. Mencione o nome da empresa, o nicho e a presença digital atual, oferecendo mostrar sem compromisso uma ideia/prévia visual de site/landing page para atrair mais clientes pelo Google e anúncios.',
+        envio_previa:
+          'Crie uma mensagem de WhatsApp avisando que você (Yago Duarte) acabou de preparar uma prévia visual exclusiva da Landing Page para a empresa deles e perguntando se pode mandar o link para darem uma olhada rápida.',
+        followup_resgate:
+          'Crie uma mensagem curta e elegante de follow-up para um lead que recebeu contato/prévia/proposta há alguns dias e ainda não respondeu. Sem cobrança chata, gerando curiosidade e deixando fácil responder com "sim" ou "quero ver".',
+        quebra_objecao:
+          `O cliente respondeu com a seguinte objeção ou dúvida: "${objectionText || 'Achei o valor alto / vou pensar'}". Crie uma resposta persuasiva, empática e consultiva de Yago Duarte contornando essa objeção com foco em retorno sobre investimento (quantos clientes novos 1 único fechamento no mês já paga o site) e facilidade de pagamento (50% entrada e 50% na entrega).`
+      };
+
+      const prompt = `Você é Yago Duarte, web designer e desenvolvedor especialista em Landing Pages e Sites de Alta Conversão no Brasil.
+Dados do Lead:
+- Nome / Empresa: ${lead.nome || 'Cliente'}
+- Nicho: ${lead.nicho || 'Negócios Locais'}
+- Presença Digital Atual: ${lead.presenca_digital || 'Sem site'}
+- Site Atual: ${lead.site_atual || 'Não possui'}
+- Status no Funil: ${lead.status_id || 'abordar'}
+- Valor de Implantação: R$ ${lead.implantacao || 1200} (Mensalidade: R$ ${lead.mensalidade || 89}/mês)
+- Observações Internas: ${lead.observacoes || 'Nenhuma'}
+
+Objetivo da mensagem:
+${intentInstructions[intent] || intentInstructions.primeiro_contato}
+
+Regras:
+- Escreva APENAS o texto final da mensagem pronta para colar no WhatsApp (sem aspas em volta, sem explicações antes ou depois).
+- Use tom humano, profissional, próximo e direto (português do Brasil).`;
+
+      const message = await callGemini(c.env, prompt, false);
+      return c.json({ success: true, message });
+    }
+
+    // 2. Raio-X Comercial & Roteiro de Áudio de 20s por Lead
+    if (action === 'lead_xray') {
+      const lead = (body.lead || {}) as Record<string, unknown>;
+      const prompt = `Você é um estrategista comercial sênior ajudando Yago Duarte (desenvolvedor de Landing Pages de alta conversão) a fechar uma venda.
+Analise este Lead:
+- Empresa/Cliente: ${lead.nome || 'Cliente'}
+- Nicho: ${lead.nicho || 'Negócios'}
+- Presença Digital Atual: ${lead.presenca_digital || 'Sem site'}
+- Site Atual: ${lead.site_atual || 'Não possui'}
+- Origem: ${lead.origem || 'Google Maps'}
+- Valor Proposto: R$ ${lead.implantacao || 1200} + R$ ${lead.mensalidade || 89}/mês
+- Observações: ${lead.observacoes || 'Nenhuma'}
+
+Retorne um JSON válido exatamente com esta estrutura:
+{
+  "diagnostico": "1 frase direta explicando onde esse negócio está perdendo clientes hoje e por que precisa da Landing Page.",
+  "argumentos": [
+    "Argumento 1 focado em lucro/autoridade no nicho específico",
+    "Argumento 2 focado em conversão no WhatsApp e Google/Ads",
+    "Argumento 3 focado em velocidade e segurança (50% entrada / 50% na entrega)"
+  ],
+  "roteiro_audio_20s": "Texto falado natural de 20 segundos para o Yago gravar em áudio no WhatsApp para esse cliente."
+}`;
+
+      const raw = await callGemini(c.env, prompt, true);
+      const parsed = JSON.parse(raw);
+      return c.json({ success: true, data: parsed });
+    }
+
+    // 3. Personalizador Inteligente de Proposta Pública (/p/:token)
+    if (action === 'personalize_proposal') {
+      const lead = (body.lead || {}) as Record<string, unknown>;
+      const prazoDias = Number(body.prazo_dias || 7);
+
+      const prompt = `Você é Yago Duarte, especialista em criação de Landing Pages e Sites de Alta Conversão.
+Crie uma proposta comercial altamente persuasiva e personalizada para:
+- Cliente: ${lead.nome || 'Cliente'}
+- Nicho: ${lead.nicho || 'Negócios'}
+- Situação atual: ${lead.presenca_digital || 'Sem site'}
+- Observações: ${lead.observacoes || ''}
+- Prazo de entrega: ${prazoDias} dias úteis
+
+Retorne APENAS um JSON válido com a seguinte estrutura exata:
+{
+  "titulo_proposta": "Título forte e específico para o cliente e seu nicho",
+  "apresentacao": "Parágrafo persuasivo de 3 a 4 linhas mostrando como a nova estrutura web vai posicionar a marca como referência em seu nicho e transformar visitantes em clientes qualificados no WhatsApp.",
+  "itens": [
+    { "id": "1", "titulo": "Design Exclusivo no Figma", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },
+    { "id": "2", "titulo": "Copywriting Persuasivo para o Nicho", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },
+    { "id": "3", "titulo": "Desenvolvimento Mobile-First Ultra Rápido", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },
+    { "id": "4", "titulo": "Funil Direto para Agendamento no WhatsApp", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },
+    { "id": "5", "titulo": "SEO Local & Velocidade 90+ no Google", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },
+    { "id": "6", "titulo": "Rastreamento Pixel Meta & Google Ads", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true }
+  ]
+}`;
+
+      const raw = await callGemini(c.env, prompt, true);
+      const parsed = JSON.parse(raw);
+      return c.json({ success: true, data: parsed });
+    }
+
+    // 4. Gerador de Copy & Estrutura da Landing Page a partir do Briefing (/b/:token)
+    if (action === 'briefing_to_copy') {
+      const briefing = (body.briefing || {}) as Record<string, unknown>;
+      const prompt = `Você é um Copywriter Sênior e Arquiteto de Conversão especialista em Landing Pages brasileiras.
+Com base nos dados deste Briefing do cliente, crie a estrutura completa e a copy pronta para a Landing Page:
+- Empresa / Marca: ${briefing.nome_empresa || briefing.cliente_nome || 'Cliente'}
+- Slogan / Posicionamento: ${briefing.slogan_posicionamento || 'Não informado'}
+- Público-Alvo: ${briefing.publico_alvo || 'Clientes em busca de atendimento especializado'}
+- Serviços Principais: ${briefing.servicos_principais || 'Atendimento especializado'}
+- Diferenciais: ${briefing.diferenciais || 'Atendimento personalizado e excelência'}
+- Cores Preferidas: ${briefing.cores_preferidas || 'Tons elegantes e modernos'}
+- Referências: ${briefing.sites_referencia || ''}
+- Observações: ${briefing.observacoes_adicionais || ''}
+
+Retorne APENAS um JSON válido com esta estrutura exata:
+{
+  "headline": "Promessa principal magnética para a Dobra 1 (Hero)",
+  "subheadline": "Subtítulo complementar quebrando a principal objeção e gerando desejo",
+  "cta_texto": "Texto do botão principal de ação (WhatsApp)",
+  "secoes": [
+    { "dobra": "Dobra 2 · Identificação & Autoridade", "titulo": "Título da seção", "copy": "Texto persuasivo pronto para usar" },
+    { "dobra": "Dobra 3 · Serviços & Soluções", "titulo": "Título da seção", "copy": "Apresentação dos principais serviços em tópicos persuasivos" },
+    { "dobra": "Dobra 4 · Diferenciais & Prova", "titulo": "Título da seção", "copy": "Por que escolher a empresa" }
+  ],
+  "faq": [
+    { "pergunta": "Pergunta frequente 1 do nicho", "resposta": "Resposta persuasiva 1" },
+    { "pergunta": "Pergunta frequente 2 do nicho", "resposta": "Resposta persuasiva 2" },
+    { "pergunta": "Pergunta frequente 3 do nicho", "resposta": "Resposta persuasiva 3" }
+  ],
+  "direcao_visual": {
+    "paleta_hex": ["#hex1", "#hex2", "#hex3"],
+    "tipografia": "Sugestão de par de fontes Google Fonts",
+    "estilo": "Resumo da direção estética para o Figma"
+  }
+}`;
+
+      const raw = await callGemini(c.env, prompt, true);
+      const parsed = JSON.parse(raw);
+      return c.json({ success: true, data: parsed });
+    }
+
+    return c.json({ success: false, error: 'Ação de IA desconhecida' }, 400);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha na geração com IA';
+    return c.json({ success: false, error: message }, 500);
+  }
+});
+
 // Função auxiliar que monta e dispara o resumo diário no Telegram lendo direto do D1
 async function sendTelegramDailySummary(env: Bindings, overrideToken?: string, overrideChatId?: string, overrideText?: string) {
   let botToken = overrideToken || env.TELEGRAM_BOT_TOKEN || '';
@@ -446,10 +651,31 @@ async function sendTelegramDailySummary(env: Bindings, overrideToken?: string, o
     const projects = projectsRow ? (JSON.parse(projectsRow.value) as Array<Record<string, unknown>>) : [];
     const invoices = invoicesRow ? (JSON.parse(invoicesRow.value) as Array<Record<string, unknown>>) : [];
 
-    const followupsHoje = leads.filter(l => l.fase === 'prospeccao' && l.proximo_followup && String(l.proximo_followup) <= todayStr).length;
+    const pendingLeads = leads.filter(l => l.fase === 'prospeccao' && l.proximo_followup && String(l.proximo_followup) <= todayStr);
+    const followupsHoje = pendingLeads.length;
     const negociacao = leads.filter(l => l.status_id === 'negociacao' || l.status_id === 'proposta_enviada').length;
     const projetosAndamento = projects.filter(p => p.etapa !== 'No ar / Entregue').length;
     const totalMRR = invoices.reduce((acc, inv) => acc + Number(inv.valor || 0), 0);
+
+    // 5. Resumo Matinal Inteligente com Gemini (Top 3 prioridades do dia)
+    let aiTacticalBlock = '';
+    try {
+      const topCandidates = (pendingLeads.length > 0 ? pendingLeads : leads.filter(l => l.fase === 'prospeccao')).slice(0, 3);
+      if (topCandidates.length > 0) {
+        const summaryList = topCandidates
+          .map(l => `- ${l.nome} (${l.nicho}, ${l.presenca_digital}, status: ${l.status_id}, R$ ${l.implantacao || 1200})`)
+          .join('\n');
+        const aiPrompt = `Você é o copiloto comercial de Yago Duarte. Liste em 3 linhas curtas (1 para cada lead abaixo) uma dica prática de abordagem para fechar venda hoje no WhatsApp. Não use caracteres especiais de Markdown que quebrem o Telegram (evite _ ou * soltos).
+Leads prioritários de hoje:
+${summaryList}`;
+        const aiAdvice = await callGemini(env, aiPrompt, false);
+        if (aiAdvice) {
+          aiTacticalBlock = `\n\n🧠 *Foco Tático IA (Top 3 de Hoje):*\n${aiAdvice.replace(/[*_`[\]]/g, '')}`;
+        }
+      }
+    } catch {
+      // Continua envio normal caso a IA falhe
+    }
 
     text =
       `☀️ *Bom dia, Yago Duarte! Resumo Diário do CRM (08:00):*\n\n` +
@@ -457,8 +683,9 @@ async function sendTelegramDailySummary(env: Bindings, overrideToken?: string, o
       `🚀 *Projetos em desenvolvimento:* ${projetosAndamento} sites na esteira\n` +
       `💰 *MRR Ativo (Hospedagem):* R$ ${totalMRR.toFixed(2)}/mês\n` +
       `🎯 *Pipeline Quente:* ${negociacao} propostas em negociação\n` +
-      `👥 *Total na Base:* ${leads.length} leads\n\n` +
-      `👉 Acesse seu painel: https://crm.yagoduarte.com.br`;
+      `👥 *Total na Base:* ${leads.length} leads` +
+      aiTacticalBlock +
+      `\n\n👉 Acesse seu painel: https://crm.yagoduarte.com.br`;
   }
 
   const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {

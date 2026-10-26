@@ -11,8 +11,20 @@ import {
   PhoneCall, 
   FolderPlus, 
   CheckCircle2, 
-  Clock
+  Clock,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
+
+interface GeneratedLandingCopy {
+  headline: string;
+  subheadline: string;
+  cta_texto: string;
+  paleta_sugerida: string[];
+  tipografia_sugerida: string;
+  secoes: { dobra: string; objetivo: string; copy_sugerida: string }[];
+  faq: { pergunta: string; resposta: string }[];
+}
 
 interface GerarBriefingModalProps {
   isOpen: boolean;
@@ -32,8 +44,57 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
   onUpdateBriefing
 }) => {
   const [copied, setCopied] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [generatedCopy, setGeneratedCopy] = useState<GeneratedLandingCopy | null>(null);
+  const [copiedCopy, setCopiedCopy] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleGenerateCopyWithAI = async () => {
+    setAiLoading(true);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'briefing_to_copy',
+          briefing: {
+            ...briefing,
+            nome_empresa: briefing.nome_empresa || clientName,
+          },
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.ok && json.result) {
+        setGeneratedCopy(json.result as GeneratedLandingCopy);
+      }
+    } catch {
+      // fallback silencioso
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleCopyAllGenerated = () => {
+    if (!generatedCopy) return;
+    const text = [
+      `# Copy & Estrutura da Landing Page — ${briefing.nome_empresa || clientName}`,
+      `\n## Hero`,
+      `- Headline: ${generatedCopy.headline}`,
+      `- Subheadline: ${generatedCopy.subheadline}`,
+      `- CTA: ${generatedCopy.cta_texto}`,
+      `\n## Direção Visual`,
+      `- Paleta Hex: ${(generatedCopy.paleta_sugerida || []).join(', ')}`,
+      `- Tipografia: ${generatedCopy.tipografia_sugerida}`,
+      `\n## Estrutura de Dobras`,
+      ...(generatedCopy.secoes || []).map((s, i) => `${i + 1}. ${s.dobra} (${s.objetivo})\n   Copy: ${s.copy_sugerida}`),
+      `\n## FAQ`,
+      ...(generatedCopy.faq || []).map((f) => `P: ${f.pergunta}\nR: ${f.resposta}`),
+    ].join('\n');
+    navigator.clipboard.writeText(text);
+    setCopiedCopy(true);
+    setTimeout(() => setCopiedCopy(false), 2000);
+  };
 
   const publicBaseOrigin = window.location.hostname.endsWith('yagoduarte.com.br')
     ? 'https://propostas.yagoduarte.com.br'
@@ -235,6 +296,95 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
               </p>
             </div>
           )}
+
+          {/* AI Copy & Landing Page Structure Generator (Feature #3) */}
+          <div className="bg-[#16161a] border border-emerald-500/30 rounded-xl p-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="text-zinc-100 font-semibold flex items-center gap-1.5">
+                  <Sparkles size={14} className="text-emerald-400" />
+                  <span>Gerador de Copy & Estrutura da Landing Page (Gemini IA)</span>
+                </div>
+                <p className="text-[11px] text-zinc-400">
+                  Transforma o briefing em Headline, Dobras da LP, FAQ e Paleta Hex prontos para o Figma ou código.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                disabled={aiLoading}
+                onClick={handleGenerateCopyWithAI}
+                className="min-h-[34px] px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {aiLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                <span>{generatedCopy ? 'Regerar Copy IA' : 'Gerar Copy da LP'}</span>
+              </button>
+            </div>
+
+            {generatedCopy && (
+              <div className="space-y-3 pt-2 border-t border-[#27272a]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-emerald-400 font-semibold">Estrutura Gerada para {briefing.nome_empresa || clientName}</span>
+                  <button
+                    type="button"
+                    onClick={handleCopyAllGenerated}
+                    className="min-h-[30px] px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    {copiedCopy ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                    <span>{copiedCopy ? 'Copiado Tudo!' : 'Copiar Tudo'}</span>
+                  </button>
+                </div>
+
+                <div className="p-3 bg-[#09090b] border border-[#27272a] rounded-xl space-y-1.5">
+                  <div>
+                    <span className="text-zinc-400 text-[11px] block">Headline Principal (Hero):</span>
+                    <span className="text-zinc-100 font-bold text-sm">{generatedCopy.headline}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-400 text-[11px] block">Subheadline:</span>
+                    <span className="text-zinc-300">{generatedCopy.subheadline}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-400 text-[11px] block">Botão CTA:</span>
+                    <span className="inline-block mt-0.5 px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-300 font-semibold">
+                      {generatedCopy.cta_texto}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3 bg-[#09090b] border border-[#27272a] rounded-xl">
+                    <span className="text-zinc-400 text-[11px] block mb-1.5">Paleta Hex Sugerida:</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {(generatedCopy.paleta_sugerida || []).map((hex, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5 bg-[#18181b] px-2 py-1 rounded-md border border-[#27272a]">
+                          <span className="w-3 h-3 rounded-full border border-white/20" style={{ backgroundColor: hex }} />
+                          <span className="font-mono text-[11px] text-zinc-200">{hex}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="p-3 bg-[#09090b] border border-[#27272a] rounded-xl">
+                    <span className="text-zinc-400 text-[11px] block mb-1">Tipografia Sugerida:</span>
+                    <span className="text-zinc-200 font-medium">{generatedCopy.tipografia_sugerida}</span>
+                  </div>
+                </div>
+
+                {Array.isArray(generatedCopy.secoes) && generatedCopy.secoes.length > 0 && (
+                  <div className="p-3 bg-[#09090b] border border-[#27272a] rounded-xl space-y-2">
+                    <span className="text-zinc-200 font-semibold block">Dobras da Página:</span>
+                    {generatedCopy.secoes.map((sec, idx) => (
+                      <div key={idx} className="p-2.5 bg-[#16161a] border border-[#27272a] rounded-lg space-y-1">
+                        <div className="font-semibold text-emerald-400">{idx + 1}. {sec.dobra}</div>
+                        <div className="text-[11px] text-zinc-400">{sec.objetivo}</div>
+                        <p className="text-zinc-200">{sec.copy_sugerida}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Footer Actions */}

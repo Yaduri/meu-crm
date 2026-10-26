@@ -9,8 +9,19 @@ import {
   History,
   FileText,
   Edit3,
-  ArrowLeft
+  ArrowLeft,
+  Sparkles,
+  Mic,
+  Copy,
+  Check,
+  Loader2
 } from 'lucide-react';
+
+interface LeadXRayData {
+  diagnostico: string;
+  argumentos: string[];
+  roteiro_audio_20s: string;
+}
 
 interface HojeViewProps {
   leads: ClientLead[];
@@ -25,6 +36,7 @@ interface HojeViewProps {
   onMudarStatus: (leadId: string, statusId: string) => void;
   onOpenProposta?: (lead: ClientLead) => void;
   onEditLead?: (lead: ClientLead) => void;
+  onUpdateLeadMessage?: (leadId: string, newMessage: string) => void;
 }
 
 export const HojeView: React.FC<HojeViewProps> = ({
@@ -40,8 +52,16 @@ export const HojeView: React.FC<HojeViewProps> = ({
   onMudarStatus,
   onOpenProposta,
   onEditLead,
+  onUpdateLeadMessage,
 }) => {
   const [mobilePane, setMobilePane] = useState<'queue' | 'detail'>('queue');
+  const [aiLoadingIntent, setAiLoadingIntent] = useState<string | null>(null);
+  const [showObjectionBox, setShowObjectionBox] = useState(false);
+  const [objectionText, setObjectionText] = useState('');
+  const [xrayByLead, setXrayByLead] = useState<Record<string, LeadXRayData>>({});
+  const [xrayLoading, setXrayLoading] = useState(false);
+  const [copiedAudioScript, setCopiedAudioScript] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const todayStr = new Date().toISOString().slice(0, 10);
   
   // Classificar followups
@@ -60,7 +80,76 @@ export const HojeView: React.FC<HojeViewProps> = ({
   const handleSelectLeadCard = (leadId: string) => {
     onSelectLead(leadId);
     setMobilePane('detail');
+    setAiError(null);
   };
+
+  const defaultLeadMessage = selectedLead
+    ? `Olá ${selectedLead.nome}, tudo bem? Me chamo Yago Duarte e desenvolvo sites modernos e de alta conversão para o nicho de ${selectedLead.nicho}. Preparei uma prévia exclusiva para você!`
+    : '';
+
+  const currentMessage = selectedLead ? (selectedLead.msg_a_mandar || defaultLeadMessage) : '';
+
+  const handleGenerateWhatsAppAI = async (intent: string) => {
+    if (!selectedLead) return;
+    setAiLoadingIntent(intent);
+    setAiError(null);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'whatsapp_message',
+          intent,
+          objection: objectionText,
+          lead: selectedLead,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        throw new Error(json.error || 'Falha ao gerar mensagem com IA');
+      }
+      if (json.result && onUpdateLeadMessage) {
+        onUpdateLeadMessage(selectedLead.id, String(json.result).trim());
+      }
+      if (intent === 'quebra_objecao') {
+        setShowObjectionBox(false);
+        setObjectionText('');
+      }
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Erro ao conectar com Gemini IA');
+    } finally {
+      setAiLoadingIntent(null);
+    }
+  };
+
+  const handleGenerateXRay = async () => {
+    if (!selectedLead) return;
+    setXrayLoading(true);
+    setAiError(null);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'lead_xray',
+          lead: selectedLead,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) {
+        throw new Error(json.error || 'Falha ao gerar Raio-X Comercial');
+      }
+      if (json.result) {
+        setXrayByLead(prev => ({ ...prev, [selectedLead.id]: json.result as LeadXRayData }));
+      }
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Erro ao gerar Raio-X Comercial');
+    } finally {
+      setXrayLoading(false);
+    }
+  };
+
+  const currentXRay = selectedLead ? xrayByLead[selectedLead.id] : undefined;
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#09090b]">
@@ -306,7 +395,7 @@ export const HojeView: React.FC<HojeViewProps> = ({
                 </div>
               </div>
 
-              {/* Action Box: Mensagem Pronta + Disparo */}
+              {/* Action Box: Mensagem Pronta + Copiloto IA + Disparo */}
               <div className="bg-[#121215] border border-emerald-500/30 rounded-2xl p-4 sm:p-5 shadow-lg shadow-black/40">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2">
@@ -315,12 +404,93 @@ export const HojeView: React.FC<HojeViewProps> = ({
                       Mensagem Pronta para Envio
                     </span>
                   </div>
-                  <span className="text-[11px] text-zinc-400">Variáveis {`{nome}, {nicho}`} aplicadas</span>
+                  <span className="text-[11px] text-zinc-400 flex items-center gap-1">
+                    <Sparkles size={12} className="text-emerald-400" />
+                    <span>Copiloto Gemini 3.5 ativo</span>
+                  </span>
                 </div>
 
-                <div className="bg-[#09090b] border border-[#27272a] rounded-xl p-3.5 text-xs text-zinc-200 leading-relaxed font-sans">
-                  {selectedLead.msg_a_mandar || `Olá ${selectedLead.nome}, tudo bem? Me chamo Yago Duarte e desenvolvo sites modernos e de alta conversão para o nicho de ${selectedLead.nicho}. Preparei uma prévia exclusiva para você!`}
+                {/* AI Quick Generators Toolbar */}
+                <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                  <button
+                    type="button"
+                    disabled={!!aiLoadingIntent}
+                    onClick={() => handleGenerateWhatsAppAI('primeiro_contato')}
+                    className="min-h-[32px] px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {aiLoadingIntent === 'primeiro_contato' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    <span>1º Contato</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!!aiLoadingIntent}
+                    onClick={() => handleGenerateWhatsAppAI('envio_previa')}
+                    className="min-h-[32px] px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {aiLoadingIntent === 'envio_previa' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    <span>Envio de Prévia</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!!aiLoadingIntent}
+                    onClick={() => handleGenerateWhatsAppAI('followup_resgate')}
+                    className="min-h-[32px] px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {aiLoadingIntent === 'followup_resgate' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    <span>Follow-up</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!!aiLoadingIntent}
+                    onClick={() => setShowObjectionBox(prev => !prev)}
+                    className={`min-h-[32px] px-2.5 py-1 rounded-lg border text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                      showObjectionBox
+                        ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                        : 'bg-[#18181b] hover:bg-[#222227] border-[#27272a] text-zinc-300'
+                    }`}
+                  >
+                    <Sparkles size={12} className="text-amber-400" />
+                    <span>Quebrar Objeção</span>
+                  </button>
                 </div>
+
+                {showObjectionBox && (
+                  <div className="mb-3 p-3 bg-[#18181b] border border-[#27272a] rounded-xl flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <input
+                      type="text"
+                      value={objectionText}
+                      onChange={(e) => setObjectionText(e.target.value)}
+                      placeholder="Ex: Achei caro / Já tenho Instagram / Vou pensar..."
+                      className="flex-1 bg-[#09090b] border border-[#27272a] rounded-lg px-3 py-2 text-xs text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      disabled={aiLoadingIntent === 'quebra_objecao'}
+                      onClick={() => handleGenerateWhatsAppAI('quebra_objecao')}
+                      className="min-h-[34px] px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {aiLoadingIntent === 'quebra_objecao' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                      <span>Gerar Resposta</span>
+                    </button>
+                  </div>
+                )}
+
+                {aiError && (
+                  <div className="mb-3 p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-lg text-xs text-rose-300">
+                    {aiError}
+                  </div>
+                )}
+
+                <textarea
+                  rows={3}
+                  aria-label="Mensagem pronta para envio no WhatsApp"
+                  value={currentMessage}
+                  onChange={(e) => onUpdateLeadMessage?.(selectedLead.id, e.target.value)}
+                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl p-3.5 text-xs text-zinc-200 leading-relaxed font-sans focus:outline-hidden focus:border-emerald-500 resize-y"
+                />
 
                 {/* Big Action Buttons */}
                 <div className="flex flex-wrap items-center gap-2.5 mt-4">
@@ -363,6 +533,79 @@ export const HojeView: React.FC<HojeViewProps> = ({
                     <span>Registrar Contato</span>
                   </button>
                 </div>
+              </div>
+
+              {/* Raio-X Comercial & Roteiro de Áudio de 20s (Feature #4) */}
+              <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-zinc-200">
+                    <Mic size={14} className="text-emerald-400" />
+                    <span>Raio-X Comercial & Roteiro de Áudio (20s)</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={xrayLoading}
+                    onClick={handleGenerateXRay}
+                    className="min-h-[34px] px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {xrayLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                    <span>{currentXRay ? 'Atualizar Raio-X IA' : 'Gerar Raio-X & Áudio (20s)'}</span>
+                  </button>
+                </div>
+
+                {currentXRay ? (
+                  <div className="mt-4 space-y-3 text-xs">
+                    <div className="p-3 bg-[#18181b] border border-[#27272a] rounded-xl">
+                      <div className="font-semibold text-zinc-200 mb-1">Diagnóstico da Oportunidade</div>
+                      <p className="text-zinc-300 leading-relaxed">{currentXRay.diagnostico}</p>
+                    </div>
+
+                    {Array.isArray(currentXRay.argumentos) && currentXRay.argumentos.length > 0 && (
+                      <div className="p-3 bg-[#18181b] border border-[#27272a] rounded-xl">
+                        <div className="font-semibold text-zinc-200 mb-2">3 Argumentos Matadores ({selectedLead.nicho})</div>
+                        <ul className="space-y-1.5 text-zinc-300">
+                          {currentXRay.argumentos.map((arg, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-emerald-400 font-mono font-bold">{idx + 1}.</span>
+                              <span>{arg}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {currentXRay.roteiro_audio_20s && (
+                      <div className="p-3.5 bg-[#09090b] border border-emerald-500/30 rounded-xl space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-emerald-400 flex items-center gap-1.5">
+                            <Mic size={13} />
+                            <span>Roteiro para Gravar Áudio no WhatsApp (20s)</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(currentXRay.roteiro_audio_20s);
+                              setCopiedAudioScript(true);
+                              setTimeout(() => setCopiedAudioScript(false), 2000);
+                            }}
+                            className="min-h-[30px] px-2.5 py-1 rounded-lg bg-[#18181b] hover:bg-[#27272a] text-zinc-300 text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
+                          >
+                            {copiedAudioScript ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                            <span>{copiedAudioScript ? 'Copiado' : 'Copiar Roteiro'}</span>
+                          </button>
+                        </div>
+                        <p className="text-zinc-200 italic leading-relaxed">
+                          "{currentXRay.roteiro_audio_20s}"
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-zinc-400 mt-2">
+                    Clique em <strong className="text-zinc-300">Gerar Raio-X & Áudio (20s)</strong> para receber argumentos específicos do nicho de {selectedLead.nicho} e um script natural de 20 segundos para gravar áudio no WhatsApp.
+                  </p>
+                )}
               </div>
 
               {/* History & Notes Timeline */}

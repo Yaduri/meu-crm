@@ -20,3 +20,6 @@ database_id = "ba62e791-a637-41c2-883c-07078f80018a"
 
 [triggers]
 crons = ["0 11 * * *"]
+
+[vars]
+GEMINI_MODEL = "gemini-3.5-flash-lite"

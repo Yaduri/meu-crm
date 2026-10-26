@@ -76,24 +76,13 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
     setTelegramStatus(null);
 
     const token = telegramBotToken.trim();
-    const followupsHoje = leads.filter(l => l.proximo_followup === new Date().toISOString().slice(0, 10)).length;
-    const projetosAndamento = projects.filter(p => p.etapa !== 'No ar / Entregue').length;
-
-    const texto = `☀️ *Bom dia, Yago Duarte! Resumo do CRM:*\n\n` +
-      `📋 *Follow-ups para hoje:* ${followupsHoje} contatos pendentes\n` +
-      `🚀 *Projetos em desenvolvimento:* ${projetosAndamento} sites na esteira\n` +
-      `💰 *MRR Ativo (Hospedagem):* R$ ${totalMRR.toFixed(2)}/mês\n` +
-      `🎯 *Pipeline:* ${negociacao} propostas quentes em negociação\n\n` +
-      `👉 Acesse seu painel: https://crm.yagoduarte.com.br`;
-
     try {
       const res = await fetch('/api/telegram/summary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           bot_token: token,
-          chat_id: telegramChatId.trim(),
-          text: texto
+          chat_id: telegramChatId.trim()
         })
       });
 
@@ -160,7 +149,9 @@ export const RelatoriosView: React.FC<RelatoriosViewProps> = ({
             <div className="text-2xl font-bold font-mono text-zinc-100 mt-1">
               R$ {faturamentoFechado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <div className="text-[11px] text-zinc-400 mt-1">Em implantações concluídas</div>
+            <div className="text-[11px] text-zinc-400 mt-1">
+              {projects.length} projetos · MRR R$ {totalMRR.toFixed(0)}/mês
+            </div>
           </div>
 
           <div className="p-4 bg-[#121215] border border-sky-500/30 rounded-2xl">

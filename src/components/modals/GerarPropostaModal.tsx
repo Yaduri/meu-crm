@@ -7,7 +7,8 @@ import {
   ExternalLink, 
   Check, 
   Sparkles, 
-  DollarSign
+  DollarSign,
+  Loader2
 } from 'lucide-react';
 
 interface GerarPropostaModalProps {
@@ -40,6 +41,9 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
   const [apresentacao, setApresentacao] = useState(
     `Apresentamos esta proposta técnica e comercial com foco em valorizar a autoridade da sua marca na internet e transformar visitantes em novos agendamentos diretos no seu WhatsApp.`
   );
+  const [itens, setItens] = useState<ProposalItem[]>(DEFAULT_ITENS);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuccess, setAiSuccess] = useState(false);
   const [copied, setCopied] = useState(false);
 
   React.useEffect(() => {
@@ -47,10 +51,47 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
       setTitulo(`Landing Page de Alta Conversão para ${lead.nome}`);
       setImplantacao(lead.implantacao || 1200);
       setMensalidade(lead.mensalidade || 89);
+      setItens(DEFAULT_ITENS);
+      setAiSuccess(false);
     }
   }, [lead, isOpen]);
 
   if (!isOpen || !lead) return null;
+
+  const handlePersonalizeWithAI = async () => {
+    setAiLoading(true);
+    setAiSuccess(false);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'personalize_proposal',
+          lead,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.ok && json.result) {
+        if (json.result.titulo_proposta) setTitulo(json.result.titulo_proposta);
+        if (json.result.apresentacao) setApresentacao(json.result.apresentacao);
+        if (Array.isArray(json.result.itens) && json.result.itens.length > 0) {
+          setItens(
+            json.result.itens.map((item: { titulo: string; descricao: string }, idx: number) => ({
+              id: String(idx + 1),
+              titulo: item.titulo,
+              descricao: item.descricao,
+              incluso: true,
+            }))
+          );
+        }
+        setAiSuccess(true);
+      }
+    } catch {
+      // fallback silencioso
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const defaultToken = `prop-${lead.id}`;
 
@@ -75,7 +116,7 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
     nicho: lead.nicho,
     titulo_proposta: titulo,
     apresentacao,
-    itens: DEFAULT_ITENS,
+    itens,
     prazo_dias: prazoDias,
     implantacao,
     forma_pagamento_implantacao: formaPagamento,
@@ -147,6 +188,28 @@ export const GerarPropostaModal: React.FC<GerarPropostaModalProps> = ({
 
         {/* Form Body */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+          {/* AI Personalizer Callout */}
+          <div className="p-3 bg-[#18181b] border border-emerald-500/30 rounded-xl flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div className="font-semibold text-zinc-100 flex items-center gap-1.5">
+                <Sparkles size={13} className="text-emerald-400" />
+                <span>Personalização Inteligente ({lead.nicho})</span>
+              </div>
+              <p className="text-[11px] text-zinc-400">
+                Adapta título, apresentação e os 6 entregáveis especificamente para o negócio de {lead.nome}.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={aiLoading}
+              onClick={handlePersonalizeWithAI}
+              className="min-h-[34px] px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {aiLoading ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+              <span>{aiSuccess ? 'Proposta Personalizada!' : 'Personalizar com IA'}</span>
+            </button>
+          </div>
+
           <div>
             <label className="block font-medium text-zinc-300 mb-1">Título da Proposta</label>
             <input
