@@ -31,8 +31,12 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal
       {/* Top Banner sutil */}
       <div className="border-b border-[#27272a] bg-[#0d0d10]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-400 text-xs">
-            YD
+          <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700/60 overflow-hidden flex items-center justify-center p-1">
+            <img 
+              src="/logo-yd-symbol.png" 
+              alt="Yago Duarte" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <div className="text-xs font-bold text-zinc-100 leading-none">Yago Duarte</div>

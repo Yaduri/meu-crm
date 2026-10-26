@@ -50,8 +50,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Top Profile / Brand */}
       <div className="p-4 border-b border-[#27272a] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-semibold text-sm">
-            YD
+          <div className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-700/60 overflow-hidden flex items-center justify-center p-1 shadow-xs">
+            <img 
+              src="/logo-yd-symbol.png" 
+              alt="Yago Duarte" 
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
           </div>
           <div>
             <div className="font-semibold text-sm text-zinc-100 leading-tight">Yago Duarte</div>
