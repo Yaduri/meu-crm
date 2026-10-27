@@ -18,35 +18,68 @@ export const LeadWhatsAppChat: React.FC<LeadWhatsAppChatProps> = ({
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isUserScrolledUpRef = useRef<boolean>(false);
+  const prevLeadIdRef = useRef<string | null>(null);
 
   const cleanPhone = (lead.whatsapp || '').replace(/\D/g, '');
   const scriptSteps = parseConversationScript(lead.msg_a_mandar || '');
 
-  const fetchChat = async () => {
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    isUserScrolledUpRef.current = distanceFromBottom > 90;
+  };
+
+  const fetchChat = async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
     try {
       const res = await fetch(`/api/whatsapp/chat/${lead.id}`);
       if (res.ok) {
         const data = await res.json() as { success: boolean; messages: WhatsAppMessage[] };
         if (data.success && Array.isArray(data.messages)) {
-          setMessages(data.messages);
+          setMessages(prev => {
+            if (
+              prev.length === data.messages.length &&
+              prev[prev.length - 1]?.id === data.messages[data.messages.length - 1]?.id &&
+              prev[prev.length - 1]?.status === data.messages[data.messages.length - 1]?.status
+            ) {
+              return prev;
+            }
+            return data.messages;
+          });
         }
       }
     } catch {
       // Falha silenciosa
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchChat();
-    const interval = setInterval(fetchChat, 3000);
+    fetchChat(false);
+    const interval = setInterval(() => fetchChat(true), 3000);
     return () => clearInterval(interval);
   }, [lead.id]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const isNewLead = prevLeadIdRef.current !== lead.id;
+    prevLeadIdRef.current = lead.id;
+
+    if (isNewLead) {
+      isUserScrolledUpRef.current = false;
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 50);
+      return;
+    }
+
+    if (!isUserScrolledUpRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, lead.id]);
 
   const handleSendMessage = async (textToSend?: string) => {
     const text = (textToSend || inputText).trim();
@@ -139,7 +172,7 @@ export const LeadWhatsAppChat: React.FC<LeadWhatsAppChatProps> = ({
           )}
           <button
             type="button"
-            onClick={fetchChat}
+            onClick={() => fetchChat(false)}
             className="p-1 text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
             title="Recarregar histórico"
           >
@@ -149,7 +182,11 @@ export const LeadWhatsAppChat: React.FC<LeadWhatsAppChatProps> = ({
       </div>
 
       {/* Message List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[radial-gradient(#18181b_1px,transparent_1px)] [background-size:16px_16px]">
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-4 space-y-3 bg-[radial-gradient(#18181b_1px,transparent_1px)] [background-size:16px_16px]"
+      >
         {loading && messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-zinc-400 space-y-2">
             <Loader2 size={24} className="animate-spin text-emerald-400" />

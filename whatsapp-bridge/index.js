@@ -247,9 +247,9 @@ async function startWhatsApp() {
     }
   });
 
-  // Escuta novas mensagens
+  // Escuta novas mensagens (notificações em tempo real e mensagens adicionadas)
   sock.ev.on('messages.upsert', async (m) => {
-    if (m.type !== 'notify') return;
+    if (m.type !== 'notify' && m.type !== 'append') return;
 
     for (const msg of m.messages) {
       if (!msg.key || !msg.key.remoteJid) continue;

@@ -46,6 +46,16 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isUserScrolledUpRef = useRef<boolean>(false);
+  const prevLeadIdRef = useRef<string | null>(null);
+
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    isUserScrolledUpRef.current = distanceFromBottom > 90;
+  };
 
   // Fetch all conversation summaries
   const fetchConversations = useCallback(async () => {
@@ -75,35 +85,59 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
   }, [fetchConversations]);
 
   // Fetch messages for selected lead
-  const fetchChatMessages = useCallback(async (leadId: string) => {
-    setLoadingMessages(true);
+  const fetchChatMessages = useCallback(async (leadId: string, isSilent = false) => {
+    if (!isSilent) setLoadingMessages(true);
     try {
       const res = await fetch(`/api/whatsapp/chat/${leadId}`);
       if (res.ok) {
         const data = await res.json() as { success: boolean; messages: WhatsAppMessage[] };
         if (data.success && Array.isArray(data.messages)) {
-          setMessages(data.messages);
+          setMessages(prev => {
+            // Evita criar nova referência se a lista não mudou
+            if (
+              prev.length === data.messages.length &&
+              prev[prev.length - 1]?.id === data.messages[data.messages.length - 1]?.id &&
+              prev[prev.length - 1]?.status === data.messages[data.messages.length - 1]?.status
+            ) {
+              return prev;
+            }
+            return data.messages;
+          });
         }
       }
     } catch {
       // Silencioso
     } finally {
-      setLoadingMessages(false);
+      if (!isSilent) setLoadingMessages(false);
     }
   }, []);
 
   useEffect(() => {
     if (!selectedLeadId) return;
-    fetchChatMessages(selectedLeadId);
+    fetchChatMessages(selectedLeadId, false);
     const interval = setInterval(() => {
-      fetchChatMessages(selectedLeadId);
+      fetchChatMessages(selectedLeadId, true);
     }, 3000);
     return () => clearInterval(interval);
   }, [selectedLeadId, fetchChatMessages]);
 
+  // Scroll inteligente: nunca puxa para baixo se o usuário subiu para ler histórico
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const isNewLead = prevLeadIdRef.current !== selectedLeadId;
+    prevLeadIdRef.current = selectedLeadId;
+
+    if (isNewLead) {
+      isUserScrolledUpRef.current = false;
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 50);
+      return;
+    }
+
+    if (!isUserScrolledUpRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, selectedLeadId]);
 
   const selectedLead = leads.find((l) => l.id === selectedLeadId) || null;
   const scriptSteps = selectedLead ? parseConversationScript(selectedLead.msg_a_mandar || '') : null;
@@ -492,7 +526,11 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
             </div>
 
             {/* Messages Scroll Area */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 bg-[radial-gradient(#18181b_1px,transparent_1px)] [background-size:16px_16px]">
+            <div
+              ref={scrollContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 bg-[radial-gradient(#18181b_1px,transparent_1px)] [background-size:16px_16px]"
+            >
               {loadingMessages && messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-zinc-500 space-y-2">
                   <Loader2 size={24} className="animate-spin text-emerald-400" />
