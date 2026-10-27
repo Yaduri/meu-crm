@@ -129,9 +129,10 @@ export function parseOldCsv(csvText: string): MigrationSummary {
     const cleanValorRecorrente = rawValorRecorrente.replace(/[^\d,.]/g, '').replace(',', '.');
     const mensalidade = parseFloat(cleanValorRecorrente) || 0;
 
-    // Datas
+    // Datas (se o lead já estiver encerrado/sem interesse ou fechado, não agenda próximo contato)
+    const isClosedOrWon = newStatusId.startsWith('recusou_') || newStatusId.startsWith('sem_resp_') || newStatusId === 'fechado';
     const dataContato = normalizedRow['data'] || normalizedRow['data_contato'] || '';
-    const proximoContato = normalizedRow['proximo_contato'] || normalizedRow['data_proximo_contato'] || '';
+    const proximoContato = isClosedOrWon ? '' : (normalizedRow['proximo_contato'] || normalizedRow['data_proximo_contato'] || '');
 
     // Dados de entrega/financeiro antigo
     const etapaEntrega = normalizedRow['etapa_de_entrega'] || undefined;

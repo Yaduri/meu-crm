@@ -136,10 +136,21 @@ app.get('/api/state', async (c) => {
       }
     }
 
-    // Carregar os leads individuais da tabela `leads` no D1
-    const leadsRows = await c.env.DB.prepare('SELECT data_json FROM leads').all<{ data_json: string }>();
+    // Carregar os leads individuais da tabela `leads` no D1 sincronizando colunas e JSON
+    const leadsRows = await c.env.DB.prepare('SELECT status_id, fase, proximo_followup, data_json FROM leads').all<{
+      status_id: string;
+      fase: string;
+      proximo_followup: string | null;
+      data_json: string;
+    }>();
     if (leadsRows.results.length > 0) {
-      state.leads = leadsRows.results.map(r => JSON.parse(r.data_json));
+      state.leads = leadsRows.results.map(r => {
+        const parsed = JSON.parse(r.data_json);
+        if (r.status_id) parsed.status_id = r.status_id;
+        if (r.fase) parsed.fase = r.fase;
+        parsed.proximo_followup = r.proximo_followup || undefined;
+        return parsed;
+      });
     }
 
     // Mesclar também propostas e briefings atualizados por clientes nas tabelas públicas
@@ -737,7 +748,11 @@ async function sendTelegramDailySummary(env: Bindings, overrideToken?: string, o
     const projects = projectsRow ? (JSON.parse(projectsRow.value) as Array<Record<string, unknown>>) : [];
     const invoices = invoicesRow ? (JSON.parse(invoicesRow.value) as Array<Record<string, unknown>>) : [];
 
-    const pendingLeads = leads.filter(l => l.fase === 'prospeccao' && l.proximo_followup && String(l.proximo_followup) <= todayStr);
+    const pendingLeads = leads.filter(l => {
+      const st = String(l.status_id || '');
+      const isClosed = st.startsWith('recusou_') || st.startsWith('sem_resp_') || st === 'parou_responder' || st === 'fechado';
+      return l.fase === 'prospeccao' && !isClosed && l.proximo_followup && String(l.proximo_followup) <= todayStr;
+    });
     const followupsHoje = pendingLeads.length;
     const negociacao = leads.filter(l => l.status_id === 'negociacao' || l.status_id === 'proposta_enviada').length;
     const projetosAndamento = projects.filter(p => p.etapa !== 'No ar / Entregue').length;

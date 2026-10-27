@@ -236,6 +236,18 @@ export const DEFAULT_STATUSES: StatusConfig[] = [
   { id: 'fechado', label: 'Fechado (Ganho)', group: 'won', color: '#10b981', cadenceDays: 0 },
 ];
 
+export const INACTIVE_FOLLOWUP_STATUS_IDS = new Set(
+  DEFAULT_STATUSES.filter(s => s.group === 'closed' || s.group === 'won').map(s => s.id)
+);
+
+export function isLeadActiveForFollowup(lead: ClientLead): boolean {
+  if (lead.fase !== 'prospeccao') return false;
+  if (!lead.status_id) return true;
+  if (INACTIVE_FOLLOWUP_STATUS_IDS.has(lead.status_id)) return false;
+  if (lead.status_id.startsWith('recusou_') || lead.status_id.startsWith('sem_resp_')) return false;
+  return true;
+}
+
 export const NICHOS_PADRAO = [
   'Estética',
   'Advogado',

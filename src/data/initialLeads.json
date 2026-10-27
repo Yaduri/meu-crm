@@ -16,7 +16,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-2",
@@ -35,7 +35,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-3",
@@ -54,7 +54,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-4",
@@ -66,14 +66,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-08",
-    "proximo_followup": "2026-10-11",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-5",
@@ -92,7 +91,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-6",
@@ -112,7 +111,7 @@
     "observacoes": "DEMO, insta e portifpolio",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-7",
@@ -131,7 +130,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-8",
@@ -150,7 +149,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-9",
@@ -170,7 +169,7 @@
     "observacoes": "Está apertada financeiramente",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-10",
@@ -189,7 +188,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-11",
@@ -208,7 +207,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-12",
@@ -220,14 +219,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-08",
-    "proximo_followup": "2026-10-12",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-13",
@@ -247,7 +245,7 @@
     "observacoes": "Não tem condições no momento, no futuro me chama",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-14",
@@ -258,7 +256,7 @@
     "origem": "Google Maps",
     "status_id": "negociacao",
     "ultimo_contato": "2026-10-15",
-    "proximo_followup": "2026-10-26",
+    "proximo_followup": "2026-10-29",
     "followups_sem_resposta": 0,
     "implantacao": 1000,
     "mensalidade": 200,
@@ -267,7 +265,7 @@
     "observacoes": "Implantação: R$ 1.000,00\n\nInclui:\n• Cardápio digital personalizado\n• Marmitas, pratos do dia, especiais e combos\n• Botão direto para pedidos no WhatsApp\n• Informações de entrega em até 8 km\n• Página adaptada para celular\n• Estrutura preparada para receber os anúncios\n• Configuração inicial para divulgação\n\nTráfego pago: R$ 200/mês\n\nNesse acompanhamento eu faço:\n\n• Configuração e organização das campanhas\n• Criação dos anúncios com foco em promoções e combos\n• Definição do público da região de atendimento\n• Ajustes básicos nas campanhas conforme o desempenho\n• Acompanhamento dos resultados\n• Orientações sobre quais ofertas/produtos podem ser interessantes para divulgar\n• Suporte para ajustes na estrutura que leva o cliente até o WhatsApp\n\nO investimento de R$ 400/mês em anúncios é separado e fica destinado diretamente à plataforma de anúncios.\n\nA ideia é montar o caminho completo: anúncio → cardápio → WhatsApp → pedido, facilitando para o cliente comprar direto com vocês.\n\nSe fizer sentido pra você, podemos começar pela implantação e deixar essa estrutura funcionando",
     "fase": "prospeccao",
     "created_at": "2026-10-15",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-15",
@@ -279,14 +277,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-06",
-    "proximo_followup": "2026-10-09",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-16",
@@ -298,14 +295,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-06",
-    "proximo_followup": "2026-10-09",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-17",
@@ -324,7 +320,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-18",
@@ -336,7 +332,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-06",
-    "proximo_followup": "2026-10-09",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -344,7 +339,7 @@
     "observacoes": "Sem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-10-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-19",
@@ -363,7 +358,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-20",
@@ -383,7 +378,7 @@
     "observacoes": "Secretária, não me mandou o contato da dona ainda",
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-21",
@@ -401,7 +396,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-22",
@@ -413,14 +408,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-06",
-    "proximo_followup": "2026-10-09",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-23",
@@ -439,7 +433,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-24",
@@ -449,16 +443,15 @@
     "google_url": "https://share.google/GmsNx8lSsNDiaz0Vq",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordado",
+    "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-19",
-    "proximo_followup": "2026-10-26",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-19",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-25",
@@ -478,7 +471,7 @@
     "observacoes": "Gostou bastante mas está sem dinheiro no momento pra investir",
     "fase": "prospeccao",
     "created_at": "2026-10-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-26",
@@ -498,7 +491,7 @@
     "observacoes": "DEMO",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-27",
@@ -517,7 +510,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-28",
@@ -536,7 +529,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-29",
@@ -548,14 +541,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-05",
-    "proximo_followup": "2026-10-08",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-05",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-30",
@@ -574,7 +566,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-07",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-31",
@@ -593,7 +585,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-32",
@@ -612,7 +604,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-33",
@@ -631,7 +623,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-34",
@@ -642,14 +634,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-02",
-    "proximo_followup": "2026-10-07",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-35",
@@ -663,13 +654,13 @@
     "ultimo_contato": "2026-10-08",
     "proximo_followup": "2026-10-14",
     "followups_sem_resposta": 0,
-    "implantacao": 1200,
+    "implantacao": 950,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "observacoes": "DEMO",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-36",
@@ -689,7 +680,7 @@
     "observacoes": "DEMO",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-37",
@@ -701,14 +692,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-05",
-    "proximo_followup": "2026-10-08",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-05",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-38",
@@ -728,7 +718,7 @@
     "observacoes": "Indicação da Regiane",
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-39",
@@ -740,14 +730,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-02",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-40",
@@ -767,7 +756,7 @@
     "observacoes": "Gostou da DEMO, não respondeu mais",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-41",
@@ -788,7 +777,7 @@
     "observacoes": "Não tem interesse no momento, talvez no futuro",
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-42",
@@ -800,14 +789,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-43",
@@ -827,7 +815,7 @@
     "observacoes": "Passado orçamento",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-44",
@@ -847,7 +835,7 @@
     "observacoes": "DEMO",
     "fase": "prospeccao",
     "created_at": "2026-10-15",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-45",
@@ -868,7 +856,7 @@
     "observacoes": "Tem site, mas mesmo assim aceitou a demo",
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-46",
@@ -887,7 +875,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-47",
@@ -907,7 +895,7 @@
     "msg_a_mandar": "https://www.instagram.com/mariaantera.terapeutica/",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-48",
@@ -926,7 +914,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-49",
@@ -938,14 +926,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-09",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-50",
@@ -958,14 +945,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-25",
-    "proximo_followup": "2026-10-02",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-25",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-51",
@@ -986,7 +972,7 @@
     "observacoes": "DEMO",
     "fase": "prospeccao",
     "created_at": "2026-09-29",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-52",
@@ -1006,7 +992,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-53",
@@ -1025,7 +1011,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-29",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-54",
@@ -1044,7 +1030,7 @@
     "observacoes": "Sem money agora, retornar começo de dezembro",
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-55",
@@ -1064,7 +1050,7 @@
     "observacoes": "DEMO",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-56",
@@ -1085,7 +1071,7 @@
     "observacoes": "Vai mudar de área, quem sabe no futuro",
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-57",
@@ -1097,7 +1083,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -1105,7 +1090,7 @@
     "msg_a_mandar": "Boa tarde, Bruno! Tudo bem?  \nMe chamo Yago, sou desenvolvedor de sites e encontrei o Espaço Wellness enquanto conhecia clínicas e profissionais da área de saúde.  \nMe chamou atenção a estrutura que vocês já construíram, principalmente pelos +3.500 pacientes atendidos, atuação com performance e reabilitação e também o trabalho com atletas.  \nVi que hoje o Instagram direciona para um Bio.site. Tive uma ideia de como transformar toda essa presença em um site próprio, organizando melhor os tratamentos, a atuação com atletas, diferenciais da clínica e formas de agendamento.  \nPosso te mostrar um exemplo de site que desenvolvi para a área da saúde?",
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-58",
@@ -1117,14 +1102,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-59",
@@ -1136,14 +1120,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-08",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-60",
@@ -1164,7 +1147,7 @@
     "observacoes": "Não tem dinheiro no momento",
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-61",
@@ -1183,7 +1166,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-62",
@@ -1196,14 +1179,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-23",
-    "proximo_followup": "2026-09-26",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-63",
@@ -1215,14 +1197,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-64",
@@ -1233,14 +1214,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-23",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-65",
@@ -1258,7 +1238,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-66",
@@ -1275,7 +1255,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-67",
@@ -1295,7 +1275,7 @@
     "observacoes": "DEMO",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-68",
@@ -1306,14 +1286,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-23",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-69",
@@ -1333,7 +1312,7 @@
     "msg_a_mandar": "11985723291",
     "fase": "prospeccao",
     "created_at": "2026-10-05",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-70",
@@ -1344,14 +1323,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-23",
-    "proximo_followup": "2026-09-26",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-71",
@@ -1371,7 +1349,7 @@
     "observacoes": "DEMO",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-72",
@@ -1383,7 +1361,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -1391,7 +1368,7 @@
     "msg_a_mandar": "estetica.tha.sanches@gmail.com",
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-73",
@@ -1410,7 +1387,7 @@
     "observacoes": "Já esta fazendo site",
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-74",
@@ -1422,14 +1399,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-23",
-    "proximo_followup": "2026-09-26",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-75",
@@ -1441,14 +1417,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-20",
-    "proximo_followup": "2026-10-09",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-20",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-76",
@@ -1467,7 +1442,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-77",
@@ -1479,14 +1454,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-05",
-    "proximo_followup": "2026-10-08",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-05",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-78",
@@ -1498,14 +1472,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-10-05",
-    "proximo_followup": "2026-10-08",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-05",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-79",
@@ -1517,14 +1490,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-25",
-    "proximo_followup": "2026-10-02",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-25",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-80",
@@ -1544,7 +1516,7 @@
     "observacoes": "Várias pessoas entraram em contato, quer fazer site no começo do ano que vem",
     "fase": "prospeccao",
     "created_at": "2026-09-22",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-81",
@@ -1556,14 +1528,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-22",
-    "proximo_followup": "2026-09-25",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-22",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-82",
@@ -1582,7 +1553,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-83",
@@ -1602,7 +1573,7 @@
     "msg_a_mandar": "Ou 11959567747",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-84",
@@ -1620,7 +1591,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-85",
@@ -1641,7 +1612,7 @@
     "observacoes": "Tem site mas não funfa\nPassou contato da responsável 19 994948884 Elizangela",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-86",
@@ -1653,14 +1624,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-25",
-    "proximo_followup": "2026-10-02",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-25",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-87",
@@ -1680,7 +1650,7 @@
     "observacoes": "Vai encaminhar para a proprietária",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-88",
@@ -1693,14 +1663,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-18",
-    "proximo_followup": "2026-09-27",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-18",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-89",
@@ -1719,7 +1688,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-18",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-90",
@@ -1731,14 +1700,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-91",
@@ -1758,7 +1726,7 @@
     "observacoes": "Está encerrando contrato com a empresa atual, chamar começo de outubro",
     "fase": "prospeccao",
     "created_at": "2026-10-05",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-92",
@@ -1769,7 +1737,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-17",
-    "proximo_followup": "2026-09-24",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -1777,7 +1744,7 @@
     "msg_a_mandar": "Sem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-09-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-93",
@@ -1795,7 +1762,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-94",
@@ -1816,7 +1783,7 @@
     "observacoes": "Mandei demo",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-95",
@@ -1837,7 +1804,7 @@
     "observacoes": "Vai verificar orçamento",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-96",
@@ -1857,7 +1824,7 @@
     "observacoes": "Por enquanto não",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-97",
@@ -1877,7 +1844,7 @@
     "observacoes": "assim que eu for investir mais eu tenho alguém pra chamar",
     "fase": "prospeccao",
     "created_at": "2026-09-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-98",
@@ -1895,7 +1862,7 @@
     "observacoes": "Já vai fazer site, estuda marketing",
     "fase": "prospeccao",
     "created_at": "2026-09-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-99",
@@ -1906,7 +1873,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -1914,7 +1880,7 @@
     "observacoes": "Pediu meu insta",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-100",
@@ -1926,7 +1892,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-17",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -1934,7 +1899,7 @@
     "observacoes": "Vai ver com a responsável, se ela tiver interesse entra em contato",
     "fase": "prospeccao",
     "created_at": "2026-09-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-101",
@@ -1954,7 +1919,7 @@
     "observacoes": "Está passando por dificuldades",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-102",
@@ -1965,14 +1930,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-103",
@@ -1982,7 +1946,7 @@
     "instagram": "https://www.instagram.com/esteticagleice.a.cascales/",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-09-17",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -1991,7 +1955,7 @@
     "observacoes": "Por agora não",
     "fase": "prospeccao",
     "created_at": "2026-09-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-104",
@@ -2003,7 +1967,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2011,7 +1974,7 @@
     "observacoes": "Douglas",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-105",
@@ -2023,7 +1986,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2031,7 +1993,7 @@
     "observacoes": "https://linktr.ee/esteticanaabeatriz",
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-106",
@@ -2049,7 +2011,7 @@
     "observacoes": "Já tem equipe desenvolvendo site",
     "fase": "prospeccao",
     "created_at": "2026-09-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-107",
@@ -2066,7 +2028,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-108",
@@ -2077,14 +2039,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-109",
@@ -2095,14 +2056,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-110",
@@ -2113,7 +2073,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2121,7 +2080,7 @@
     "observacoes": "Dra Taynara",
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-111",
@@ -2139,7 +2098,7 @@
     "observacoes": "Não è prioridade no momento",
     "fase": "prospeccao",
     "created_at": "2026-09-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-112",
@@ -2158,7 +2117,7 @@
     "observacoes": "Proprietário se acidentou, retornar mês que vem",
     "fase": "prospeccao",
     "created_at": "2026-09-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-113",
@@ -2176,7 +2135,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-10-05",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-114",
@@ -2188,7 +2147,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2196,7 +2154,7 @@
     "msg_a_mandar": "Tentei ajudar mas ach oque não vai me responder",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-115",
@@ -2214,7 +2172,7 @@
     "observacoes": "Não tem mais clinica",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-116",
@@ -2233,7 +2191,7 @@
     "observacoes": "1FU\nTem cursos também",
     "fase": "prospeccao",
     "created_at": "2026-10-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-117",
@@ -2253,7 +2211,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-118",
@@ -2271,7 +2229,7 @@
     "observacoes": "Sem interesse no momento\nhttps://espacolyta.keepo.bio/",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-119",
@@ -2282,7 +2240,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-21",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2290,7 +2247,7 @@
     "observacoes": "Depilação a Laser",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-120",
@@ -2301,14 +2258,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-21",
-    "proximo_followup": "2026-09-27",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-121",
@@ -2319,14 +2275,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-09-27",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-122",
@@ -2337,14 +2292,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-123",
@@ -2361,7 +2315,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-124",
@@ -2381,7 +2335,7 @@
     "observacoes": "Score: 75/100 (FORTE) | Diagnóstico: Sem website cadastrado no Google | Motivo: 🚨 Não possui website cadastrado no Google Maps | ⚪ Pouca presença no Google (0 avaliações) | Google: 0 avaliações (Nota 5.0) | Endereço: \nR. Júlio Zanoni, 67 - Sl 10 - Centro, Jarinu - SP, 13240-000",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-125",
@@ -2401,7 +2355,7 @@
     "observacoes": "1M audio",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-126",
@@ -2413,7 +2367,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2422,7 +2375,7 @@
     "observacoes": "1M mandei audio",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-127",
@@ -2434,7 +2387,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-16",
-    "proximo_followup": "2026-09-24",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2443,7 +2395,7 @@
     "observacoes": "1M Mandei audio",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-128",
@@ -2463,7 +2415,7 @@
     "observacoes": "Tem site feito em 2022\nEstá estruturando",
     "fase": "prospeccao",
     "created_at": "2026-09-03",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-129",
@@ -2474,14 +2426,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-08-24",
-    "proximo_followup": "2026-09-24",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-130",
@@ -2501,7 +2452,7 @@
     "observacoes": "Não tem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-09-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-131",
@@ -2512,7 +2463,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2520,7 +2470,7 @@
     "observacoes": "Sem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-132",
@@ -2531,14 +2481,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-08-24",
-    "proximo_followup": "2026-09-24",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-133",
@@ -2549,14 +2498,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-28",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-28",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-134",
@@ -2567,14 +2515,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-21",
-    "proximo_followup": "2026-09-27",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-135",
@@ -2585,14 +2532,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-21",
-    "proximo_followup": "2026-09-27",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-136",
@@ -2603,14 +2549,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-05",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-137",
@@ -2627,7 +2572,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-138",
@@ -2644,7 +2589,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-139",
@@ -2661,7 +2606,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-140",
@@ -2679,7 +2624,7 @@
     "observacoes": "Não tem interesse\nMandei demonstração, aguardando resposta",
     "fase": "prospeccao",
     "created_at": "2026-08-25",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-141",
@@ -2696,7 +2641,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-142",
@@ -2713,7 +2658,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-143",
@@ -2730,7 +2675,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-144",
@@ -2747,7 +2692,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-145",
@@ -2756,7 +2701,7 @@
     "whatsapp": "11971898265",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-24",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -2765,7 +2710,7 @@
     "observacoes": "No momento não tem interesse\nhttps://juliamoraesadvogada.com.br/",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-146",
@@ -2784,7 +2729,7 @@
     "observacoes": "FU Bastante potencial. Vai olhar no final de semana",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-147",
@@ -2802,7 +2747,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-148",
@@ -2820,7 +2765,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-149",
@@ -2838,7 +2783,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-150",
@@ -2857,7 +2802,7 @@
     "observacoes": "1FU\nPerguntou valor, mandei",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-151",
@@ -2875,7 +2820,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-152",
@@ -2892,7 +2837,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-153",
@@ -2912,7 +2857,7 @@
     "observacoes": "Não podia financeiramente, retornei com proposta 50 50, parcelamento e desconto",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-154",
@@ -2930,7 +2875,7 @@
     "observacoes": "Sem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-155",
@@ -2949,7 +2894,7 @@
     "observacoes": "DEMO",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-156",
@@ -2960,7 +2905,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2968,7 +2912,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-157",
@@ -2979,7 +2923,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-29",
-    "proximo_followup": "2026-10-06",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -2987,7 +2930,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-29",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-158",
@@ -2998,7 +2941,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -3006,7 +2948,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-159",
@@ -3025,7 +2967,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-160",
@@ -3043,7 +2985,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-161",
@@ -3063,7 +3005,7 @@
     "observacoes": "Não pode fechar nada por enquanto por conta de contrato",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-162",
@@ -3081,7 +3023,7 @@
     "observacoes": "Sem interesse",
     "fase": "prospeccao",
     "created_at": "2026-08-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-163",
@@ -3092,7 +3034,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-21",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -3100,7 +3041,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-164",
@@ -3118,7 +3059,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-165",
@@ -3137,7 +3078,7 @@
     "observacoes": "Perguntou valor e pediu portifólio, está sem money por enquanto\nTinha site mas não funfa mais\nhttps://rafaelasousapsicologa.com.br/",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-166",
@@ -3155,7 +3096,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-167",
@@ -3173,7 +3114,7 @@
     "observacoes": "Sem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-168",
@@ -3184,7 +3125,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -3192,7 +3132,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-169",
@@ -3210,7 +3150,7 @@
     "observacoes": "Sem interesse",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-170",
@@ -3229,7 +3169,7 @@
     "observacoes": "sem timing — retomar futuramente\nperguntou sobre valor e permuta",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-171",
@@ -3247,7 +3187,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-172",
@@ -3266,7 +3206,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-173",
@@ -3285,7 +3225,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-174",
@@ -3304,7 +3244,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-175",
@@ -3322,7 +3262,7 @@
     "observacoes": "1FU Secretária respondeu, aguardando",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-176",
@@ -3331,7 +3271,7 @@
     "whatsapp": "11950720305",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-09-02",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -3340,7 +3280,7 @@
     "observacoes": "Sem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-177",
@@ -3358,7 +3298,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-178",
@@ -3376,7 +3316,7 @@
     "observacoes": "1FU\nGerente ia entrar em contato",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-179",
@@ -3394,7 +3334,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-180",
@@ -3412,7 +3352,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-181",
@@ -3421,7 +3361,7 @@
     "whatsapp": "11977736335",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-19",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -3430,7 +3370,7 @@
     "observacoes": "Agradeço muito pelo. No momento,não estou buscando esse tipo de serviço. Já recebi algumas propostas semelhantes para desenvolvimento de site e, como concilio duas áreas profissionais e estou organizando as duas atividades, um site ainda não é uma prioridade para mim neste momento.\nMas agradeço pela apresentação e pela consideração em entrar em contato. Desejo muito sucesso no seu trabalho! 🙏🏼",
     "fase": "prospeccao",
     "created_at": "2026-08-19",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-182",
@@ -3448,7 +3388,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-183",
@@ -3466,7 +3406,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-184",
@@ -3484,7 +3424,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-185",
@@ -3502,7 +3442,7 @@
     "observacoes": "1M",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-186",
@@ -3520,7 +3460,7 @@
     "observacoes": "1FU\nAguardando resposta secretária",
     "fase": "prospeccao",
     "created_at": "2026-09-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-187",
@@ -3539,7 +3479,7 @@
     "observacoes": "Não tem interesse mas mandei previa, pedi para mostrar ao responsável",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-188",
@@ -3557,7 +3497,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-189",
@@ -3576,7 +3516,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-25",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-190",
@@ -3595,7 +3535,7 @@
     "observacoes": "Talvez ano que vem",
     "fase": "prospeccao",
     "created_at": "2026-08-13",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-191",
@@ -3606,7 +3546,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-25",
-    "proximo_followup": "2026-10-02",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -3614,7 +3553,7 @@
     "observacoes": "2FU\nmandei audio",
     "fase": "prospeccao",
     "created_at": "2026-09-25",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-192",
@@ -3633,7 +3572,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-193",
@@ -3651,7 +3590,7 @@
     "observacoes": "Já tem site em desenvolvimento",
     "fase": "prospeccao",
     "created_at": "2026-08-13",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-194",
@@ -3660,7 +3599,7 @@
     "whatsapp": "11941109933",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-19",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -3669,7 +3608,7 @@
     "observacoes": "Não tem interesse em site no momento",
     "fase": "prospeccao",
     "created_at": "2026-08-19",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-195",
@@ -3688,7 +3627,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-196",
@@ -3706,7 +3645,7 @@
     "observacoes": "Encerramento\nEnviado demo",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-197",
@@ -3724,7 +3663,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-198",
@@ -3742,7 +3681,7 @@
     "observacoes": "Encerramento\nEnviado demonstração",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-199",
@@ -3760,7 +3699,7 @@
     "observacoes": "1FU",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-200",
@@ -3778,7 +3717,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-201",
@@ -3796,7 +3735,7 @@
     "observacoes": "1FU (Não recebe mensagem, block?)",
     "fase": "prospeccao",
     "created_at": "2026-08-19",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-202",
@@ -3814,7 +3753,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-203",
@@ -3832,7 +3771,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-204",
@@ -3844,7 +3783,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-21",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -3852,7 +3790,7 @@
     "observacoes": "Enviada prévia\n2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-205",
@@ -3870,7 +3808,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-206",
@@ -3888,7 +3826,7 @@
     "observacoes": "2FU (block?)",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-207",
@@ -3906,7 +3844,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-208",
@@ -3924,7 +3862,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-209",
@@ -3942,7 +3880,7 @@
     "observacoes": "Não tem interesse",
     "fase": "prospeccao",
     "created_at": "2026-08-17",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-210",
@@ -3959,7 +3897,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-211",
@@ -3970,7 +3908,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -3978,7 +3915,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-212",
@@ -3996,7 +3933,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-213",
@@ -4014,7 +3951,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-214",
@@ -4032,7 +3969,7 @@
     "observacoes": "1FU (block?)",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-215",
@@ -4050,7 +3987,7 @@
     "observacoes": "2FU block?",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-216",
@@ -4068,7 +4005,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-217",
@@ -4087,7 +4024,7 @@
     "observacoes": "Está com agenda cheia, sem interesse",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-218",
@@ -4106,7 +4043,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-219",
@@ -4125,7 +4062,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-220",
@@ -4137,7 +4074,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-09-24",
-    "proximo_followup": "2026-10-01",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -4145,7 +4081,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-221",
@@ -4155,7 +4091,7 @@
     "instagram": "https://www.instagram.com/jonathanigor.psi/",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-14",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -4164,7 +4100,7 @@
     "observacoes": "no momento não tenho a pretensão de contratar este serviço por algumas razões pessoais e empresariais",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-222",
@@ -4183,7 +4119,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-223",
@@ -4200,7 +4136,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-224",
@@ -4209,7 +4145,7 @@
     "whatsapp": "11942373219",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-12",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -4218,7 +4154,7 @@
     "observacoes": "No momento não tenho interesse",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-225",
@@ -4236,7 +4172,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-226",
@@ -4255,7 +4191,7 @@
     "observacoes": "Follow up, ela estava na correria",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-227",
@@ -4273,7 +4209,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-228",
@@ -4291,7 +4227,7 @@
     "observacoes": "Entrar em contato 12/09\nEncaminhou para a proprietaria, follow up",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-229",
@@ -4309,7 +4245,7 @@
     "observacoes": "Tentar contato 12/09",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-230",
@@ -4328,7 +4264,7 @@
     "observacoes": "No momento não",
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-231",
@@ -4345,7 +4281,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-232",
@@ -4363,7 +4299,7 @@
     "observacoes": "Tentar contato 12/09",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-233",
@@ -4381,7 +4317,7 @@
     "observacoes": "Sem resposta",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-234",
@@ -4399,7 +4335,7 @@
     "observacoes": "Não respondeu mais, encerrei",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-235",
@@ -4416,7 +4352,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-236",
@@ -4433,7 +4369,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-237",
@@ -4450,7 +4386,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-238",
@@ -4468,7 +4404,7 @@
     "observacoes": "3 mensagens sem resposta",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-239",
@@ -4486,7 +4422,7 @@
     "observacoes": "Acho que me bloqueou kkk",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-240",
@@ -4504,7 +4440,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-241",
@@ -4522,7 +4458,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-242",
@@ -4541,7 +4477,7 @@
     "observacoes": "Vai deixar contato salvo caso precise algum dia",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-243",
@@ -4550,7 +4486,7 @@
     "whatsapp": "11937250920",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-12",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -4559,7 +4495,7 @@
     "observacoes": "No momento não, deixou contato salvo",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-244",
@@ -4577,7 +4513,7 @@
     "observacoes": "Ia respondeu",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-245",
@@ -4596,7 +4532,7 @@
     "observacoes": "Mandei demonstração e 2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-19",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-246",
@@ -4614,7 +4550,7 @@
     "observacoes": "FU\nTem site mas está off\nVai encaminhas a mensagem para a proprietária",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-247",
@@ -4632,7 +4568,7 @@
     "observacoes": "No momento não quer",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-248",
@@ -4650,7 +4586,7 @@
     "observacoes": "FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-249",
@@ -4668,7 +4604,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-250",
@@ -4686,7 +4622,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-251",
@@ -4704,7 +4640,7 @@
     "observacoes": "Expliquei melhor como funciona. Mas não responde mais",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-252",
@@ -4722,7 +4658,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-21",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-253",
@@ -4740,7 +4676,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-254",
@@ -4758,7 +4694,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-255",
@@ -4767,7 +4703,7 @@
     "whatsapp": "11966183665",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-14",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -4776,7 +4712,7 @@
     "observacoes": "Enviado instagram e portifolio. Não quer no momento",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-256",
@@ -4794,7 +4730,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-257",
@@ -4812,7 +4748,7 @@
     "observacoes": "No momento não",
     "fase": "prospeccao",
     "created_at": "2026-09-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-258",
@@ -4830,7 +4766,7 @@
     "observacoes": "2FU block?",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-259",
@@ -4839,7 +4775,7 @@
     "whatsapp": "11973021506",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-24",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -4848,7 +4784,7 @@
     "observacoes": "Não faz sentido no momento",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-260",
@@ -4866,7 +4802,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-07",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-261",
@@ -4875,7 +4811,7 @@
     "whatsapp": "11969168020",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-14",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -4884,7 +4820,7 @@
     "observacoes": "Sem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-262",
@@ -4902,7 +4838,7 @@
     "observacoes": "1FU\nMandei demonstração\nVai enviar para o responsável",
     "fase": "prospeccao",
     "created_at": "2026-09-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-263",
@@ -4920,7 +4856,7 @@
     "observacoes": "Não trabalha mais com estética",
     "fase": "prospeccao",
     "created_at": "2026-08-11",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-264",
@@ -4939,7 +4875,7 @@
     "observacoes": "Já tem site em desenvolvimento. PERGUNTAR SOBRE ELE PQ ATÈ AGORA NADA KKKKK",
     "fase": "prospeccao",
     "created_at": "2026-08-11",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-265",
@@ -4957,7 +4893,7 @@
     "observacoes": "Retornar dia 27/09",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-266",
@@ -4966,7 +4902,7 @@
     "whatsapp": "11998537430",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-12",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -4975,7 +4911,7 @@
     "observacoes": "No momento não",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-267",
@@ -4992,7 +4928,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-268",
@@ -5010,7 +4946,7 @@
     "observacoes": "Não tem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-269",
@@ -5019,7 +4955,7 @@
     "whatsapp": "11963784902",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-12",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -5028,7 +4964,7 @@
     "observacoes": "No momento não faz sentido, mas vai me indicar para outros",
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-270",
@@ -5037,7 +4973,7 @@
     "whatsapp": "11964074740",
     "presenca_digital": "Sem Site",
     "origem": "Google Maps",
-    "status_id": "abordar",
+    "status_id": "recusou_outro",
     "ultimo_contato": "2026-08-14",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
@@ -5046,7 +4982,7 @@
     "observacoes": "Sem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-271",
@@ -5064,7 +5000,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-272",
@@ -5082,7 +5018,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-273",
@@ -5099,7 +5035,7 @@
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-12",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-274",
@@ -5118,7 +5054,7 @@
     "observacoes": "No momento não tem interesse",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-275",
@@ -5136,7 +5072,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-276",
@@ -5154,7 +5090,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-277",
@@ -5172,7 +5108,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-09-16",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-278",
@@ -5190,7 +5126,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-279",
@@ -5208,7 +5144,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-280",
@@ -5226,7 +5162,7 @@
     "observacoes": "FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-281",
@@ -5244,7 +5180,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-282",
@@ -5262,7 +5198,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-283",
@@ -5280,7 +5216,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-284",
@@ -5298,7 +5234,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-285",
@@ -5316,7 +5252,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-286",
@@ -5334,7 +5270,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-287",
@@ -5352,7 +5288,7 @@
     "observacoes": "último follow-up → sem resposta, arquivar.",
     "fase": "prospeccao",
     "created_at": "2026-08-19",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-288",
@@ -5371,7 +5307,7 @@
     "observacoes": "Não tem interesse no momento",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-289",
@@ -5389,7 +5325,7 @@
     "observacoes": "Encerramento\nEnviado valor, 3 follow up",
     "fase": "prospeccao",
     "created_at": "2026-09-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-290",
@@ -5407,7 +5343,7 @@
     "observacoes": "Mandei demonstração e ultimo follow up\nNão respondeu mais",
     "fase": "prospeccao",
     "created_at": "2026-08-19",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-291",
@@ -5425,7 +5361,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-292",
@@ -5443,7 +5379,7 @@
     "observacoes": "2FU",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-293",
@@ -5454,14 +5390,13 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-08-07",
-    "proximo_followup": "2026-11-25",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
     "dia_vencimento": 10,
     "fase": "prospeccao",
     "created_at": "2026-08-07",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-294",
@@ -5479,7 +5414,7 @@
     "observacoes": "Enviou a msg para os proprietários\nEles tinham site mas está off\nAguardar entrarem em contato",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-295",
@@ -5497,7 +5432,7 @@
     "observacoes": "FU (Não recebeu mensagem, me bloqueou?)",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-296",
@@ -5517,7 +5452,7 @@
     "observacoes": "Não tem condições no momento.",
     "fase": "prospeccao",
     "created_at": "2026-08-06",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-297",
@@ -5536,7 +5471,7 @@
     "observacoes": "1FU\nPerguntou preço de novo rs",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-298",
@@ -5554,7 +5489,7 @@
     "observacoes": "FU. Não recebeu, tomei block?",
     "fase": "prospeccao",
     "created_at": "2026-08-18",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-299",
@@ -5572,7 +5507,7 @@
     "observacoes": "Follow up (não recebeu mensagem, me bloqueou??)",
     "fase": "prospeccao",
     "created_at": "2026-08-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-300",
@@ -5590,7 +5525,7 @@
     "observacoes": "Ultimo FU\nBom dia Isabela, tudo bem?\nQueria só confirmar antes de encerrar por aqui: a ideia de ter um site próprio para apresentar seus atendimentos e ajudar novas pacientes a encontrarem seu trabalho é algo que faria sentido para você neste momento ou prefere deixar para mais pra frente?",
     "fase": "prospeccao",
     "created_at": "2026-08-24",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-301",
@@ -5609,7 +5544,7 @@
     "observacoes": "FU audio\nVai comparar com outra empresa, vai mostrar para a sócia",
     "fase": "prospeccao",
     "created_at": "2026-09-14",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-302",
@@ -5628,7 +5563,7 @@
     "observacoes": "Ela vai entrar em contato semana que vem, eu espero",
     "fase": "prospeccao",
     "created_at": "2026-09-23",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-303",
@@ -5647,7 +5582,7 @@
     "observacoes": "Está sem dinheiro no momento, precisa fazer tratamento caro\nVai me indicar",
     "fase": "prospeccao",
     "created_at": "2026-10-08",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-304",
@@ -5667,7 +5602,7 @@
     "observacoes": "FU\nEnviado site exemplo, perguntou sobre valores. Agora vai pensar sobre e me retorna",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-305",
@@ -5678,7 +5613,6 @@
     "origem": "Google Maps",
     "status_id": "recusou_sem_interesse",
     "ultimo_contato": "2026-08-10",
-    "proximo_followup": "2026-09-26",
     "followups_sem_resposta": 0,
     "implantacao": 1200,
     "mensalidade": 89,
@@ -5686,7 +5620,7 @@
     "observacoes": "Entrar em contato dia 10/09",
     "fase": "prospeccao",
     "created_at": "2026-08-10",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   },
   {
     "id": "lead-real-306",
@@ -5706,6 +5640,6 @@
     "observacoes": "Marcar reuniçao novamente",
     "fase": "prospeccao",
     "created_at": "2026-10-02",
-    "updated_at": "2026-10-26"
+    "updated_at": "2026-10-27"
   }
 ]

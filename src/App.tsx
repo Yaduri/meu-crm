@@ -32,7 +32,7 @@ import type {
   BriefingData,
   CrmSettings
 } from './types/crm';
-import { DEFAULT_STATUSES, DEFAULT_CRM_SETTINGS } from './types/crm';
+import { DEFAULT_STATUSES, DEFAULT_CRM_SETTINGS, isLeadActiveForFollowup } from './types/crm';
 
 const LEADS_STORAGE_KEY = 'crm_yago_leads';
 const PROJECTS_STORAGE_KEY = 'crm_yago_projects';
@@ -915,8 +915,9 @@ export function App() {
   // Clientes na Carteira são os que têm fase 'carteira' ou projeto 'No ar'
   const carteiraClients = leads.filter(l => l.fase === 'carteira' || projects.some(p => p.client_id === l.id && p.etapa === 'No ar / Entregue'));
 
+  const todayForCounts = new Date().toISOString().slice(0, 10);
   const counts = {
-    hoje: leads.filter(l => l.fase === 'prospeccao' && (l.proximo_followup || l.status_id === 'previa_enviada')).length,
+    hoje: leads.filter(l => isLeadActiveForFollowup(l) && l.proximo_followup && l.proximo_followup <= todayForCounts).length,
     prospeccao: leads.filter(l => l.fase === 'prospeccao').length,
     projetos: projects.length,
     carteira: carteiraClients.length

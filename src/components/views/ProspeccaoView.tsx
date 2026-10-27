@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { ClientLead } from '../../types/crm';
+import { isLeadActiveForFollowup } from '../../types/crm';
 import { ProspeccaoKanban } from './ProspeccaoKanban';
 import { ProspeccaoTable } from './ProspeccaoTable';
 import { 
@@ -45,17 +46,17 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
 
   const todayStr = new Date().toISOString().slice(0, 10);
 
-  // Contagens dinâmicas para as pílulas
-  const countHoje = leads.filter(l => l.proximo_followup === todayStr).length;
-  const countAtrasados = leads.filter(l => l.proximo_followup && l.proximo_followup < todayStr && l.fase === 'prospeccao').length;
+  // Contagens dinâmicas para as pílulas (ignorando leads encerrados/sem interesse nos follow-ups)
+  const countHoje = leads.filter(l => isLeadActiveForFollowup(l) && l.proximo_followup === todayStr).length;
+  const countAtrasados = leads.filter(l => isLeadActiveForFollowup(l) && l.proximo_followup && l.proximo_followup < todayStr).length;
   const countNegociacao = leads.filter(l => l.status_id === 'negociacao' || l.status_id === 'proposta_enviada').length;
   const countSemSite = leads.filter(l => l.presenca_digital === 'Sem site' || !l.site_atual).length;
   const countAAbordar = leads.filter(l => l.status_id === 'abordar').length;
 
   // Filtragem dos leads em tempo real
   const filteredLeads = leads.filter(l => {
-    if (filterPill === 'hoje' && l.proximo_followup !== todayStr) return false;
-    if (filterPill === 'atrasado' && !(l.proximo_followup && l.proximo_followup < todayStr && l.fase === 'prospeccao')) return false;
+    if (filterPill === 'hoje' && !(isLeadActiveForFollowup(l) && l.proximo_followup === todayStr)) return false;
+    if (filterPill === 'atrasado' && !(isLeadActiveForFollowup(l) && l.proximo_followup && l.proximo_followup < todayStr)) return false;
     if (filterPill === 'negociacao' && l.status_id !== 'negociacao' && l.status_id !== 'proposta_enviada') return false;
     if (filterPill === 'semsite' && l.presenca_digital !== 'Sem site' && l.site_atual) return false;
     if (filterPill === 'abordar' && l.status_id !== 'abordar') return false;

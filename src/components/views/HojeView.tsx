@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { ClientLead, Project, MonthlyInvoice, Installment } from '../../types/crm';
-import { DEFAULT_STATUSES } from '../../types/crm';
+import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
 import { 
   Send, 
   Clock, 
@@ -67,9 +67,9 @@ export const HojeView: React.FC<HojeViewProps> = ({
   const [actionToast, setActionToast] = useState<string | null>(null);
   const todayStr = new Date().toISOString().slice(0, 10);
   
-  // Classificar followups
-  const overdueLeads = leads.filter(l => l.proximo_followup && l.proximo_followup < todayStr && l.fase === 'prospeccao');
-  const todayLeads = leads.filter(l => l.proximo_followup === todayStr && l.fase === 'prospeccao');
+  // Classificar followups (apenas leads ativos em prospecção; ignora recusados/encerrados/fechados)
+  const overdueLeads = leads.filter(l => isLeadActiveForFollowup(l) && l.proximo_followup && l.proximo_followup < todayStr);
+  const todayLeads = leads.filter(l => isLeadActiveForFollowup(l) && l.proximo_followup === todayStr);
   const pendingQueue = [...overdueLeads, ...todayLeads];
 
   const selectedLead = leads.find((l) => l.id === selectedLeadId) || pendingQueue[0] || leads[0];
