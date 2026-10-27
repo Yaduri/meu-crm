@@ -520,7 +520,7 @@ export const HojeView: React.FC<HojeViewProps> = ({
                     className="min-h-[32px] px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
                   >
                     {aiLoadingIntent === 'envio_previa' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                    <span>Envio de Prévia</span>
+                    <span>Site Demo</span>
                   </button>
 
                   <button

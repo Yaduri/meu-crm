@@ -482,7 +482,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-300 font-medium mb-1">Link da Prévia (Online / Web)</label>
+              <label className="block text-zinc-300 font-medium mb-1">Link do Site de Demonstração (Demo / Modelo)</label>
               <input
                 type="url"
                 value={linkPrevia}
@@ -524,7 +524,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
                   className="px-2 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {aiLoadingIntent === 'envio_previa' ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
-                  <span>Prévia IA</span>
+                  <span>Demo IA</span>
                 </button>
                 <button
                   type="button"

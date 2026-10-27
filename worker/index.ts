@@ -565,12 +565,28 @@ app.post('/api/ai/generate', async (c) => {
       const objectionText = String(body.objection || body.objectionText || '');
 
       const intentInstructions: Record<string, string> = {
-        primeiro_contato:
-          'Crie uma mensagem de 1º contato frio no WhatsApp curta (3 a 4 frases curtas), cordial e sem cara de robô. Mencione o nome da empresa, o nicho e a presença digital atual, oferecendo mostrar sem compromisso uma ideia/prévia visual de site/landing page para atrair mais clientes pelo Google e anúncios.',
-        envio_previa:
-          `Crie uma mensagem de WhatsApp avisando que você (Yago Duarte) acabou de preparar uma prévia visual exclusiva da Landing Page para a empresa deles${lead.link_previa ? ` (inclua o link: ${lead.link_previa})` : ''} e perguntando o que acham da estrutura.`,
+        primeiro_contato: `Gere uma mensagem de 1º contato frio no WhatsApp seguindo EXATAMENTE o estilo de abordagem real de Yago Duarte:
+
+Estrutura de referência usada por Yago:
+"Encontrei seu trabalho enquanto conhecia profissionais da área de [nicho].
+Vi que você já tem uma presença bem construída no Instagram e também boas avaliações no Google. Gostei bastante da variedade de serviços que você oferece.
+Percebi que vocês ainda não possuem um site próprio. Isso pode fazer com que parte das pessoas que pesquisam pela empresa no Google não encontre rapidamente informações sobre serviços e atendimento.
+Trabalho com desenvolvimento de sites e tive uma ideia de como transformar essa presença em um site próprio, apresentando melhor os serviços, seus diferenciais e facilitando o acesso às informações e ao agendamento.
+Posso te mostrar um exemplo de site que desenvolvi para a área de [área/nicho correspondente]?"
+
+Regras obrigatórias:
+1. Adapte os termos específicos ao nicho (${lead.nicho || 'Negócios Locais'}) e ao nome da empresa (${lead.nome || 'Cliente'}).
+2. Se o lead tiver site cadastrado (${lead.site_atual || ''}), mencione de forma construtiva que o site atual pode estar desatualizado ou não ser tão otimizado para celulares e agendamento rápido.
+3. NUNCA diga que já fez uma prévia pronta exclusiva para a empresa dele. Você deve dizer que desenvolveu um EXEMPLO de site para a área dele e perguntar com simpatia se pode mostrar esse exemplo.
+4. Separe em pequenos parágrafos bem espaçados, com tom humano, natural e respeitoso.`,
+
+        envio_previa: `Gere uma mensagem de WhatsApp para apresentar o site de demonstração que você (Yago Duarte) desenvolveu como modelo para o nicho de ${lead.nicho || 'Negócios'}:
+${lead.link_previa ? `Link do site de demonstração a incluir: ${lead.link_previa}` : '(Inclua o espaço para o link do site de demonstração)'}
+Apresente o exemplo com entusiasmo profissional, destacando a rapidez no celular, a apresentação clara dos serviços e o botão de agendamento direto no WhatsApp. Pergunte o que achou da ideia e da estrutura.`,
+
         followup_resgate:
-          'Crie uma mensagem curta e elegante de follow-up para um lead que recebeu contato/prévia/proposta há alguns dias e ainda não respondeu. Sem cobrança chata, gerando curiosidade e deixando fácil responder com "sim" ou "quero ver".',
+          'Crie uma mensagem curta, educada e sem pressão de follow-up para um lead que recebeu o primeiro contato ou o link do site de demonstração há alguns dias e ainda não respondeu. Deixe muito fácil responder com apenas um "oi, vi sim" ou "pode mandar".',
+
         quebra_objecao:
           `O cliente respondeu com a seguinte objeção ou dúvida: "${objectionText || 'Achei o valor alto / vou pensar'}". Crie uma resposta persuasiva, empática e consultiva de Yago Duarte contornando essa objeção com foco em retorno sobre investimento (quantos clientes novos 1 único fechamento no mês já paga o site) e facilidade de pagamento (50% entrada e 50% na entrega).`
       };
