@@ -40,7 +40,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
   onBulkUpdateLeads,
   onBulkDeleteLeads,
 }) => {
-  const [viewMode, setViewMode] = useState<'kanban' | 'tabela'>('kanban');
+  const [viewMode, setViewMode] = useState<'tabela' | 'kanban'>('tabela');
   const [filterPill, setFilterPill] = useState<FilterPill>('todos');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -89,21 +89,8 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Switch Kanban vs Tabela */}
+          {/* Switch Tabela vs Kanban */}
           <div className="bg-[#18181b] border border-[#27272a] p-1 rounded-xl flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setViewMode('kanban')}
-              className={`min-h-[34px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                viewMode === 'kanban'
-                  ? 'bg-[#27272a] text-zinc-100 shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200'
-              }`}
-            >
-              <Kanban size={13} />
-              <span>Kanban</span>
-            </button>
-
             <button
               type="button"
               onClick={() => setViewMode('tabela')}
@@ -115,6 +102,19 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
             >
               <TableIcon size={13} />
               <span>Tabela</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode('kanban')}
+              className={`min-h-[34px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                viewMode === 'kanban'
+                  ? 'bg-[#27272a] text-zinc-100 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <Kanban size={13} />
+              <span>Kanban</span>
             </button>
           </div>
 
