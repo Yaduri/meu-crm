@@ -1,7 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { ClientLead } from '../../types/crm';
-import { DEFAULT_STATUSES } from '../../types/crm';
-import { Send, Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, Trash2, Calendar, DollarSign, X } from 'lucide-react';
+import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
+import {
+  Send,
+  Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  ChevronDown,
+  Trash2,
+  Calendar,
+  CalendarCheck,
+  DollarSign,
+  X,
+  AlertTriangle,
+  Zap,
+  Sun,
+  Check,
+} from 'lucide-react';
 
 interface ProspeccaoTableProps {
   leads: ClientLead[];
@@ -20,6 +36,7 @@ type SortField =
   | 'whatsapp' 
   | 'implantacao' 
   | 'mensalidade' 
+  | 'ultimo_contato'
   | 'proximo_followup';
 
 type SortOrder = 'asc' | 'desc';
@@ -41,6 +58,64 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_STEP);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [openFollowupLeadId, setOpenFollowupLeadId] = useState<string | null>(null);
+  const [customFollowupDate, setCustomFollowupDate] = useState<string>('');
+  const popoverRef = useRef<HTMLDivElement | null>(null);
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        setOpenFollowupLeadId(null);
+      }
+    };
+    if (openFollowupLeadId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openFollowupLeadId]);
+
+  const handleOpenFollowupPopover = (lead: ClientLead) => {
+    if (openFollowupLeadId === lead.id) {
+      setOpenFollowupLeadId(null);
+      return;
+    }
+    setCustomFollowupDate(lead.proximo_followup || todayStr);
+    setOpenFollowupLeadId(lead.id);
+  };
+
+  const handleQuickFollowupSelect = (leadId: string, daysOffset: number | null) => {
+    if (!onBulkUpdateLeads) return;
+    if (daysOffset === null) {
+      onBulkUpdateLeads([leadId], { proximo_followup: undefined });
+    } else {
+      const d = new Date();
+      d.setDate(d.getDate() + daysOffset);
+      const dateStr = d.toISOString().slice(0, 10);
+      onBulkUpdateLeads([leadId], { proximo_followup: dateStr });
+    }
+    setOpenFollowupLeadId(null);
+  };
+
+  const handleCustomFollowupSave = (leadId: string) => {
+    if (!onBulkUpdateLeads) return;
+    onBulkUpdateLeads([leadId], { proximo_followup: customFollowupDate || undefined });
+    setOpenFollowupLeadId(null);
+  };
+
+  const handleMarkLastContactToday = (leadId: string) => {
+    if (!onBulkUpdateLeads) return;
+    onBulkUpdateLeads([leadId], { ultimo_contato: todayStr });
+  };
+
+  const getDaysDiffFromToday = (dateStr: string): number => {
+    const target = new Date(`${dateStr}T00:00:00`);
+    const today = new Date(`${todayStr}T00:00:00`);
+    return Math.round((today.getTime() - target.getTime()) / (1000 * 60 * 60 * 24));
+  };
 
   const toggleSelectOne = (leadId: string) => {
     setSelectedIds(prev => {
@@ -96,6 +171,12 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
       if (sortField === 'proximo_followup') {
         const dateA = a.proximo_followup || '9999-99-99';
         const dateB = b.proximo_followup || '9999-99-99';
+        return dateA.localeCompare(dateB) * multiplier;
+      }
+
+      if (sortField === 'ultimo_contato') {
+        const dateA = a.ultimo_contato || '0000-00-00';
+        const dateB = b.ultimo_contato || '0000-00-00';
         return dateA.localeCompare(dateB) * multiplier;
       }
 
@@ -361,11 +442,21 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
               </th>
 
               <th
+                onClick={() => handleSort('ultimo_contato')}
+                className="py-3 px-4 cursor-pointer hover:bg-[#18181d] hover:text-zinc-100 transition-colors group"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className={sortField === 'ultimo_contato' ? 'text-emerald-400' : ''}>Último Contato</span>
+                  {renderSortIcon('ultimo_contato')}
+                </div>
+              </th>
+
+              <th
                 onClick={() => handleSort('proximo_followup')}
                 className="py-3 px-4 cursor-pointer hover:bg-[#18181d] hover:text-zinc-100 transition-colors group"
               >
                 <div className="flex items-center gap-1.5">
-                  <span className={sortField === 'proximo_followup' ? 'text-emerald-400' : ''}>Próximo Contato</span>
+                  <span className={sortField === 'proximo_followup' ? 'text-emerald-400' : ''}>Próximo Follow-up</span>
                   {renderSortIcon('proximo_followup')}
                 </div>
               </th>
@@ -378,6 +469,13 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
             {paginatedLeads.map((lead) => {
               const status = DEFAULT_STATUSES.find(s => s.id === lead.status_id) || DEFAULT_STATUSES[0];
               const isChecked = selectedIds.has(lead.id);
+              const isActiveLead = isLeadActiveForFollowup(lead);
+              const followupStr = lead.proximo_followup;
+              const isOverdue = Boolean(isActiveLead && followupStr && followupStr < todayStr);
+              const isToday = Boolean(followupStr && followupStr === todayStr);
+              const daysDiff = followupStr ? getDaysDiffFromToday(followupStr) : 0;
+              const isPopoverOpen = openFollowupLeadId === lead.id;
+
               return (
                 <tr
                   key={lead.id}
@@ -440,8 +538,149 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
                   <td className="py-3 px-4 text-right font-mono text-zinc-300">
                     {lead.mensalidade > 0 ? `R$ ${lead.mensalidade.toFixed(2)}` : '-'}
                   </td>
-                  <td className="py-3 px-4 text-zinc-300 font-mono">
-                    {lead.proximo_followup ? lead.proximo_followup.split('-').reverse().join('/') : '-'}
+                  <td className="py-3 px-4 font-mono text-zinc-300" onClick={(e) => e.stopPropagation()}>
+                    <div className="inline-flex items-center gap-2">
+                      <span>
+                        {lead.ultimo_contato ? lead.ultimo_contato.split('-').reverse().join('/') : '-'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleMarkLastContactToday(lead.id)}
+                        title="Marcar último contato como Hoje"
+                        aria-label={`Marcar último contato de ${lead.nome} como hoje`}
+                        className="p-1 rounded-md text-zinc-400 hover:text-emerald-400 hover:bg-zinc-800/80 transition-colors cursor-pointer"
+                      >
+                        <CalendarCheck size={13} />
+                      </button>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 font-mono relative" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenFollowupPopover(lead)}
+                      title="Clique para agendar ou alterar o próximo contato"
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-all cursor-pointer ${
+                        !followupStr
+                          ? 'bg-[#18181b] hover:bg-[#222227] border border-dashed border-zinc-700 text-zinc-400 hover:text-zinc-200'
+                          : isOverdue
+                          ? 'bg-rose-950/60 hover:bg-rose-900/60 border border-rose-500/40 text-rose-400'
+                          : isToday
+                          ? 'bg-amber-950/60 hover:bg-amber-900/50 border border-amber-500/40 text-amber-300'
+                          : isActiveLead
+                          ? 'bg-sky-950/50 hover:bg-sky-900/50 border border-sky-500/30 text-sky-300'
+                          : 'bg-zinc-900 hover:bg-zinc-800 border border-zinc-700/70 text-zinc-400'
+                      }`}
+                    >
+                      {!followupStr ? (
+                        <>
+                          <Calendar size={11} />
+                          <span>+ Agendar</span>
+                        </>
+                      ) : (
+                        <>
+                          {isOverdue ? (
+                            <AlertTriangle size={11} className="text-rose-400 shrink-0" />
+                          ) : isToday ? (
+                            <Zap size={11} className="text-amber-400 shrink-0" />
+                          ) : (
+                            <Calendar size={11} className="shrink-0" />
+                          )}
+                          <span>{followupStr.split('-').reverse().join('/')}</span>
+                          {isOverdue && daysDiff > 0 && (
+                            <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-bold">
+                              {daysDiff}d
+                            </span>
+                          )}
+                          {isToday && (
+                            <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold">
+                              Hoje
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </button>
+
+                    {isPopoverOpen && (
+                      <div
+                        ref={popoverRef}
+                        className="absolute right-4 top-11 z-40 w-64 bg-[#111218] border border-[#272835] rounded-2xl p-3.5 shadow-2xl text-left font-sans"
+                      >
+                        <div className="flex items-center justify-between mb-2.5">
+                          <span className="text-[11px] font-bold text-zinc-400 tracking-wide">
+                            Próximo Contato
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleQuickFollowupSelect(lead.id, null)}
+                            className="text-[11px] text-zinc-400 hover:text-rose-400 flex items-center gap-1 transition-colors cursor-pointer"
+                          >
+                            <X size={12} />
+                            <span>Limpar</span>
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleQuickFollowupSelect(lead.id, 0)}
+                            className="py-2.5 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <Zap size={12} className="text-amber-400 shrink-0" />
+                            <span>Hoje</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleQuickFollowupSelect(lead.id, 1)}
+                            className="py-2.5 px-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <Sun size={12} className="text-sky-400 shrink-0" />
+                            <span className="leading-tight text-center">Amanhã (+1d)</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleQuickFollowupSelect(lead.id, 3)}
+                            className="py-2.5 px-2.5 rounded-xl bg-[#1b1c26] hover:bg-[#252634] border border-[#2d2e3d] text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <Calendar size={12} className="text-zinc-400 shrink-0" />
+                            <span>Em 3 dias</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleQuickFollowupSelect(lead.id, 7)}
+                            className="py-2.5 px-2.5 rounded-xl bg-[#1b1c26] hover:bg-[#252634] border border-[#2d2e3d] text-zinc-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <Calendar size={12} className="text-zinc-400 shrink-0" />
+                            <span className="leading-tight text-center">Em 1 semana</span>
+                          </button>
+                        </div>
+
+                        <div className="mt-3 pt-2.5 border-t border-[#22232e]">
+                          <label className="block text-[11px] text-zinc-400 mb-1.5">
+                            Ou escolha no calendário:
+                          </label>
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="date"
+                              value={customFollowupDate}
+                              onChange={(e) => setCustomFollowupDate(e.target.value)}
+                              className="flex-1 min-w-0 bg-[#0b0c10] border border-[#272835] rounded-xl px-2.5 py-1.5 text-xs text-zinc-100 font-mono focus:outline-hidden focus:border-emerald-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleCustomFollowupSave(lead.id)}
+                              title="Confirmar data"
+                              aria-label="Confirmar data"
+                              className="w-8 h-8 rounded-xl bg-white hover:bg-zinc-200 text-zinc-950 flex items-center justify-center shrink-0 transition-colors cursor-pointer"
+                            >
+                              <Check size={14} strokeWidth={2.5} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </td>
                   <td className="py-3 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                     <button

@@ -283,6 +283,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
             onMoveLeadStatus={onMoveLeadStatus}
             onOpenWhatsApp={onOpenWhatsApp}
             onNewLeadWithStatus={onNewLeadWithStatus}
+            onBulkUpdateLeads={onBulkUpdateLeads}
           />
         ) : (
           <ProspeccaoTable
