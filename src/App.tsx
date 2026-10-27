@@ -827,6 +827,20 @@ export function App() {
       const filtered = prev.filter(p => p.token !== proposal.token);
       return [proposal, ...filtered];
     });
+
+    const publicBaseOrigin = window.location.hostname.endsWith('yagoduarte.com.br')
+      ? 'https://propostas.yagoduarte.com.br'
+      : window.location.origin;
+    const link = `${publicBaseOrigin}/p/${proposal.token}`;
+
+    setLeads(prev => prev.map(l => l.id === proposal.lead_id ? { ...l, link_proposta: link } : l));
+
+    // Persistência imediata no D1 sem aguardar debounce
+    fetch('/api/state', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ proposals: [proposal] })
+    }).catch(() => {});
   };
 
   const handleUpdateBriefing = (updated: BriefingData) => {
@@ -1154,6 +1168,7 @@ export function App() {
             isOpen={!!selectedProposalLead}
             onClose={() => setSelectedProposalLead(null)}
             lead={selectedProposalLead}
+            existingProposal={proposals.find(p => p.token === `prop-${selectedProposalLead.id}` || p.lead_id === selectedProposalLead.id)}
             onSaveProposal={handleSaveProposal}
           />
         )}
