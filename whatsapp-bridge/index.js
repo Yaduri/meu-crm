@@ -3,8 +3,7 @@ import makeWASocket, {
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
   normalizeMessageContent,
-  downloadMediaMessage,
-  Browsers
+  downloadMediaMessage
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import qrcodeTerminal from 'qrcode-terminal';
@@ -273,8 +272,7 @@ async function startWhatsApp() {
     auth: state,
     printQRInTerminal: false,
     generateHighQualityLinkPreview: false,
-    syncFullHistory: true,
-    browser: Browsers.windows('Desktop')
+    syncFullHistory: true
   });
 
   sock.ev.on('creds.update', saveCreds);
