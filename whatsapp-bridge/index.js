@@ -13,6 +13,39 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Suprime ruídos internos de mensagens antigas de grupos/contatos antigos do libsignal (Bad MAC)
+const filterNoise = (str) => {
+  return (
+    str.includes('Bad MAC') ||
+    str.includes('Failed to decrypt message') ||
+    str.includes('Closing open session in favor of incoming prekey bundle') ||
+    str.includes('Closing session: SessionEntry') ||
+    str.includes('Session error:Error:')
+  );
+};
+
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+process.stderr.write = (chunk, encoding, callback) => {
+  const str = chunk ? chunk.toString() : '';
+  if (filterNoise(str)) {
+    if (typeof encoding === 'function') encoding();
+    else if (typeof callback === 'function') callback();
+    return true;
+  }
+  return originalStderrWrite(chunk, encoding, callback);
+};
+
+const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+process.stdout.write = (chunk, encoding, callback) => {
+  const str = chunk ? chunk.toString() : '';
+  if (filterNoise(str)) {
+    if (typeof encoding === 'function') encoding();
+    else if (typeof callback === 'function') callback();
+    return true;
+  }
+  return originalStdoutWrite(chunk, encoding, callback);
+};
+
 // Configurações
 const CONFIG_FILE = path.join(__dirname, 'config.json');
 let config = {
