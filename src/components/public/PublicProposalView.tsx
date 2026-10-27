@@ -16,11 +16,15 @@ import {
 interface PublicProposalViewProps {
   proposal: Proposal;
   onAccept?: () => void;
+  whatsappComercial?: string;
 }
 
-export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal: initialProposal }) => {
+export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ 
+  proposal: initialProposal,
+  whatsappComercial,
+}) => {
   const [proposal, setProposal] = React.useState<Proposal>(initialProposal);
-  const yagoWhatsApp = '5511911300834'; // WhatsApp de contato de Yago
+  const [yagoWhatsApp, setYagoWhatsApp] = React.useState<string>(whatsappComercial || '5511945987666');
 
   React.useEffect(() => {
     document.title = `Proposta Comercial · ${proposal.cliente_nome} | Yago Duarte`;
@@ -29,6 +33,9 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal
       .then(res => {
         if (res.success && res.proposal) {
           setProposal(res.proposal);
+        }
+        if (res.whatsapp_comercial) {
+          setYagoWhatsApp(res.whatsapp_comercial);
         }
       })
       .catch(() => {});
@@ -64,8 +71,9 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({ proposal
       }),
     }).catch(() => {});
 
+    const cleanPhone = (yagoWhatsApp || '5511945987666').replace(/\D/g, '');
     const msg = `Olá Yago Duarte! Vi a proposta comercial para "${proposal.cliente_nome}" no valor de R$ ${proposal.implantacao.toFixed(2)} e aprovei os termos! Como podemos dar início?`;
-    const url = `https://wa.me/${yagoWhatsApp}?text=${encodeURIComponent(msg)}`;
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
   };
 

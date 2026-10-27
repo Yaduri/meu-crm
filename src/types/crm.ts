@@ -271,7 +271,7 @@ export interface CrmSettings {
 
 export const DEFAULT_CRM_SETTINGS: CrmSettings = {
   nomeProfissional: 'Yago Duarte',
-  whatsappComercial: '5511911300834',
+  whatsappComercial: '5511945987666',
   chavePix: '',
   implantacaoPadrao: 1200,
   mensalidadePadrao: 89,

@@ -142,7 +142,7 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
                       type="text"
                       value={formData.whatsappComercial}
                       onChange={(e) => setFormData({ ...formData, whatsappComercial: e.target.value })}
-                      placeholder="5511911300834"
+                      placeholder="5511945987666"
                       className="w-full bg-[#18181b] border border-[#27272a] rounded-xl pl-9 pr-3 py-2 text-zinc-100 placeholder:text-zinc-400 font-mono focus:outline-hidden focus:border-emerald-500"
                     />
                   </div>

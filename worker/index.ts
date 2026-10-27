@@ -327,9 +327,20 @@ app.get('/api/proposals/:token', async (c) => {
   if (!row) {
     return c.json({ success: false, error: 'Proposta não encontrada' }, 404);
   }
+
+  let whatsappComercial = '5511945987666';
+  try {
+    const settingsRow = await c.env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'settings'").first<{ value: string }>();
+    if (settingsRow) {
+      const s = JSON.parse(settingsRow.value);
+      if (s.whatsappComercial) whatsappComercial = s.whatsappComercial;
+    }
+  } catch {}
+
   return c.json({
     success: true,
-    proposal: JSON.parse(row.data_json)
+    proposal: JSON.parse(row.data_json),
+    whatsapp_comercial: whatsappComercial,
   });
 });
 
@@ -388,9 +399,20 @@ app.get('/api/briefings/:token', async (c) => {
   if (!row) {
     return c.json({ success: false, error: 'Briefing não encontrado' }, 404);
   }
+
+  let whatsappComercial = '5511945987666';
+  try {
+    const settingsRow = await c.env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'settings'").first<{ value: string }>();
+    if (settingsRow) {
+      const s = JSON.parse(settingsRow.value);
+      if (s.whatsappComercial) whatsappComercial = s.whatsappComercial;
+    }
+  } catch {}
+
   return c.json({
     success: true,
-    briefing: JSON.parse(row.data_json)
+    briefing: JSON.parse(row.data_json),
+    whatsapp_comercial: whatsappComercial,
   });
 });
 

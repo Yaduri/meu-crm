@@ -850,7 +850,7 @@ export function App() {
       token: pToken,
       lead_id: matchedLead?.id || 'lead-1',
       cliente_nome: clientName,
-      cliente_whatsapp: matchedLead?.whatsapp || '11911300834',
+      cliente_whatsapp: matchedLead?.whatsapp || settings.whatsappComercial || '11945987666',
       nicho: clientNicho,
       titulo_proposta: `Landing Page de Alta Conversão para ${clientName}`,
       apresentacao: `Apresentamos uma proposta completa para posicionar a marca ${clientName} com máxima autoridade na web e atrair clientes qualificados diretamente para o seu WhatsApp.`,
@@ -877,7 +877,7 @@ export function App() {
 
     return (
       <Suspense fallback={<div className="min-h-screen bg-[#09090b] flex items-center justify-center text-zinc-400 text-sm">Carregando proposta...</div>}>
-        <PublicProposalView proposal={foundProposal} />
+        <PublicProposalView proposal={foundProposal} whatsappComercial={settings.whatsappComercial} />
       </Suspense>
     );
   }
@@ -898,7 +898,7 @@ export function App() {
       diferenciais: '',
       cores_preferidas: '',
       sites_referencia: '',
-      whatsapp_atendimento: firstLead?.whatsapp || '11911300834',
+      whatsapp_atendimento: firstLead?.whatsapp || settings.whatsappComercial || '11945987666',
       instagram: firstLead?.instagram || '',
       endereco_fisico: '',
       link_arquivos: '',
@@ -909,7 +909,11 @@ export function App() {
 
     return (
       <Suspense fallback={<div className="min-h-screen bg-[#09090b] flex items-center justify-center text-zinc-400 text-sm">Carregando briefing...</div>}>
-        <PublicBriefingView initialData={foundBriefing} onSaveBriefing={handleUpdateBriefing} />
+        <PublicBriefingView 
+          initialData={foundBriefing} 
+          onSaveBriefing={handleUpdateBriefing} 
+          whatsappComercial={settings.whatsappComercial} 
+        />
       </Suspense>
     );
   }

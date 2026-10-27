@@ -13,17 +13,18 @@ import {
 interface PublicBriefingViewProps {
   initialData: BriefingData;
   onSaveBriefing: (updated: BriefingData) => void;
+  whatsappComercial?: string;
 }
 
 export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({ 
   initialData, 
-  onSaveBriefing 
+  onSaveBriefing,
+  whatsappComercial,
 }) => {
   const [formData, setFormData] = useState<BriefingData>(initialData);
   const [submitted, setSubmitted] = useState(initialData.preenchido || false);
   const [uploadingFile, setUploadingFile] = useState(false);
-
-  const yagoWhatsApp = '5511911300834';
+  const [yagoWhatsApp, setYagoWhatsApp] = useState<string>(whatsappComercial || '5511945987666');
 
   React.useEffect(() => {
     document.title = `Briefing do Projeto · ${initialData.cliente_nome} | Yago Duarte`;
@@ -34,9 +35,12 @@ export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({
           setFormData(res.briefing);
           if (res.briefing.preenchido) setSubmitted(true);
         }
+        if (res.whatsapp_comercial) {
+          setYagoWhatsApp(res.whatsapp_comercial);
+        }
       })
       .catch(() => {});
-  }, [initialData.token]);
+  }, [initialData.token, initialData.cliente_nome]);
 
   const handleChange = (field: keyof BriefingData, value: string) => {
     setFormData(prev => ({
@@ -89,8 +93,9 @@ export const PublicBriefingView: React.FC<PublicBriefingViewProps> = ({
   };
 
   const handleNotifyWhatsApp = () => {
+    const cleanPhone = (yagoWhatsApp || '5511945987666').replace(/\D/g, '');
     const msg = `Olá Yago Duarte! Acabei de preencher e enviar o briefing do projeto "${formData.nome_empresa || formData.cliente_nome}"!`;
-    const url = `https://wa.me/${yagoWhatsApp}?text=${encodeURIComponent(msg)}`;
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
     window.open(url, '_blank');
   };
 
