@@ -1372,24 +1372,26 @@ app.post('/api/whatsapp/sync', async (c) => {
         }
       }
 
-      // Executa inserções em lotes de até 50 (limite seguro do Cloudflare D1 batch)
-      for (let i = 0; i < statements.length; i += 50) {
-        const chunk = statements.slice(i, i + 50);
-        await c.env.DB.batch(chunk);
-      }
-
-      // Atualiza ultimo_contato dos leads impactados
+      // Inclui atualização de ultimo_contato dos leads impactados no mesmo lote de batch
       for (const [leadId, contactTime] of leadsToUpdate.entries()) {
         const leadRow = allLeads.results.find((l) => l.id === leadId);
         if (leadRow) {
           try {
             const ld = JSON.parse(leadRow.data_json || '{}');
             ld.ultimo_contato = contactTime;
-            await c.env.DB.prepare(
-              'UPDATE leads SET data_json = ?, updated_at = ? WHERE id = ?'
-            ).bind(JSON.stringify(ld), contactTime, leadId).run();
+            statements.push(
+              c.env.DB.prepare(
+                'UPDATE leads SET data_json = ?, updated_at = ? WHERE id = ?'
+              ).bind(JSON.stringify(ld), contactTime, leadId)
+            );
           } catch {}
         }
+      }
+
+      // Executa inserções e atualizações em lotes de até 50 (limite seguro do Cloudflare D1 batch)
+      for (let i = 0; i < statements.length; i += 50) {
+        const chunk = statements.slice(i, i + 50);
+        await c.env.DB.batch(chunk);
       }
     }
 
