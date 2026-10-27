@@ -855,7 +855,7 @@ export function App() {
       titulo_proposta: `Landing Page de Alta Conversão para ${clientName}`,
       apresentacao: `Apresentamos uma proposta completa para posicionar a marca ${clientName} com máxima autoridade na web e atrair clientes qualificados diretamente para o seu WhatsApp.`,
       itens: [
-        { id: '1', titulo: 'Design Exclusivo no Figma', descricao: 'Layout sob medida criado para a sua identidade visual antes da programação.', incluso: true },
+        { id: '1', titulo: 'Design Visual Exclusivo', descricao: 'Layout moderno e sob medida criado exclusivamente para a identidade da sua marca.', incluso: true },
         { id: '2', titulo: 'Copywriting Estratégico Persuasivo', descricao: 'Textos orientados a conversão e estruturados para quebrar objeções do cliente.', incluso: true },
         { id: '3', titulo: 'Desenvolvimento Responsivo Ultra Rápido', descricao: 'Código limpo, seguro e com carregamento instantâneo em smartphones e PCs.', incluso: true },
         { id: '4', titulo: 'Botão Flutuante de WhatsApp Direto', descricao: 'Chamadas para ação integradas com mensagem de contato pré-formatada.', incluso: true },

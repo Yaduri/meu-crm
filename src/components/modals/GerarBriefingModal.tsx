@@ -306,7 +306,7 @@ export const GerarBriefingModal: React.FC<GerarBriefingModalProps> = ({
                   <span>Gerador de Copy & Estrutura da Landing Page (Gemini IA)</span>
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  Transforma o briefing em Headline, Dobras da LP, FAQ e Paleta Hex prontos para o Figma ou código.
+                  Transforma o briefing em Headline, Dobras da LP, FAQ e Paleta Hex prontos para a criação do site.
                 </p>
               </div>
 

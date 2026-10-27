@@ -155,20 +155,25 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
           </div>
 
           <div className="grid md:grid-cols-2 gap-3.5">
-            {proposal.itens.map((item) => (
-              <div 
-                key={item.id}
-                className="p-4 bg-[#121215] border border-[#27272a] rounded-xl flex items-start gap-3 hover:border-zinc-700 transition-colors"
-              >
-                <div className="p-1 rounded-full bg-emerald-500/10 text-emerald-400 mt-0.5 shrink-0">
-                  <CheckCircle2 size={16} />
+            {proposal.itens.map((item) => {
+              const displayTitle = item.titulo.replace(/\s*no Figma\b/gi, '').replace(/\bFigma\b/gi, 'Design');
+              const displayDesc = item.descricao.replace(/\s*no Figma\b/gi, '').replace(/\bFigma\b/gi, 'Layout');
+
+              return (
+                <div 
+                  key={item.id}
+                  className="p-4 bg-[#121215] border border-[#27272a] rounded-xl flex items-start gap-3 hover:border-zinc-700 transition-colors"
+                >
+                  <div className="p-1 rounded-full bg-emerald-500/10 text-emerald-400 mt-0.5 shrink-0">
+                    <CheckCircle2 size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm text-zinc-100">{displayTitle}</h3>
+                    <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">{displayDesc}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-zinc-100">{item.titulo}</h3>
-                  <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">{item.descricao}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -189,7 +194,7 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
             <div className="p-3.5 bg-[#18181b] rounded-xl border border-zinc-800/80">
               <div className="font-mono text-emerald-400 font-bold mb-1">Passo 02</div>
               <div className="font-semibold text-zinc-200 text-sm">Design & Aprovação</div>
-              <p className="text-zinc-400 mt-1">Criação do layout exclusivo no Figma para você aprovar o visual antes da programação.</p>
+              <p className="text-zinc-400 mt-1">Criação do layout visual exclusivo e personalizado para você aprovar o design antes da publicação final.</p>
             </div>
 
             <div className="p-3.5 bg-[#18181b] rounded-xl border border-zinc-800/80">

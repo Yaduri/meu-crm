@@ -199,7 +199,7 @@ export const ETAPAS_PROJETO: { id: EtapaProjeto; label: string; color: string }[
 export const CHECKLIST_PADRAO_LP: string[] = [
   'Receber logo e identidade visual',
   'Coletar textos e depoimentos',
-  'Wireframe e Layout no Figma',
+  'Wireframe e Estrutura do Layout',
   'Aprovação do design pelo cliente',
   'Desenvolvimento front-end responsivo',
   'Configuração de botão WhatsApp e formulários',

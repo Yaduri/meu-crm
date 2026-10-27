@@ -482,7 +482,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-zinc-300 font-medium mb-1">Link da Prévia (Figma / Web)</label>
+              <label className="block text-zinc-300 font-medium mb-1">Link da Prévia (Online / Web)</label>
               <input
                 type="url"
                 value={linkPrevia}

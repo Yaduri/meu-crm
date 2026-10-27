@@ -643,7 +643,7 @@ Retorne APENAS um JSON válido com a seguinte estrutura exata:
   "titulo_proposta": "Título forte e específico para o cliente e seu nicho",
   "apresentacao": "Parágrafo persuasivo de 3 a 4 linhas mostrando como a nova estrutura web vai posicionar a marca como referência em seu nicho e transformar visitantes em clientes qualificados no WhatsApp.",
   "itens": [
-    { "id": "1", "titulo": "Design Exclusivo no Figma", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },
+    { "id": "1", "titulo": "Design Visual Exclusivo", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },
     { "id": "2", "titulo": "Copywriting Persuasivo para o Nicho", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },
     { "id": "3", "titulo": "Desenvolvimento Mobile-First Ultra Rápido", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },
     { "id": "4", "titulo": "Funil Direto para Agendamento no WhatsApp", "descricao": "Descrição adaptada ao nicho do cliente", "incluso": true },

@@ -275,12 +275,12 @@ export const ProjetosView: React.FC<ProjetosViewProps> = ({
               <div className="text-xs font-semibold text-zinc-200">Links do Projeto</div>
               
               <div>
-                <label className="block text-[11px] text-zinc-400 mb-1">Link Figma / Wireframe</label>
+                <label className="block text-[11px] text-zinc-400 mb-1">Link do Layout / Wireframe</label>
                 <input
                   type="url"
                   value={selectedProject.link_figma || ''}
                   onChange={(e) => onUpdateProjectLinks(selectedProject.id, { figma: e.target.value })}
-                  placeholder="https://figma.com/..."
+                  placeholder="https://..."
                   className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
                 />
               </div>
