@@ -12,6 +12,7 @@ import {
   UploadCloud,
   DownloadCloud,
   Smartphone,
+  MessageSquare,
   X
 } from 'lucide-react';
 import type { WhatsAppBridgeStatus } from '../../types/crm';
@@ -51,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navItems = [
     { id: 'hoje', label: 'Hoje', icon: Calendar, badge: counts.hoje },
     { id: 'prospeccao', label: 'Prospecção', icon: Users, badge: counts.prospeccao },
+    { id: 'conversas', label: 'Conversas', icon: MessageSquare },
     { id: 'projetos', label: 'Projetos', icon: FolderKanban, badge: counts.projetos },
     { id: 'carteira', label: 'Carteira', icon: Wallet, badge: counts.carteira },
     { id: 'financeiro', label: 'Financeiro', icon: DollarSign },

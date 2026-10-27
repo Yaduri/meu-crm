@@ -8,6 +8,7 @@ import { exportLeadsToCsv } from './lib/csvMigration';
 import { extractFirstMessageFromScript } from './utils/conversationScript';
 
 const ProspeccaoView = lazy(() => import('./components/views/ProspeccaoView').then(m => ({ default: m.ProspeccaoView })));
+const ConversasView = lazy(() => import('./components/views/ConversasView').then(m => ({ default: m.ConversasView })));
 const ProjetosView = lazy(() => import('./components/views/ProjetosView').then(m => ({ default: m.ProjetosView })));
 const FinanceiroView = lazy(() => import('./components/views/FinanceiroView').then(m => ({ default: m.FinanceiroView })));
 const CarteiraView = lazy(() => import('./components/views/CarteiraView').then(m => ({ default: m.CarteiraView })));
@@ -970,6 +971,7 @@ export function App() {
   const viewTitles: Record<string, string> = {
     hoje: 'Hoje',
     prospeccao: 'Prospecção',
+    conversas: 'Conversas',
     projetos: 'Projetos',
     carteira: 'Carteira',
     financeiro: 'Financeiro',
@@ -1101,6 +1103,19 @@ export function App() {
               });
               setIsModalOpen(true);
             }}
+          />
+        )}
+
+        {currentView === 'conversas' && (
+          <ConversasView
+            leads={leads}
+            whatsAppStatus={whatsAppStatus}
+            onOpenWhatsAppModal={() => setIsWhatsAppModalOpen(true)}
+            onEditLead={(lead) => {
+              setEditingLead(lead);
+              setIsModalOpen(true);
+            }}
+            onOpenProposta={(lead) => setSelectedProposalLead(lead)}
           />
         )}
 

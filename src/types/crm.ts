@@ -57,6 +57,20 @@ export interface WhatsAppMessage {
   created_at: string;
 }
 
+export interface WhatsAppConversationSummary {
+  lead_id: string;
+  lead_nome: string;
+  lead_nicho: string;
+  whatsapp: string;
+  last_message: {
+    body: string;
+    timestamp: number;
+    from_me: number;
+    status: string;
+    created_at: string;
+  };
+}
+
 export interface WhatsAppBridgeStatus {
   connected: boolean;
   status: 'connected' | 'qr_ready' | 'connecting' | 'disconnected' | 'offline' | 'error';

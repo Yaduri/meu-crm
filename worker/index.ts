@@ -956,6 +956,66 @@ app.get('/api/whatsapp/chat/:leadId', async (c) => {
   }
 });
 
+// Lista de conversas ativas agrupadas por lead (para a aba estilo WhatsApp Web)
+app.get('/api/whatsapp/conversations', async (c) => {
+  try {
+    const rawConversations = await c.env.DB.prepare(
+      `SELECT m.lead_id, m.whatsapp, m.from_me, m.body, m.timestamp, m.status, m.created_at
+       FROM whatsapp_messages m
+       INNER JOIN (
+         SELECT lead_id, MAX(timestamp) as max_ts
+         FROM whatsapp_messages
+         GROUP BY lead_id
+       ) latest ON m.lead_id = latest.lead_id AND m.timestamp = latest.max_ts
+       ORDER BY m.timestamp DESC`
+    ).all<{
+      lead_id: string;
+      whatsapp: string;
+      from_me: number;
+      body: string;
+      timestamp: number;
+      status: string;
+      created_at: string;
+    }>();
+
+    const allLeads = await c.env.DB.prepare(
+      'SELECT id, nome, nicho, data_json FROM leads'
+    ).all<{ id: string; nome: string; nicho: string; data_json: string }>();
+
+    const leadMap = new Map<string, { nome: string; nicho: string; raw: Record<string, unknown> }>();
+    for (const l of allLeads.results || []) {
+      let parsed = {};
+      try { parsed = JSON.parse(l.data_json || '{}'); } catch {}
+      leadMap.set(l.id, { nome: l.nome, nicho: l.nicho || 'Geral', raw: parsed });
+    }
+
+    const conversations = (rawConversations.results || []).map((item) => {
+      const info = leadMap.get(item.lead_id);
+      return {
+        lead_id: item.lead_id,
+        lead_nome: info?.nome || 'Lead sem nome',
+        lead_nicho: info?.nicho || 'Geral',
+        whatsapp: item.whatsapp,
+        last_message: {
+          body: item.body,
+          timestamp: item.timestamp,
+          from_me: item.from_me,
+          status: item.status,
+          created_at: item.created_at
+        }
+      };
+    });
+
+    return c.json({
+      success: true,
+      conversations
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao listar conversas';
+    return c.json({ error: message }, 500);
+  }
+});
+
 // Envia mensagem pelo CRM (enfileira para a ponte local disparar no WhatsApp)
 app.post('/api/whatsapp/send', async (c) => {
   try {

@@ -120,7 +120,7 @@ async function startWhatsApp() {
     auth: state,
     printQRInTerminal: false,
     generateHighQualityLinkPreview: false,
-    syncFullHistory: false
+    syncFullHistory: true
   });
 
   sock.ev.on('creds.update', saveCreds);
@@ -168,6 +168,48 @@ async function startWhatsApp() {
       console.log(`\n✅ WHATSAPP CONECTADO COM SUCESSO!`);
       console.log(`📱 Número Ativo: ${connectedPhone}`);
       console.log(`🔒 Filtro de Privacidade Ativo: Somente mensagens de leads serão sincronizadas.\n`);
+      triggerSyncImmediately();
+    }
+  });
+
+  // Captura histórico de mensagens prévias enviadas pelo celular
+  sock.ev.on('messaging-history.set', async ({ chats, contacts, messages, isLatest }) => {
+    if (!messages || !Array.isArray(messages)) return;
+    console.log(`📥 Recebido lote de histórico do celular: ${messages.length} mensagens no total.`);
+
+    let leadMessagesFound = 0;
+    for (const msg of messages) {
+      if (!msg.key || !msg.key.remoteJid) continue;
+      const jid = msg.key.remoteJid;
+
+      if (jid.endsWith('@g.us') || jid.endsWith('@broadcast') || jid === 'status@broadcast') {
+        continue;
+      }
+
+      const rawPhone = jid.replace('@s.whatsapp.net', '');
+      const cleaned = cleanPhone(rawPhone);
+
+      if (!leadsPhoneCache.has(cleaned)) {
+        continue;
+      }
+
+      const text = extractMessageText(msg);
+      if (!text || !text.trim()) continue;
+
+      const fromMe = !!msg.key.fromMe;
+      leadMessagesFound++;
+
+      incomingQueue.push({
+        id: msg.key.id || `hist_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        phone: cleaned,
+        body: text.trim(),
+        timestamp: (msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now()),
+        from_me: fromMe
+      });
+    }
+
+    if (leadMessagesFound > 0) {
+      console.log(`✨ Encontradas ${leadMessagesFound} mensagens de leads no histórico do seu WhatsApp! Sincronizando com o CRM...`);
       triggerSyncImmediately();
     }
   });
