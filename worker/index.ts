@@ -1261,37 +1261,54 @@ app.post('/api/whatsapp/sync', async (c) => {
       }
     }
 
-    // 5. Processa mensagens recebidas (se houver)
+    // 5. Processa mensagens recebidas (se houver) com batching para alta performance
     if (body.incoming_messages && body.incoming_messages.length > 0) {
+      const statements: D1PreparedStatement[] = [];
+      const leadsToUpdate = new Map<string, string>(); // leadId -> isoNow
+
       for (const msg of body.incoming_messages) {
         const cleaned = cleanPhoneDigits(msg.phone);
         const match = phoneToLeadMap.get(cleaned);
         if (match) {
-          await c.env.DB.prepare(
-            `INSERT OR IGNORE INTO whatsapp_messages (id, lead_id, whatsapp, from_me, body, timestamp, status, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-          ).bind(
-            msg.id,
-            match.leadId,
-            cleaned,
-            msg.from_me ? 1 : 0,
-            msg.body,
-            msg.timestamp,
-            'received',
-            isoNow
-          ).run();
+          statements.push(
+            c.env.DB.prepare(
+              `INSERT OR IGNORE INTO whatsapp_messages (id, lead_id, whatsapp, from_me, body, timestamp, status, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+            ).bind(
+              msg.id,
+              match.leadId,
+              cleaned,
+              msg.from_me ? 1 : 0,
+              msg.body,
+              msg.timestamp,
+              'received',
+              isoNow
+            )
+          );
 
-          // Se a mensagem veio do lead, atualiza o ultimo contato
           if (!msg.from_me) {
-            const leadRow = allLeads.results.find(l => l.id === match.leadId);
-            if (leadRow) {
-              const ld = JSON.parse(leadRow.data_json || '{}');
-              ld.ultimo_contato = isoNow;
-              await c.env.DB.prepare(
-                'UPDATE leads SET data_json = ?, updated_at = ? WHERE id = ?'
-              ).bind(JSON.stringify(ld), isoNow, match.leadId).run();
-            }
+            leadsToUpdate.set(match.leadId, isoNow);
           }
+        }
+      }
+
+      // Executa inserções em lotes de até 50 (limite seguro do Cloudflare D1 batch)
+      for (let i = 0; i < statements.length; i += 50) {
+        const chunk = statements.slice(i, i + 50);
+        await c.env.DB.batch(chunk);
+      }
+
+      // Atualiza ultimo_contato dos leads impactados
+      for (const [leadId, contactTime] of leadsToUpdate.entries()) {
+        const leadRow = allLeads.results.find((l) => l.id === leadId);
+        if (leadRow) {
+          try {
+            const ld = JSON.parse(leadRow.data_json || '{}');
+            ld.ultimo_contato = contactTime;
+            await c.env.DB.prepare(
+              'UPDATE leads SET data_json = ?, updated_at = ? WHERE id = ?'
+            ).bind(JSON.stringify(ld), contactTime, leadId).run();
+          } catch {}
         }
       }
     }

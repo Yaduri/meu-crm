@@ -21,6 +21,7 @@ export const LeadWhatsAppChat: React.FC<LeadWhatsAppChatProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isUserScrolledUpRef = useRef<boolean>(false);
   const prevLeadIdRef = useRef<string | null>(null);
+  const prevMessagesCountRef = useRef<number>(0);
 
   const cleanPhone = (lead.whatsapp || '').replace(/\D/g, '');
   const scriptSteps = parseConversationScript(lead.msg_a_mandar || '');
@@ -29,7 +30,7 @@ export const LeadWhatsAppChat: React.FC<LeadWhatsAppChatProps> = ({
     if (!scrollContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    isUserScrolledUpRef.current = distanceFromBottom > 90;
+    isUserScrolledUpRef.current = distanceFromBottom > 60;
   };
 
   const fetchChat = async (isSilent = false) => {
@@ -68,6 +69,9 @@ export const LeadWhatsAppChat: React.FC<LeadWhatsAppChatProps> = ({
     const isNewLead = prevLeadIdRef.current !== lead.id;
     prevLeadIdRef.current = lead.id;
 
+    const countChanged = messages.length > prevMessagesCountRef.current;
+    prevMessagesCountRef.current = messages.length;
+
     if (isNewLead) {
       isUserScrolledUpRef.current = false;
       setTimeout(() => {
@@ -76,7 +80,8 @@ export const LeadWhatsAppChat: React.FC<LeadWhatsAppChatProps> = ({
       return;
     }
 
-    if (!isUserScrolledUpRef.current) {
+    // Só scrolla se realmente chegou mensagem nova e usuário não está lendo histórico acima
+    if (countChanged && !isUserScrolledUpRef.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, lead.id]);

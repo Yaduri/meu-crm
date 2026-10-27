@@ -49,12 +49,13 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isUserScrolledUpRef = useRef<boolean>(false);
   const prevLeadIdRef = useRef<string | null>(null);
+  const prevMessagesCountRef = useRef<number>(0);
 
   const handleScroll = () => {
     if (!scrollContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    isUserScrolledUpRef.current = distanceFromBottom > 90;
+    isUserScrolledUpRef.current = distanceFromBottom > 60;
   };
 
   // Fetch all conversation summaries
@@ -126,6 +127,9 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
     const isNewLead = prevLeadIdRef.current !== selectedLeadId;
     prevLeadIdRef.current = selectedLeadId;
 
+    const countChanged = messages.length > prevMessagesCountRef.current;
+    prevMessagesCountRef.current = messages.length;
+
     if (isNewLead) {
       isUserScrolledUpRef.current = false;
       setTimeout(() => {
@@ -134,7 +138,8 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
       return;
     }
 
-    if (!isUserScrolledUpRef.current) {
+    // Só scrolla se realmente chegou mensagem NOVA e o usuário não está lendo mensagens antigas
+    if (countChanged && !isUserScrolledUpRef.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, selectedLeadId]);
