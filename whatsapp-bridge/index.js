@@ -1,7 +1,8 @@
 import makeWASocket, {
   DisconnectReason,
   useMultiFileAuthState,
-  fetchLatestBaileysVersion
+  fetchLatestBaileysVersion,
+  normalizeMessageContent
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import qrcodeTerminal from 'qrcode-terminal';
@@ -133,13 +134,24 @@ function loadLeadsCacheFromDisk() {
 }
 
 function extractMessageText(msg) {
-  if (!msg || !msg.message) return '';
-  const m = msg.message;
+  if (!msg) return '';
+  const normalized = normalizeMessageContent(msg.message);
+  if (!normalized) {
+    if (msg.messageStubType) return '[Evento no chat]';
+    return '';
+  }
+  const m = normalized;
   return (
     m.conversation ||
     m.extendedTextMessage?.text ||
     m.imageMessage?.caption ||
+    (m.imageMessage ? '[Imagem]' : '') ||
     m.videoMessage?.caption ||
+    (m.videoMessage ? '[Vídeo]' : '') ||
+    (m.audioMessage ? '[Áudio]' : '') ||
+    (m.documentMessage?.title || (m.documentMessage ? '[Documento]' : '')) ||
+    (m.stickerMessage ? '[Figurinha]' : '') ||
+    (m.contactMessage ? '[Contato]' : '') ||
     m.templateButtonReplyMessage?.selectedId ||
     m.buttonsResponseMessage?.selectedButtonId ||
     ''
@@ -317,6 +329,29 @@ async function startWhatsApp() {
         timestamp: (msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now()),
         from_me: fromMe
       });
+    }
+
+    // Se houver conversas no chats do WhatsApp de leads cujo texto de mensagens individuais
+    // não pôde ser decifrado por chaves antigas (Bad MAC), garante que a conversa apareça no CRM
+    if (chats && Array.isArray(chats)) {
+      for (const chat of chats) {
+        const cleaned = resolvePhoneFromJid(chat.id);
+        if (cleaned && leadsPhoneCache.has(cleaned)) {
+          const leadInfo = leadsMap.get(cleaned);
+          const leadLabel = `${leadInfo?.nome || cleaned} (${cleaned})`;
+          if (!matchedLeadNames.has(leadLabel)) {
+            matchedLeadNames.add(leadLabel);
+            leadMessagesFound++;
+            incomingQueue.push({
+              id: `chat_init_${chat.id}_${chat.conversationTimestamp || Date.now()}`,
+              phone: cleaned,
+              body: '[Conversa no WhatsApp]',
+              timestamp: (chat.conversationTimestamp ? Number(chat.conversationTimestamp) * 1000 : Date.now()),
+              from_me: true
+            });
+          }
+        }
+      }
     }
 
     if (leadMessagesFound > 0) {
