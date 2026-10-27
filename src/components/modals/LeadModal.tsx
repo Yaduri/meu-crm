@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
 import { parseConversationScript } from '../../utils/conversationScript';
+import { LeadWhatsAppChat } from '../whatsapp/LeadWhatsAppChat';
 import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste, MessageSquare, Clock, Copy, Check, Send } from 'lucide-react';
 
 interface LeadModalProps {
@@ -48,6 +49,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   const [magicLoading, setMagicLoading] = useState(false);
   const [copiedStepIdx, setCopiedStepIdx] = useState<number | null>(null);
   const [scriptViewMode, setScriptViewMode] = useState<'steps' | 'raw'>('steps');
+  const [modalTab, setModalTab] = useState<'dados' | 'whatsapp'>('dados');
 
   const handleParseRawLeadAI = async () => {
     if (!rawPasteText.trim()) return;
@@ -235,8 +237,51 @@ export const LeadModal: React.FC<LeadModalProps> = ({
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs">
+        {/* Modal Tabs when editing existing lead */}
+        {initialLead && (
+          <div className="flex items-center gap-2 px-5 sm:px-6 py-2.5 bg-[#121215] border-b border-[#27272a] shrink-0">
+            <button
+              type="button"
+              onClick={() => setModalTab('dados')}
+              className={`min-h-[32px] px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                modalTab === 'dados'
+                  ? 'bg-[#27272f] text-zinc-100 shadow-xs'
+                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#18181b]'
+              }`}
+            >
+              Dados Cadastrais
+            </button>
+            <button
+              type="button"
+              onClick={() => setModalTab('whatsapp')}
+              className={`min-h-[32px] px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                modalTab === 'whatsapp'
+                  ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30'
+                  : 'text-zinc-400 hover:text-emerald-400 hover:bg-[#18181b]'
+              }`}
+            >
+              <MessageSquare size={13} />
+              <span>Chat WhatsApp</span>
+            </button>
+          </div>
+        )}
+
+        {/* Form Body or WhatsApp Live Chat */}
+        {modalTab === 'whatsapp' && initialLead ? (
+          <div className="p-5 flex-1 overflow-hidden flex flex-col">
+            <LeadWhatsAppChat lead={initialLead} />
+            <div className="flex justify-end pt-4 border-t border-[#27272a] mt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="min-h-[38px] px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors cursor-pointer"
+              >
+                Concluir e Fechar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs">
           {/* Magic Paste Box (Feature #6) */}
           <div className="p-3 bg-[#18181b] border border-emerald-500/30 rounded-xl space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -732,6 +777,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
             </div>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

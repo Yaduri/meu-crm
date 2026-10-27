@@ -11,8 +11,10 @@ import {
   Plus,
   UploadCloud,
   DownloadCloud,
+  Smartphone,
   X
 } from 'lucide-react';
+import type { WhatsAppBridgeStatus } from '../../types/crm';
 
 interface SidebarProps {
   currentView: string;
@@ -27,6 +29,8 @@ interface SidebarProps {
   onOpenMigration: () => void;
   onExportCsv: () => void;
   onOpenCommandPalette?: () => void;
+  onOpenWhatsApp?: () => void;
+  whatsAppStatus?: WhatsAppBridgeStatus | null;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;
 }
@@ -39,6 +43,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenMigration,
   onExportCsv,
   onOpenCommandPalette,
+  onOpenWhatsApp,
+  whatsAppStatus,
   isOpenMobile = false,
   onCloseMobile,
 }) => {
@@ -155,6 +161,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
             );
           })}
         </nav>
+
+        {/* WhatsApp Bridge Live Status */}
+        {onOpenWhatsApp && (
+          <div className="p-3 border-t border-[#27272a]">
+            <button
+              type="button"
+              onClick={() => {
+                onOpenWhatsApp();
+                onCloseMobile?.();
+              }}
+              className="w-full min-h-[38px] flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#18181b] hover:bg-[#1f1f23] border border-[#27272a] text-xs transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <Smartphone size={14} className={whatsAppStatus?.connected ? 'text-emerald-400' : whatsAppStatus?.online ? 'text-amber-400' : 'text-zinc-500'} />
+                <span className="font-semibold text-zinc-200">WhatsApp</span>
+              </div>
+              {whatsAppStatus?.connected ? (
+                <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded-md">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Ativo
+                </span>
+              ) : whatsAppStatus?.online && whatsAppStatus.status === 'qr_ready' ? (
+                <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-400 bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.5 rounded-md">
+                  Escanear QR
+                </span>
+              ) : (
+                <span className="text-[10px] font-medium text-zinc-500 bg-[#27272a] px-1.5 py-0.5 rounded-md">
+                  Offline
+                </span>
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Migration & Backup Tools */}
         <div className="p-3 border-t border-[#27272a] space-y-1.5">

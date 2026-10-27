@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ClientLead, Project, MonthlyInvoice, Installment } from '../../types/crm';
 import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
 import { parseConversationScript } from '../../utils/conversationScript';
+import { LeadWhatsAppChat } from '../whatsapp/LeadWhatsAppChat';
 import { 
   Send, 
   Clock, 
@@ -40,6 +41,7 @@ interface HojeViewProps {
   onOpenProposta?: (lead: ClientLead) => void;
   onEditLead?: (lead: ClientLead) => void;
   onUpdateLeadMessage?: (leadId: string, newMessage: string) => void;
+  onOpenWhatsAppModal?: () => void;
 }
 
 export const HojeView: React.FC<HojeViewProps> = ({
@@ -56,8 +58,10 @@ export const HojeView: React.FC<HojeViewProps> = ({
   onOpenProposta,
   onEditLead,
   onUpdateLeadMessage,
+  onOpenWhatsAppModal,
 }) => {
   const [mobilePane, setMobilePane] = useState<'queue' | 'detail'>('queue');
+  const [centerMode, setCenterMode] = useState<'script' | 'chat'>('script');
   const [aiLoadingIntent, setAiLoadingIntent] = useState<string | null>(null);
   const [showObjectionBox, setShowObjectionBox] = useState(false);
   const [objectionText, setObjectionText] = useState('');
@@ -504,8 +508,36 @@ export const HojeView: React.FC<HojeViewProps> = ({
                 </div>
               </div>
 
-              {/* Action Box: Mensagem Pronta + Copiloto IA + Disparo */}
-              <div className="bg-[#121215] border border-emerald-500/30 rounded-2xl p-4 sm:p-5 shadow-lg shadow-black/40">
+              {/* Mode Switcher: Roteiro vs Chat ao Vivo */}
+              <div className="flex items-center gap-1.5 p-1 bg-[#121215] border border-[#27272a] rounded-xl w-fit">
+                <button
+                  type="button"
+                  onClick={() => setCenterMode('script')}
+                  className={`min-h-[30px] px-3 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                    centerMode === 'script' ? 'bg-[#27272f] text-zinc-100 shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
+                  }`}
+                >
+                  ⚡ Roteiro do 1º Contato
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCenterMode('chat')}
+                  className={`min-h-[30px] px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                    centerMode === 'chat' ? 'bg-emerald-600/20 text-emerald-300 border border-emerald-500/30' : 'text-zinc-400 hover:text-emerald-400'
+                  }`}
+                >
+                  <MessageSquare size={13} />
+                  <span>Conversa no WhatsApp (Live)</span>
+                </button>
+              </div>
+
+              {centerMode === 'chat' ? (
+                <div>
+                  <LeadWhatsAppChat lead={selectedLead} onOpenWhatsAppModal={onOpenWhatsAppModal} />
+                </div>
+              ) : (
+                /* Action Box: Mensagem Pronta + Copiloto IA + Disparo */
+                <div className="bg-[#121215] border border-emerald-500/30 rounded-2xl p-4 sm:p-5 shadow-lg shadow-black/40">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2">
                     <Send size={15} className="text-emerald-400" />
@@ -762,6 +794,7 @@ export const HojeView: React.FC<HojeViewProps> = ({
                   </div>
                 </div>
               </div>
+              )}
 
               {/* Raio-X Comercial & Roteiro de Áudio de 20s (Feature #4) */}
               <div className="bg-[#121215] border border-[#27272a] rounded-2xl p-4 sm:p-5">

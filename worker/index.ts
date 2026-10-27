@@ -865,6 +865,303 @@ app.post('/api/telegram/summary', async (c) => {
   }
 });
 
+// ==========================================
+// INTEGRAÇÃO WHATSAPP (PONTE LOCAL BAILEYS)
+// ==========================================
+
+function cleanPhoneDigits(raw: string): string {
+  return (raw || '').replace(/\D/g, '');
+}
+
+function getPhoneVariants(phone: string): string[] {
+  const digits = cleanPhoneDigits(phone);
+  if (!digits) return [];
+  const variants = new Set<string>();
+  variants.add(digits);
+
+  if (digits.startsWith('55') && digits.length >= 12) {
+    const without55 = digits.slice(2);
+    variants.add(without55);
+    if (without55.length === 11 && without55[2] === '9') {
+      variants.add(without55.slice(0, 2) + without55.slice(3));
+      variants.add('55' + without55.slice(0, 2) + without55.slice(3));
+    }
+  } else if (digits.length === 11 && digits[2] === '9') {
+    variants.add('55' + digits);
+    variants.add(digits.slice(0, 2) + digits.slice(3));
+    variants.add('55' + digits.slice(0, 2) + digits.slice(3));
+  } else if (digits.length === 10) {
+    variants.add('55' + digits);
+    variants.add(digits.slice(0, 2) + '9' + digits.slice(2));
+    variants.add('55' + digits.slice(0, 2) + '9' + digits.slice(2));
+  }
+
+  return Array.from(variants);
+}
+
+// Status da conexão do WhatsApp (verificado pelo frontend)
+app.get('/api/whatsapp/status', async (c) => {
+  try {
+    const session = await c.env.DB.prepare(
+      'SELECT status, phone, qr_code, last_ping, updated_at FROM whatsapp_session WHERE id = ?'
+    ).bind('default').first<{
+      status: string;
+      phone: string | null;
+      qr_code: string | null;
+      last_ping: number | null;
+      updated_at: string | null;
+    }>();
+
+    const now = Date.now();
+    const isOnline = !!(session?.last_ping && (now - session.last_ping < 20000));
+
+    return c.json({
+      connected: session?.status === 'connected' && isOnline,
+      status: isOnline ? (session?.status || 'disconnected') : 'offline',
+      phone: session?.phone || null,
+      qr_code: isOnline && session?.status === 'qr_ready' ? session.qr_code : null,
+      last_ping: session?.last_ping || null,
+      online: isOnline
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao consultar status';
+    return c.json({ connected: false, status: 'error', error: message }, 500);
+  }
+});
+
+// Histórico de mensagens trocadas com o lead
+app.get('/api/whatsapp/chat/:leadId', async (c) => {
+  const leadId = c.req.param('leadId');
+  try {
+    const messages = await c.env.DB.prepare(
+      'SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at FROM whatsapp_messages WHERE lead_id = ? ORDER BY timestamp ASC'
+    ).bind(leadId).all<{
+      id: string;
+      lead_id: string;
+      whatsapp: string;
+      from_me: number;
+      body: string;
+      timestamp: number;
+      status: string;
+      created_at: string;
+    }>();
+
+    return c.json({
+      success: true,
+      messages: messages.results || []
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao carregar mensagens';
+    return c.json({ error: message }, 500);
+  }
+});
+
+// Envia mensagem pelo CRM (enfileira para a ponte local disparar no WhatsApp)
+app.post('/api/whatsapp/send', async (c) => {
+  try {
+    const { leadId, text } = await c.req.json<{ leadId: string; text: string }>();
+    if (!leadId || !text || !text.trim()) {
+      return c.json({ error: 'Lead e texto são obrigatórios' }, 400);
+    }
+
+    const leadRow = await c.env.DB.prepare(
+      'SELECT id, nome, data_json FROM leads WHERE id = ?'
+    ).bind(leadId).first<{ id: string; nome: string; data_json: string }>();
+
+    if (!leadRow) {
+      return c.json({ error: 'Lead não encontrado' }, 404);
+    }
+
+    const leadData = JSON.parse(leadRow.data_json || '{}');
+    const rawPhone = leadData.whatsapp || leadData.telefone || '';
+    const phone = cleanPhoneDigits(rawPhone);
+    if (!phone) {
+      return c.json({ error: 'Lead não possui número de WhatsApp cadastrado' }, 400);
+    }
+
+    const now = Date.now();
+    const isoNow = new Date().toISOString();
+    const msgId = `msg_${now}_${Math.random().toString(36).substring(2, 8)}`;
+
+    // Salva no histórico de mensagens do CRM
+    await c.env.DB.prepare(
+      'INSERT INTO whatsapp_messages (id, lead_id, whatsapp, from_me, body, timestamp, status, created_at) VALUES (?, ?, ?, 1, ?, ?, ?, ?)'
+    ).bind(msgId, leadId, phone, text.trim(), now, 'pending', isoNow).run();
+
+    // Enfileira no outbox para a ponte disparar
+    await c.env.DB.prepare(
+      'INSERT INTO whatsapp_outbox (id, lead_id, whatsapp, body, status, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(msgId, leadId, phone, text.trim(), 'pending', isoNow).run();
+
+    // Atualiza ultimo_contato do lead
+    leadData.ultimo_contato = isoNow;
+    await c.env.DB.prepare(
+      'UPDATE leads SET data_json = ?, updated_at = ? WHERE id = ?'
+    ).bind(JSON.stringify(leadData), isoNow, leadId).run();
+
+    return c.json({
+      success: true,
+      messageId: msgId,
+      message: {
+        id: msgId,
+        lead_id: leadId,
+        whatsapp: phone,
+        from_me: 1,
+        body: text.trim(),
+        timestamp: now,
+        status: 'pending',
+        created_at: isoNow
+      }
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao enviar mensagem';
+    return c.json({ error: message }, 500);
+  }
+});
+
+// Sincronização entre a ponte local no PC e o Cloudflare D1
+app.post('/api/whatsapp/sync', async (c) => {
+  try {
+    const body = await c.req.json<{
+      status?: string;
+      phone?: string;
+      qr_code?: string | null;
+      sent_outbox_ids?: string[];
+      failed_outbox_ids?: Array<{ id: string; error?: string }>;
+      incoming_messages?: Array<{
+        id: string;
+        phone: string;
+        body: string;
+        timestamp: number;
+        from_me: boolean;
+      }>;
+    }>();
+
+    const now = Date.now();
+    const isoNow = new Date().toISOString();
+
+    // 1. Atualiza estado da sessão
+    if (body.status) {
+      await c.env.DB.prepare(
+        `INSERT INTO whatsapp_session (id, status, phone, qr_code, last_ping, updated_at)
+         VALUES ('default', ?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           status = excluded.status,
+           phone = COALESCE(excluded.phone, whatsapp_session.phone),
+           qr_code = excluded.qr_code,
+           last_ping = excluded.last_ping,
+           updated_at = excluded.updated_at`
+      ).bind(
+        body.status,
+        body.phone || null,
+        body.qr_code || null,
+        now,
+        isoNow
+      ).run();
+    }
+
+    // 2. Atualiza mensagens enviadas com sucesso
+    if (body.sent_outbox_ids && body.sent_outbox_ids.length > 0) {
+      for (const outboxId of body.sent_outbox_ids) {
+        await c.env.DB.prepare(
+          'UPDATE whatsapp_outbox SET status = ?, sent_at = ? WHERE id = ?'
+        ).bind('sent', isoNow, outboxId).run();
+
+        await c.env.DB.prepare(
+          'UPDATE whatsapp_messages SET status = ? WHERE id = ?'
+        ).bind('sent', outboxId).run();
+      }
+    }
+
+    // 3. Atualiza falhas de envio
+    if (body.failed_outbox_ids && body.failed_outbox_ids.length > 0) {
+      for (const item of body.failed_outbox_ids) {
+        await c.env.DB.prepare(
+          'UPDATE whatsapp_outbox SET status = ?, error = ? WHERE id = ?'
+        ).bind('failed', item.error || 'Falha no envio', item.id).run();
+
+        await c.env.DB.prepare(
+          'UPDATE whatsapp_messages SET status = ? WHERE id = ?'
+        ).bind('failed', item.id).run();
+      }
+    }
+
+    // 4. Carrega todos os leads para cruzar telefones e devolver cache à ponte
+    const allLeads = await c.env.DB.prepare(
+      'SELECT id, nome, data_json FROM leads'
+    ).all<{ id: string; nome: string; data_json: string }>();
+
+    const phoneToLeadMap = new Map<string, { leadId: string; nome: string }>();
+    const leadsFilterCache: Array<{ id: string; nome: string; phone: string; variants: string[] }> = [];
+
+    for (const lead of allLeads.results || []) {
+      const parsed = JSON.parse(lead.data_json || '{}');
+      const raw = parsed.whatsapp || parsed.telefone;
+      if (raw) {
+        const variants = getPhoneVariants(raw);
+        for (const v of variants) {
+          phoneToLeadMap.set(v, { leadId: lead.id, nome: lead.nome });
+        }
+        leadsFilterCache.push({
+          id: lead.id,
+          nome: lead.nome,
+          phone: cleanPhoneDigits(raw),
+          variants
+        });
+      }
+    }
+
+    // 5. Processa mensagens recebidas (se houver)
+    if (body.incoming_messages && body.incoming_messages.length > 0) {
+      for (const msg of body.incoming_messages) {
+        const cleaned = cleanPhoneDigits(msg.phone);
+        const match = phoneToLeadMap.get(cleaned);
+        if (match) {
+          await c.env.DB.prepare(
+            `INSERT OR IGNORE INTO whatsapp_messages (id, lead_id, whatsapp, from_me, body, timestamp, status, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+          ).bind(
+            msg.id,
+            match.leadId,
+            cleaned,
+            msg.from_me ? 1 : 0,
+            msg.body,
+            msg.timestamp,
+            'received',
+            isoNow
+          ).run();
+
+          // Se a mensagem veio do lead, atualiza o ultimo contato
+          if (!msg.from_me) {
+            const leadRow = allLeads.results.find(l => l.id === match.leadId);
+            if (leadRow) {
+              const ld = JSON.parse(leadRow.data_json || '{}');
+              ld.ultimo_contato = isoNow;
+              await c.env.DB.prepare(
+                'UPDATE leads SET data_json = ?, updated_at = ? WHERE id = ?'
+              ).bind(JSON.stringify(ld), isoNow, match.leadId).run();
+            }
+          }
+        }
+      }
+    }
+
+    // 6. Busca mensagens pendentes na fila outbox para a ponte disparar
+    const pending = await c.env.DB.prepare(
+      "SELECT id, lead_id, whatsapp, body FROM whatsapp_outbox WHERE status = 'pending' ORDER BY created_at ASC LIMIT 10"
+    ).all<{ id: string; lead_id: string; whatsapp: string; body: string }>();
+
+    return c.json({
+      success: true,
+      pending_outbox: pending.results || [],
+      leads_cache: leadsFilterCache
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro na sincronização';
+    return c.json({ error: message }, 500);
+  }
+});
+
 export default {
   async fetch(request: Request, env: Bindings, ctx: unknown): Promise<Response> {
     const url = new URL(request.url);

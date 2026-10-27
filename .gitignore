@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# WhatsApp Local Auth
+whatsapp-bridge/auth_info/
+auth_info/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

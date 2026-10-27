@@ -1,0 +1,16 @@
+{
+  "name": "crm-whatsapp-bridge",
+  "version": "1.0.0",
+  "description": "Ponte local de WhatsApp para o CRM Yago Duarte",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.13",
+    "pino": "^9.6.0",
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
