@@ -55,6 +55,10 @@ export interface WhatsAppMessage {
   timestamp: number;
   status: string; // 'pending' | 'sent' | 'received' | 'failed'
   created_at: string;
+  media_type?: 'image' | 'audio' | 'document' | 'sticker' | null;
+  media_url?: string | null;
+  media_filename?: string | null;
+  media_mimetype?: string | null;
 }
 
 export interface WhatsAppConversationSummary {
@@ -68,6 +72,9 @@ export interface WhatsAppConversationSummary {
     from_me: number;
     status: string;
     created_at: string;
+    media_type?: 'image' | 'audio' | 'document' | 'sticker' | null;
+    media_url?: string | null;
+    media_filename?: string | null;
   };
 }
 

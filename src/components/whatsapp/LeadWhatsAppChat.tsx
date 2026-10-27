@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { ClientLead, WhatsAppMessage } from '../../types/crm';
 import { parseConversationScript } from '../../utils/conversationScript';
+import {
+  AudioMessagePlayer,
+  DocumentMessageCard,
+  ImageMessageViewer
+} from './WhatsAppMediaComponents';
 import { Send, Loader2, MessageSquare, Sparkles, RefreshCw, Smartphone, Check, CheckCheck, Clock } from 'lucide-react';
 
 interface LeadWhatsAppChatProps {
@@ -224,7 +229,46 @@ export const LeadWhatsAppChat: React.FC<LeadWhatsAppChatProps> = ({
                       : 'bg-[#18181b] border border-[#27272a] text-zinc-100 rounded-tl-xs'
                   }`}
                 >
-                  {msg.body}
+                  {/* Mídia: Foto / Imagem */}
+                  {msg.media_type === 'image' && msg.media_url && (
+                    <ImageMessageViewer src={msg.media_url} alt={msg.body} />
+                  )}
+
+                  {/* Mídia: Áudio de Voz com Player */}
+                  {msg.media_type === 'audio' && msg.media_url && (
+                    <AudioMessagePlayer src={msg.media_url} isMe={isMe} />
+                  )}
+
+                  {/* Mídia: Documento / PDF */}
+                  {msg.media_type === 'document' && msg.media_url && (
+                    <DocumentMessageCard
+                      url={msg.media_url}
+                      filename={msg.media_filename}
+                      isMe={isMe}
+                    />
+                  )}
+
+                  {/* Mídia: Figurinha */}
+                  {msg.media_type === 'sticker' && msg.media_url && (
+                    <div className="py-1">
+                      <img
+                        src={msg.media_url}
+                        alt="Figurinha"
+                        className="w-24 h-24 object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+
+                  {/* Texto ou Legenda */}
+                  {msg.body &&
+                    !['[Imagem]', '[Áudio]', '[Áudio de Voz]', '[Figurinha]', '[Evento no chat]'].includes(
+                      msg.body
+                    ) &&
+                    !msg.body.startsWith('[Documento:') && (
+                      <p className={msg.media_url ? 'mt-1.5' : ''}>{msg.body}</p>
+                    )}
+
                   <div
                     className={`flex items-center justify-end gap-1 mt-1 text-[10px] select-none ${
                       isMe ? 'text-emerald-400/70' : 'text-zinc-500'

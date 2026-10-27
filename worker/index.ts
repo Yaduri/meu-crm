@@ -952,7 +952,7 @@ app.get('/api/whatsapp/chat/:leadId', async (c) => {
     if (phoneVariants.length > 0) {
       const placeholders = phoneVariants.map(() => '?').join(',');
       messages = await c.env.DB.prepare(
-        `SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at
+        `SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at, media_type, media_url, media_filename, media_mimetype
          FROM whatsapp_messages
          WHERE lead_id = ? OR whatsapp IN (${placeholders})
          ORDER BY timestamp ASC`
@@ -965,10 +965,15 @@ app.get('/api/whatsapp/chat/:leadId', async (c) => {
         timestamp: number;
         status: string;
         created_at: string;
+        media_type: string | null;
+        media_url: string | null;
+        media_filename: string | null;
+        media_mimetype: string | null;
       }>();
     } else {
       messages = await c.env.DB.prepare(
-        'SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at FROM whatsapp_messages WHERE lead_id = ? ORDER BY timestamp ASC'
+        `SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at, media_type, media_url, media_filename, media_mimetype
+         FROM whatsapp_messages WHERE lead_id = ? ORDER BY timestamp ASC`
       ).bind(leadId).all<{
         id: string;
         lead_id: string;
@@ -978,6 +983,10 @@ app.get('/api/whatsapp/chat/:leadId', async (c) => {
         timestamp: number;
         status: string;
         created_at: string;
+        media_type: string | null;
+        media_url: string | null;
+        media_filename: string | null;
+        media_mimetype: string | null;
       }>();
     }
 
@@ -1036,7 +1045,7 @@ app.get('/api/whatsapp/conversations', async (c) => {
 
     // 2. Busca todas as mensagens para agrupar por lead ativo
     const allMessages = await c.env.DB.prepare(
-      `SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at
+      `SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at, media_type, media_url, media_filename
        FROM whatsapp_messages
        ORDER BY timestamp ASC`
     ).all<{
@@ -1048,6 +1057,9 @@ app.get('/api/whatsapp/conversations', async (c) => {
       timestamp: number;
       status: string;
       created_at: string;
+      media_type: string | null;
+      media_url: string | null;
+      media_filename: string | null;
     }>();
 
     // 3. Agrupa por LEAD ATIVO (ignora leads apagados para nunca mostrar "Lead sem nome")
@@ -1064,6 +1076,9 @@ app.get('/api/whatsapp/conversations', async (c) => {
           from_me: number;
           status: string;
           created_at: string;
+          media_type?: string | null;
+          media_url?: string | null;
+          media_filename?: string | null;
         };
       }
     >();
@@ -1087,7 +1102,10 @@ app.get('/api/whatsapp/conversations', async (c) => {
           timestamp: msg.timestamp,
           from_me: msg.from_me,
           status: msg.status,
-          created_at: msg.created_at
+          created_at: msg.created_at,
+          media_type: msg.media_type,
+          media_url: msg.media_url,
+          media_filename: msg.media_filename
         }
       });
     }
@@ -1109,9 +1127,18 @@ app.get('/api/whatsapp/conversations', async (c) => {
 // Envia mensagem pelo CRM (enfileira para a ponte local disparar no WhatsApp)
 app.post('/api/whatsapp/send', async (c) => {
   try {
-    const { leadId, text } = await c.req.json<{ leadId: string; text: string }>();
-    if (!leadId || !text || !text.trim()) {
-      return c.json({ error: 'Lead e texto são obrigatórios' }, 400);
+    const { leadId, text, media_type, media_url, media_filename, media_mimetype } = await c.req.json<{
+      leadId: string;
+      text?: string;
+      media_type?: string;
+      media_url?: string;
+      media_filename?: string;
+      media_mimetype?: string;
+    }>();
+
+    const bodyText = (text || '').trim();
+    if (!leadId || (!bodyText && !media_url)) {
+      return c.json({ error: 'Lead e mensagem ou arquivo são obrigatórios' }, 400);
     }
 
     const leadRow = await c.env.DB.prepare(
@@ -1133,15 +1160,47 @@ app.post('/api/whatsapp/send', async (c) => {
     const isoNow = new Date().toISOString();
     const msgId = `msg_${now}_${Math.random().toString(36).substring(2, 8)}`;
 
+    const fallbackBody = bodyText || (
+      media_type === 'image' ? '[Imagem]' :
+      media_type === 'audio' ? '[Áudio de Voz]' :
+      media_type === 'document' ? `[Documento: ${media_filename || 'Arquivo'}]` :
+      '[Arquivo]'
+    );
+
     // Salva no histórico de mensagens do CRM
     await c.env.DB.prepare(
-      'INSERT INTO whatsapp_messages (id, lead_id, whatsapp, from_me, body, timestamp, status, created_at) VALUES (?, ?, ?, 1, ?, ?, ?, ?)'
-    ).bind(msgId, leadId, phone, text.trim(), now, 'pending', isoNow).run();
+      `INSERT INTO whatsapp_messages (id, lead_id, whatsapp, from_me, body, timestamp, status, created_at, media_type, media_url, media_filename, media_mimetype)
+       VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      msgId,
+      leadId,
+      phone,
+      fallbackBody,
+      now,
+      'pending',
+      isoNow,
+      media_type || null,
+      media_url || null,
+      media_filename || null,
+      media_mimetype || null
+    ).run();
 
     // Enfileira no outbox para a ponte disparar
     await c.env.DB.prepare(
-      'INSERT INTO whatsapp_outbox (id, lead_id, whatsapp, body, status, created_at) VALUES (?, ?, ?, ?, ?, ?)'
-    ).bind(msgId, leadId, phone, text.trim(), 'pending', isoNow).run();
+      `INSERT INTO whatsapp_outbox (id, lead_id, whatsapp, body, status, created_at, media_type, media_url, media_filename, media_mimetype)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      msgId,
+      leadId,
+      phone,
+      bodyText,
+      'pending',
+      isoNow,
+      media_type || null,
+      media_url || null,
+      media_filename || null,
+      media_mimetype || null
+    ).run();
 
     // Atualiza ultimo_contato do lead
     leadData.ultimo_contato = isoNow;
@@ -1157,10 +1216,14 @@ app.post('/api/whatsapp/send', async (c) => {
         lead_id: leadId,
         whatsapp: phone,
         from_me: 1,
-        body: text.trim(),
+        body: fallbackBody,
         timestamp: now,
         status: 'pending',
-        created_at: isoNow
+        created_at: isoNow,
+        media_type: media_type || null,
+        media_url: media_url || null,
+        media_filename: media_filename || null,
+        media_mimetype: media_mimetype || null
       }
     });
   } catch (err: unknown) {
@@ -1184,6 +1247,10 @@ app.post('/api/whatsapp/sync', async (c) => {
         body: string;
         timestamp: number;
         from_me: boolean;
+        media_type?: string | null;
+        media_url?: string | null;
+        media_filename?: string | null;
+        media_mimetype?: string | null;
       }>;
     }>();
 
@@ -1272,8 +1339,8 @@ app.post('/api/whatsapp/sync', async (c) => {
         if (match) {
           statements.push(
             c.env.DB.prepare(
-              `INSERT OR IGNORE INTO whatsapp_messages (id, lead_id, whatsapp, from_me, body, timestamp, status, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+              `INSERT OR IGNORE INTO whatsapp_messages (id, lead_id, whatsapp, from_me, body, timestamp, status, created_at, media_type, media_url, media_filename, media_mimetype)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             ).bind(
               msg.id,
               match.leadId,
@@ -1282,7 +1349,11 @@ app.post('/api/whatsapp/sync', async (c) => {
               msg.body,
               msg.timestamp,
               'received',
-              isoNow
+              isoNow,
+              msg.media_type || null,
+              msg.media_url || null,
+              msg.media_filename || null,
+              msg.media_mimetype || null
             )
           );
 
@@ -1315,8 +1386,18 @@ app.post('/api/whatsapp/sync', async (c) => {
 
     // 6. Busca mensagens pendentes na fila outbox para a ponte disparar
     const pending = await c.env.DB.prepare(
-      "SELECT id, lead_id, whatsapp, body FROM whatsapp_outbox WHERE status = 'pending' ORDER BY created_at ASC LIMIT 10"
-    ).all<{ id: string; lead_id: string; whatsapp: string; body: string }>();
+      `SELECT id, lead_id, whatsapp, body, media_type, media_url, media_filename, media_mimetype
+       FROM whatsapp_outbox WHERE status = 'pending' ORDER BY created_at ASC LIMIT 10`
+    ).all<{
+      id: string;
+      lead_id: string;
+      whatsapp: string;
+      body: string;
+      media_type: string | null;
+      media_url: string | null;
+      media_filename: string | null;
+      media_mimetype: string | null;
+    }>();
 
     return c.json({
       success: true,

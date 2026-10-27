@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { ClientLead, WhatsAppBridgeStatus, WhatsAppConversationSummary, WhatsAppMessage } from '../../types/crm';
 import { parseConversationScript } from '../../utils/conversationScript';
+import {
+  AudioMessagePlayer,
+  DocumentMessageCard,
+  ImageMessageViewer
+} from '../whatsapp/WhatsAppMediaComponents';
 import { 
   MessageSquare, 
   Search, 
@@ -15,7 +20,12 @@ import {
   Check, 
   CheckCheck, 
   Clock,
-  ShieldCheck
+  ShieldCheck,
+  Paperclip,
+  Mic,
+  Trash2,
+  X,
+  Volume2
 } from 'lucide-react';
 
 interface ConversasViewProps {
@@ -44,6 +54,21 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<{
+    file: File;
+    previewUrl?: string;
+    type: 'image' | 'audio' | 'document';
+  } | null>(null);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Audio recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<number | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -147,7 +172,181 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
   const selectedLead = leads.find((l) => l.id === selectedLeadId) || null;
   const scriptSteps = selectedLead ? parseConversationScript(selectedLead.msg_a_mandar || '') : null;
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    let type: 'image' | 'audio' | 'document' = 'document';
+    let previewUrl: string | undefined;
+
+    if (file.type.startsWith('image/')) {
+      type = 'image';
+      previewUrl = URL.createObjectURL(file);
+    } else if (file.type.startsWith('audio/')) {
+      type = 'audio';
+    } else {
+      type = 'document';
+    }
+
+    setAttachedFile({ file, type, previewUrl });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+        ? 'audio/ogg;codecs=opus'
+        : 'audio/webm';
+
+      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.start(200);
+      setIsRecording(true);
+      setRecordingSeconds(0);
+
+      recordingTimerRef.current = window.setInterval(() => {
+        setRecordingSeconds((prev) => prev + 1);
+      }, 1000);
+    } catch {
+      alert('Não foi possível acessar o microfone. Verifique as permissões de áudio no navegador.');
+    }
+  };
+
+  const stopRecordingAndSend = async () => {
+    if (!mediaRecorderRef.current || !isRecording) return;
+    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+
+    const recorder = mediaRecorderRef.current;
+    recorder.onstop = async () => {
+      recorder.stream.getTracks().forEach((t) => t.stop());
+      const mimeType = recorder.mimeType || 'audio/webm';
+      const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+      const audioFile = new File([audioBlob], `audio_${Date.now()}.webm`, { type: mimeType });
+
+      setIsRecording(false);
+      setRecordingSeconds(0);
+      await handleSendFile(audioFile, 'audio', '[Áudio de Voz]');
+    };
+
+    recorder.stop();
+  };
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      mediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
+    setRecordingSeconds(0);
+    audioChunksRef.current = [];
+  };
+
+  const handleSendFile = async (
+    fileToSend: File,
+    fileType: 'image' | 'audio' | 'document',
+    captionText?: string
+  ) => {
+    if (!selectedLead || sending) return;
+    const cleanPhone = (selectedLead.whatsapp || '').replace(/\D/g, '');
+    if (!cleanPhone) {
+      alert('Este lead não possui um número de WhatsApp cadastrado.');
+      return;
+    }
+
+    setSending(true);
+    setUploadingMedia(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', fileToSend);
+
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('Falha no upload do arquivo');
+      }
+
+      const uploadData = (await uploadRes.json()) as { url: string; name: string; contentType?: string };
+
+      const tempId = `temp_${Date.now()}`;
+      const defaultBody =
+        captionText ||
+        (fileType === 'image'
+          ? '[Imagem]'
+          : fileType === 'audio'
+          ? '[Áudio de Voz]'
+          : `[Documento: ${fileToSend.name}]`);
+
+      const optimisticMsg: WhatsAppMessage = {
+        id: tempId,
+        lead_id: selectedLead.id,
+        whatsapp: cleanPhone,
+        from_me: 1,
+        body: defaultBody,
+        timestamp: Date.now(),
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        media_type: fileType,
+        media_url: uploadData.url,
+        media_filename: fileToSend.name,
+        media_mimetype: uploadData.contentType || fileToSend.type
+      };
+
+      setMessages((prev) => [...prev, optimisticMsg]);
+      setAttachedFile(null);
+      setInputText('');
+
+      const sendRes = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadId: selectedLead.id,
+          text: captionText || '',
+          media_type: fileType,
+          media_url: uploadData.url,
+          media_filename: fileToSend.name,
+          media_mimetype: uploadData.contentType || fileToSend.type
+        })
+      });
+
+      if (!sendRes.ok) {
+        alert('Erro ao enviar mídia para o WhatsApp.');
+      } else {
+        fetchChatMessages(selectedLead.id);
+        fetchConversations();
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Falha ao enviar arquivo';
+      alert(`Erro: ${msg}`);
+    } finally {
+      setSending(false);
+      setUploadingMedia(false);
+      setTimeout(() => textareaRef.current?.focus(), 50);
+    }
+  };
+
   const handleSendMessage = async (textToSend?: string) => {
+    if (attachedFile) {
+      await handleSendFile(attachedFile.file, attachedFile.type, (textToSend || inputText).trim());
+      return;
+    }
+
     const text = (textToSend || inputText).trim();
     if (!text || sending || !selectedLead) return;
 
@@ -396,7 +595,15 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
                         </span>
                         <span className="truncate">
                           {conv.last_message.from_me === 1 ? 'Você: ' : ''}
-                          {conv.last_message.body}
+                          {conv.last_message.media_type === 'image'
+                            ? '📷 Foto'
+                            : conv.last_message.media_type === 'audio'
+                            ? '🎙️ Áudio'
+                            : conv.last_message.media_type === 'document'
+                            ? `📄 ${conv.last_message.media_filename || 'Documento'}`
+                            : conv.last_message.media_type === 'sticker'
+                            ? '👾 Figurinha'
+                            : conv.last_message.body}
                         </span>
                       </div>
                     </div>
@@ -568,7 +775,46 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
                             : 'bg-[#18181b] border border-[#27272a] text-zinc-100 rounded-tl-xs'
                         }`}
                       >
-                        {msg.body}
+                        {/* Mídia: Foto / Imagem */}
+                        {msg.media_type === 'image' && msg.media_url && (
+                          <ImageMessageViewer src={msg.media_url} alt={msg.body} />
+                        )}
+
+                        {/* Mídia: Áudio de Voz com Player */}
+                        {msg.media_type === 'audio' && msg.media_url && (
+                          <AudioMessagePlayer src={msg.media_url} isMe={isMe} />
+                        )}
+
+                        {/* Mídia: Documento / PDF */}
+                        {msg.media_type === 'document' && msg.media_url && (
+                          <DocumentMessageCard
+                            url={msg.media_url}
+                            filename={msg.media_filename}
+                            isMe={isMe}
+                          />
+                        )}
+
+                        {/* Mídia: Figurinha */}
+                        {msg.media_type === 'sticker' && msg.media_url && (
+                          <div className="py-1">
+                            <img
+                              src={msg.media_url}
+                              alt="Figurinha"
+                              className="w-28 h-28 object-contain"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+
+                        {/* Texto ou Legenda */}
+                        {msg.body &&
+                          !['[Imagem]', '[Áudio]', '[Áudio de Voz]', '[Figurinha]', '[Evento no chat]'].includes(
+                            msg.body
+                          ) &&
+                          !msg.body.startsWith('[Documento:') && (
+                            <p className={msg.media_url ? 'mt-1.5' : ''}>{msg.body}</p>
+                          )}
+
                         <div
                           className={`flex items-center justify-end gap-1 mt-1 text-[10px] select-none ${
                             isMe ? 'text-emerald-400/70' : 'text-zinc-500'
@@ -616,26 +862,140 @@ export const ConversasView: React.FC<ConversasViewProps> = ({
               </div>
             )}
 
+            {/* Hidden File Input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+              accept="image/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+            />
+
+            {/* Barra de Anexo Selecionado */}
+            {attachedFile && (
+              <div className="flex items-center justify-between px-4 py-2 bg-[#18181b] border-t border-[#27272a] text-xs text-zinc-300 shrink-0">
+                <div className="flex items-center gap-2.5 truncate">
+                  {attachedFile.type === 'image' && attachedFile.previewUrl ? (
+                    <img
+                      src={attachedFile.previewUrl}
+                      alt="Preview"
+                      className="w-8 h-8 rounded-md object-cover border border-[#3f3f46]"
+                    />
+                  ) : attachedFile.type === 'document' ? (
+                    <div className="w-8 h-8 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                      <FileText size={16} />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 rounded-md bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                      <Volume2 size={16} />
+                    </div>
+                  )}
+                  <div className="flex flex-col truncate">
+                    <span className="truncate font-semibold text-zinc-200">
+                      {attachedFile.file.name}
+                    </span>
+                    <span className="text-[10px] text-zinc-500">
+                      {(attachedFile.file.size / 1024).toFixed(0)} KB • Arquivo pronto para envio
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAttachedFile(null)}
+                  className="p-1 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                  title="Remover anexo"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+
             {/* Input Bar */}
             <div className="p-3 sm:p-4 bg-[#121215] border-t border-[#27272a] flex items-end gap-2.5 shrink-0">
-              <textarea
-                ref={textareaRef}
-                rows={2}
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={`Mensagem para ${selectedLead.nome}... (Pressione Enter para enviar)`}
-                className="flex-1 bg-[#18181b] border border-[#27272a] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-hidden focus:border-emerald-500 resize-none"
-              />
-              <button
-                type="button"
-                disabled={sending || !inputText.trim()}
-                onClick={() => handleSendMessage()}
-                className="min-h-[46px] px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-              >
-                {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                <span className="hidden sm:inline">Enviar</span>
-              </button>
+              {isRecording ? (
+                /* Modo Gravação de Áudio ao Vivo */
+                <div className="flex-1 flex items-center justify-between bg-red-950/30 border border-red-500/40 rounded-xl px-4 py-2.5 min-h-[46px]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                    <span className="text-xs font-semibold text-red-200">Gravando áudio de voz...</span>
+                    <span className="text-xs font-mono text-red-300 bg-red-900/40 px-2 py-0.5 rounded-md font-bold">
+                      {Math.floor(recordingSeconds / 60)}:{(recordingSeconds % 60).toString().padStart(2, '0')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={cancelRecording}
+                      className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
+                      title="Cancelar gravação"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={stopRecordingAndSend}
+                      className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-md"
+                      title="Enviar áudio para o lead"
+                    >
+                      <Send size={13} />
+                      <span>Enviar Áudio</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Modo Normal de Digitação */
+                <>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={sending || uploadingMedia}
+                    className="min-h-[46px] w-[46px] rounded-xl bg-[#18181b] hover:bg-[#27272f] border border-[#27272a] hover:border-emerald-500/40 text-zinc-400 hover:text-emerald-400 flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-40"
+                    title="Anexar arquivo, imagem ou documento"
+                  >
+                    <Paperclip size={18} />
+                  </button>
+
+                  <textarea
+                    ref={textareaRef}
+                    rows={2}
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={
+                      attachedFile
+                        ? 'Adicione uma legenda ao arquivo (opcional)...'
+                        : `Mensagem para ${selectedLead.nome}... (Pressione Enter para enviar)`
+                    }
+                    className="flex-1 bg-[#18181b] border border-[#27272a] rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-hidden focus:border-emerald-500 resize-none"
+                  />
+
+                  {inputText.trim() || attachedFile ? (
+                    <button
+                      type="button"
+                      disabled={sending || uploadingMedia}
+                      onClick={() => handleSendMessage()}
+                      className="min-h-[46px] px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                    >
+                      {sending || uploadingMedia ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Send size={16} />
+                      )}
+                      <span className="hidden sm:inline">Enviar</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={startRecording}
+                      disabled={sending}
+                      className="min-h-[46px] w-[46px] rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center transition-transform active:scale-95 cursor-pointer shrink-0 shadow-md"
+                      title="Gravar áudio de voz para o WhatsApp"
+                    >
+                      <Mic size={18} />
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </>
         ) : (

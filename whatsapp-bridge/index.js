@@ -2,7 +2,8 @@ import makeWASocket, {
   DisconnectReason,
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
-  normalizeMessageContent
+  normalizeMessageContent,
+  downloadMediaMessage
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import qrcodeTerminal from 'qrcode-terminal';
@@ -156,6 +157,77 @@ function extractMessageText(msg) {
     m.buttonsResponseMessage?.selectedButtonId ||
     ''
   );
+}
+
+function getMediaDetails(msg) {
+  if (!msg || !msg.message) return null;
+  const m = normalizeMessageContent(msg.message);
+  if (!m) return null;
+
+  if (m.imageMessage) {
+    const ext = m.imageMessage.mimetype?.includes('png') ? 'png' : 'jpg';
+    return {
+      type: 'image',
+      mimetype: m.imageMessage.mimetype || 'image/jpeg',
+      filename: `foto_${Date.now()}.${ext}`,
+      caption: m.imageMessage.caption || ''
+    };
+  }
+  if (m.audioMessage) {
+    return {
+      type: 'audio',
+      mimetype: m.audioMessage.mimetype || 'audio/ogg; codecs=opus',
+      filename: `audio_${Date.now()}.ogg`,
+      caption: ''
+    };
+  }
+  if (m.documentMessage) {
+    const name = m.documentMessage.fileName || m.documentMessage.title || `doc_${Date.now()}.pdf`;
+    return {
+      type: 'document',
+      mimetype: m.documentMessage.mimetype || 'application/pdf',
+      filename: name,
+      caption: m.documentMessage.caption || ''
+    };
+  }
+  if (m.stickerMessage) {
+    return {
+      type: 'sticker',
+      mimetype: m.stickerMessage.mimetype || 'image/webp',
+      filename: `sticker_${Date.now()}.webp`,
+      caption: ''
+    };
+  }
+  if (m.videoMessage) {
+    return {
+      type: 'video',
+      mimetype: m.videoMessage.mimetype || 'video/mp4',
+      filename: `video_${Date.now()}.mp4`,
+      caption: m.videoMessage.caption || ''
+    };
+  }
+  return null;
+}
+
+async function uploadMediaBuffer(buffer, filename, mimetype) {
+  try {
+    const formData = new FormData();
+    const blob = new Blob([buffer], { type: mimetype || 'application/octet-stream' });
+    formData.append('file', blob, filename || `zap_media_${Date.now()}`);
+
+    const res = await fetch(`${config.apiUrl}/api/upload`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.url;
+    }
+  } catch (err) {
+    console.warn('⚠️ Falha ao salvar mídia na nuvem:', err.message);
+  }
+  return null;
 }
 
 function toWhatsAppJid(phone) {
@@ -383,20 +455,42 @@ async function startWhatsApp() {
       }
 
       const text = extractMessageText(msg);
-      if (!text || !text.trim()) continue;
+      const mediaInfo = getMediaDetails(msg);
+      let mediaUrl = null;
+
+      if (mediaInfo) {
+        try {
+          const buffer = await downloadMediaMessage(
+            msg,
+            'buffer',
+            {},
+            { logger: sock?.logger, reuploadRequest: (update) => sock?.updateMediaMessage(update) }
+          );
+          if (buffer) {
+            mediaUrl = await uploadMediaBuffer(buffer, mediaInfo.filename, mediaInfo.mimetype);
+          }
+        } catch {}
+      }
+
+      const bodyText = (mediaInfo?.caption || '').trim() || text.trim() || (mediaInfo ? `[${mediaInfo.type.toUpperCase()}]` : '');
+      if (!bodyText && !mediaUrl) continue;
 
       const fromMe = !!msg.key.fromMe;
       const leadInfo = leadsMap.get(cleaned);
       const leadNome = leadInfo ? leadInfo.nome : cleaned;
 
-      console.log(`💬 [Lead: ${leadNome}] ${fromMe ? 'Você:' : 'Cliente:'} ${text.slice(0, 60)}`);
+      console.log(`💬 [Lead: ${leadNome}] ${fromMe ? 'Você:' : 'Cliente:'} ${bodyText.slice(0, 60)}`);
 
       incomingQueue.push({
         id: msg.key.id || `inc_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         phone: cleaned,
-        body: text.trim(),
+        body: bodyText,
         timestamp: (msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now()),
-        from_me: fromMe
+        from_me: fromMe,
+        media_type: mediaInfo?.type || null,
+        media_url: mediaUrl,
+        media_filename: mediaInfo?.filename || null,
+        media_mimetype: mediaInfo?.mimetype || null
       });
 
       triggerSyncImmediately();
@@ -454,8 +548,46 @@ async function syncWithCrm() {
         for (const outbox of data.pending_outbox) {
           const jid = toWhatsAppJid(outbox.whatsapp);
           try {
-            console.log(`📤 Enviando mensagem para ${outbox.whatsapp}...`);
-            await sock.sendMessage(jid, { text: outbox.body });
+            if (outbox.media_url) {
+              console.log(`📤 Enviando ${outbox.media_type || 'mídia'} para ${outbox.whatsapp}...`);
+              const mediaRes = await fetch(`${config.apiUrl}${outbox.media_url}`);
+              if (!mediaRes.ok) throw new Error(`Falha ao baixar mídia: ${mediaRes.statusText}`);
+              const mediaBuffer = Buffer.from(await mediaRes.arrayBuffer());
+
+              if (outbox.media_type === 'image') {
+                await sock.sendMessage(jid, {
+                  image: mediaBuffer,
+                  caption: outbox.body && outbox.body !== '[Imagem]' ? outbox.body : undefined
+                });
+              } else if (outbox.media_type === 'audio') {
+                await sock.sendMessage(jid, {
+                  audio: mediaBuffer,
+                  mimetype: outbox.media_mimetype || 'audio/mp4',
+                  ptt: true
+                });
+              } else if (outbox.media_type === 'document') {
+                await sock.sendMessage(jid, {
+                  document: mediaBuffer,
+                  mimetype: outbox.media_mimetype || 'application/pdf',
+                  fileName: outbox.media_filename || 'documento.pdf',
+                  caption: outbox.body && !outbox.body.startsWith('[Documento') ? outbox.body : undefined
+                });
+              } else if (outbox.media_type === 'sticker') {
+                await sock.sendMessage(jid, {
+                  sticker: mediaBuffer
+                });
+              } else if (outbox.media_type === 'video') {
+                await sock.sendMessage(jid, {
+                  video: mediaBuffer,
+                  caption: outbox.body && outbox.body !== '[Vídeo]' ? outbox.body : undefined
+                });
+              } else {
+                await sock.sendMessage(jid, { text: outbox.body });
+              }
+            } else {
+              console.log(`📤 Enviando mensagem para ${outbox.whatsapp}...`);
+              await sock.sendMessage(jid, { text: outbox.body });
+            }
             sentOutboxIds.push(outbox.id);
             console.log(`✅ Mensagem enviada com sucesso! [ID: ${outbox.id}]`);
           } catch (err) {
