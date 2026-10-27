@@ -3,7 +3,8 @@ import makeWASocket, {
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
   normalizeMessageContent,
-  downloadMediaMessage
+  downloadMediaMessage,
+  Browsers
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import qrcodeTerminal from 'qrcode-terminal';
@@ -272,7 +273,8 @@ async function startWhatsApp() {
     auth: state,
     printQRInTerminal: false,
     generateHighQualityLinkPreview: false,
-    syncFullHistory: true
+    syncFullHistory: true,
+    browser: Browsers.windows('Desktop')
   });
 
   sock.ev.on('creds.update', saveCreds);
@@ -384,6 +386,15 @@ async function startWhatsApp() {
         continue;
       }
 
+      // Se for o contato de teste da irmã (11945130865), limita a sincronização aos últimos 7 dias
+      if (cleaned.endsWith('11945130865')) {
+        const msgTs = msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now();
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        if (msgTs < sevenDaysAgo) {
+          continue;
+        }
+      }
+
       const text = extractMessageText(msg);
       if (!text || !text.trim()) continue;
 
@@ -452,6 +463,15 @@ async function startWhatsApp() {
       if (!isLead) {
         // Ignora silenciosamente para preservar 100% da privacidade de conversas pessoais
         continue;
+      }
+
+      // Se for o contato de teste da irmã (11945130865), limita a sincronização aos últimos 7 dias
+      if (cleaned.endsWith('11945130865')) {
+        const msgTs = msg.messageTimestamp ? Number(msg.messageTimestamp) * 1000 : Date.now();
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        if (msgTs < sevenDaysAgo) {
+          continue;
+        }
       }
 
       const text = extractMessageText(msg);

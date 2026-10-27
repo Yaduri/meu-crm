@@ -1335,6 +1335,15 @@ app.post('/api/whatsapp/sync', async (c) => {
 
       for (const msg of body.incoming_messages) {
         const cleaned = cleanPhoneDigits(msg.phone);
+
+        // Se for o contato de teste da irmã (11945130865), limita a sincronização aos últimos 7 dias
+        if (cleaned.endsWith('11945130865')) {
+          const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+          if (msg.timestamp < sevenDaysAgo) {
+            continue;
+          }
+        }
+
         const match = phoneToLeadMap.get(cleaned);
         if (match) {
           statements.push(
