@@ -500,6 +500,8 @@ export function App() {
         presenca_digital: leadData.presenca_digital || 'Sem site',
         origem: leadData.origem || 'Google Maps',
         status_id: leadData.status_id || 'abordar',
+        ultimo_contato: leadData.ultimo_contato,
+        proximo_followup: leadData.proximo_followup,
         implantacao: leadData.implantacao || settings.implantacaoPadrao || 1200,
         mensalidade: leadData.mensalidade || settings.mensalidadePadrao || 89,
         msg_a_mandar: leadData.msg_a_mandar,

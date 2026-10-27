@@ -33,6 +33,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   );
   const [origem, setOrigem] = useState<LeadOrigem>(initialLead?.origem || 'Google Maps');
   const [statusId, setStatusId] = useState(initialLead?.status_id || 'abordar');
+  const [ultimoContato, setUltimoContato] = useState(initialLead?.ultimo_contato || '');
+  const [proximoFollowup, setProximoFollowup] = useState(initialLead?.proximo_followup || '');
   const [implantacao, setImplantacao] = useState(initialLead?.implantacao?.toString() || '1200');
   const [mensalidade, setMensalidade] = useState(initialLead?.mensalidade?.toString() || '89');
   const [linkPrevia, setLinkPrevia] = useState(initialLead?.link_previa || '');
@@ -123,6 +125,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({
       setPresencaDigital(initialLead.presenca_digital || 'Sem site');
       setOrigem(initialLead.origem || 'Google Maps');
       setStatusId(initialLead.status_id || 'abordar');
+      setUltimoContato(initialLead.ultimo_contato || '');
+      setProximoFollowup(initialLead.proximo_followup || '');
       setImplantacao(initialLead.implantacao !== undefined ? initialLead.implantacao.toString() : '1200');
       setMensalidade(initialLead.mensalidade !== undefined ? initialLead.mensalidade.toString() : '89');
       setLinkPrevia(initialLead.link_previa || '');
@@ -139,6 +143,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({
       setPresencaDigital('Sem site');
       setOrigem('Google Maps');
       setStatusId('abordar');
+      setUltimoContato('');
+      setProximoFollowup('');
       setImplantacao('1200');
       setMensalidade('89');
       setLinkPrevia('');
@@ -177,6 +183,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({
       presenca_digital: presencaDigital,
       origem,
       status_id: statusId,
+      ultimo_contato: ultimoContato || undefined,
+      proximo_followup: proximoFollowup || undefined,
       implantacao: parseFloat(implantacao) || 0,
       mensalidade: parseFloat(mensalidade) || 0,
       link_previa: linkPrevia,
@@ -405,6 +413,69 @@ export const LeadModal: React.FC<LeadModalProps> = ({
                 value={mensalidade}
                 onChange={(e) => setMensalidade(e.target.value)}
                 className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 focus:outline-hidden focus:border-emerald-500 font-mono"
+              />
+            </div>
+          </div>
+
+          {/* Datas de Contato & Próximo Follow-up */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-[#16161a] border border-[#27272a] rounded-xl">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-zinc-300 font-medium">Data do Último Contato</label>
+                <button
+                  type="button"
+                  onClick={() => setUltimoContato(new Date().toISOString().slice(0, 10))}
+                  className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium cursor-pointer"
+                >
+                  Marcar Hoje
+                </button>
+              </div>
+              <input
+                type="date"
+                value={ultimoContato}
+                onChange={(e) => setUltimoContato(e.target.value)}
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 font-mono focus:outline-hidden focus:border-emerald-500"
+              />
+            </div>
+
+            <div>
+              <div className="flex flex-wrap items-center justify-between gap-1 mb-1">
+                <label className="block text-zinc-300 font-medium">Próximo Contato (Follow-up)</label>
+                <div className="flex items-center gap-1">
+                  {[
+                    { label: 'Hoje', days: 0 },
+                    { label: '+2d', days: 2 },
+                    { label: '+7d', days: 7 },
+                  ].map((btn) => (
+                    <button
+                      key={btn.label}
+                      type="button"
+                      onClick={() => {
+                        const d = new Date();
+                        d.setDate(d.getDate() + btn.days);
+                        setProximoFollowup(d.toISOString().slice(0, 10));
+                      }}
+                      className="px-1.5 py-0.5 rounded bg-[#27272a] hover:bg-zinc-700 text-zinc-200 text-[10px] font-mono cursor-pointer"
+                    >
+                      {btn.label}
+                    </button>
+                  ))}
+                  {proximoFollowup && (
+                    <button
+                      type="button"
+                      onClick={() => setProximoFollowup('')}
+                      className="px-1.5 py-0.5 rounded bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-[10px] cursor-pointer"
+                    >
+                      Limpar
+                    </button>
+                  )}
+                </div>
+              </div>
+              <input
+                type="date"
+                value={proximoFollowup}
+                onChange={(e) => setProximoFollowup(e.target.value)}
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 font-mono focus:outline-hidden focus:border-emerald-500"
               />
             </div>
           </div>
