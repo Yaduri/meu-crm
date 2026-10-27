@@ -933,18 +933,53 @@ app.get('/api/whatsapp/status', async (c) => {
 app.get('/api/whatsapp/chat/:leadId', async (c) => {
   const leadId = c.req.param('leadId');
   try {
-    const messages = await c.env.DB.prepare(
-      'SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at FROM whatsapp_messages WHERE lead_id = ? ORDER BY timestamp ASC'
-    ).bind(leadId).all<{
-      id: string;
-      lead_id: string;
-      whatsapp: string;
-      from_me: number;
-      body: string;
-      timestamp: number;
-      status: string;
-      created_at: string;
-    }>();
+    const leadRow = await c.env.DB.prepare(
+      'SELECT id, data_json FROM leads WHERE id = ?'
+    ).bind(leadId).first<{ id: string; data_json: string }>();
+
+    let phoneVariants: string[] = [];
+    if (leadRow) {
+      try {
+        const parsed = JSON.parse(leadRow.data_json || '{}');
+        const raw = parsed.whatsapp || parsed.telefone;
+        if (raw) {
+          phoneVariants = getPhoneVariants(raw);
+        }
+      } catch {}
+    }
+
+    let messages;
+    if (phoneVariants.length > 0) {
+      const placeholders = phoneVariants.map(() => '?').join(',');
+      messages = await c.env.DB.prepare(
+        `SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at
+         FROM whatsapp_messages
+         WHERE lead_id = ? OR whatsapp IN (${placeholders})
+         ORDER BY timestamp ASC`
+      ).bind(leadId, ...phoneVariants).all<{
+        id: string;
+        lead_id: string;
+        whatsapp: string;
+        from_me: number;
+        body: string;
+        timestamp: number;
+        status: string;
+        created_at: string;
+      }>();
+    } else {
+      messages = await c.env.DB.prepare(
+        'SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at FROM whatsapp_messages WHERE lead_id = ? ORDER BY timestamp ASC'
+      ).bind(leadId).all<{
+        id: string;
+        lead_id: string;
+        whatsapp: string;
+        from_me: number;
+        body: string;
+        timestamp: number;
+        status: string;
+        created_at: string;
+      }>();
+    }
 
     return c.json({
       success: true,
@@ -959,16 +994,53 @@ app.get('/api/whatsapp/chat/:leadId', async (c) => {
 // Lista de conversas ativas agrupadas por lead (para a aba estilo WhatsApp Web)
 app.get('/api/whatsapp/conversations', async (c) => {
   try {
-    const rawConversations = await c.env.DB.prepare(
-      `SELECT m.lead_id, m.whatsapp, m.from_me, m.body, m.timestamp, m.status, m.created_at
-       FROM whatsapp_messages m
-       INNER JOIN (
-         SELECT lead_id, MAX(timestamp) as max_ts
-         FROM whatsapp_messages
-         GROUP BY lead_id
-       ) latest ON m.lead_id = latest.lead_id AND m.timestamp = latest.max_ts
-       ORDER BY m.timestamp DESC`
+    // 1. Carrega todos os leads ativos para indexar por telefone e ID
+    const allLeads = await c.env.DB.prepare(
+      'SELECT id, nome, nicho, data_json FROM leads'
+    ).all<{ id: string; nome: string; nicho: string; data_json: string }>();
+
+    interface ActiveLeadInfo {
+      id: string;
+      nome: string;
+      nicho: string;
+      primaryPhone: string;
+    }
+
+    const phoneToLeadMap = new Map<string, ActiveLeadInfo>();
+    const leadByIdMap = new Map<string, ActiveLeadInfo>();
+
+    for (const l of allLeads.results || []) {
+      let rawPhone = '';
+      try {
+        const parsed = JSON.parse(l.data_json || '{}');
+        rawPhone = parsed.whatsapp || parsed.telefone || '';
+      } catch {}
+
+      const cleanPhone = cleanPhoneDigits(rawPhone);
+      const leadInfo: ActiveLeadInfo = {
+        id: l.id,
+        nome: l.nome,
+        nicho: l.nicho || 'Geral',
+        primaryPhone: cleanPhone
+      };
+
+      leadByIdMap.set(l.id, leadInfo);
+
+      if (rawPhone) {
+        const variants = getPhoneVariants(rawPhone);
+        for (const v of variants) {
+          phoneToLeadMap.set(v, leadInfo);
+        }
+      }
+    }
+
+    // 2. Busca todas as mensagens para agrupar por lead ativo
+    const allMessages = await c.env.DB.prepare(
+      `SELECT id, lead_id, whatsapp, from_me, body, timestamp, status, created_at
+       FROM whatsapp_messages
+       ORDER BY timestamp ASC`
     ).all<{
+      id: string;
       lead_id: string;
       whatsapp: string;
       from_me: number;
@@ -978,33 +1050,51 @@ app.get('/api/whatsapp/conversations', async (c) => {
       created_at: string;
     }>();
 
-    const allLeads = await c.env.DB.prepare(
-      'SELECT id, nome, nicho, data_json FROM leads'
-    ).all<{ id: string; nome: string; nicho: string; data_json: string }>();
+    // 3. Agrupa por LEAD ATIVO (ignora leads apagados para nunca mostrar "Lead sem nome")
+    const groupedByLead = new Map<
+      string,
+      {
+        lead_id: string;
+        lead_nome: string;
+        lead_nicho: string;
+        whatsapp: string;
+        last_message: {
+          body: string;
+          timestamp: number;
+          from_me: number;
+          status: string;
+          created_at: string;
+        };
+      }
+    >();
 
-    const leadMap = new Map<string, { nome: string; nicho: string; raw: Record<string, unknown> }>();
-    for (const l of allLeads.results || []) {
-      let parsed = {};
-      try { parsed = JSON.parse(l.data_json || '{}'); } catch {}
-      leadMap.set(l.id, { nome: l.nome, nicho: l.nicho || 'Geral', raw: parsed });
+    for (const msg of allMessages.results || []) {
+      const cleaned = cleanPhoneDigits(msg.whatsapp);
+      const matchedLead = phoneToLeadMap.get(cleaned) || leadByIdMap.get(msg.lead_id);
+
+      // Se não pertence a nenhum lead ativo cadastrado, não exibe
+      if (!matchedLead) {
+        continue;
+      }
+
+      groupedByLead.set(matchedLead.id, {
+        lead_id: matchedLead.id,
+        lead_nome: matchedLead.nome,
+        lead_nicho: matchedLead.nicho,
+        whatsapp: matchedLead.primaryPhone || cleaned,
+        last_message: {
+          body: msg.body,
+          timestamp: msg.timestamp,
+          from_me: msg.from_me,
+          status: msg.status,
+          created_at: msg.created_at
+        }
+      });
     }
 
-    const conversations = (rawConversations.results || []).map((item) => {
-      const info = leadMap.get(item.lead_id);
-      return {
-        lead_id: item.lead_id,
-        lead_nome: info?.nome || 'Lead sem nome',
-        lead_nicho: info?.nicho || 'Geral',
-        whatsapp: item.whatsapp,
-        last_message: {
-          body: item.body,
-          timestamp: item.timestamp,
-          from_me: item.from_me,
-          status: item.status,
-          created_at: item.created_at
-        }
-      };
-    });
+    const conversations = Array.from(groupedByLead.values()).sort(
+      (a, b) => b.last_message.timestamp - a.last_message.timestamp
+    );
 
     return c.json({
       success: true,
