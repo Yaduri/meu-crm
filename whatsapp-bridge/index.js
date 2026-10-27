@@ -16,7 +16,7 @@ const __dirname = path.dirname(__filename);
 // Configurações
 const CONFIG_FILE = path.join(__dirname, 'config.json');
 let config = {
-  apiUrl: 'https://crm.yagoduarte.com.br',
+  apiUrl: 'https://meu-crm.yaduri16.workers.dev',
   syncIntervalMs: 2500
 };
 
@@ -40,6 +40,7 @@ let connectionStatus = 'connecting'; // 'connecting' | 'qr_ready' | 'connected' 
 let connectedPhone = null;
 let currentQrDataUrl = null;
 let isSyncing = false;
+let hasLoggedFirstSync = false;
 
 // Filas
 let incomingQueue = [];
@@ -239,12 +240,17 @@ async function syncWithCrm() {
     });
 
     if (!res.ok) {
-      // Se falhar (ex: sem internet), mantém as filas para tentar na próxima
+      console.warn(`⚠️ Erro ao sincronizar com CRM (${res.status} ${res.statusText})`);
       isSyncing = false;
       return;
     }
 
     const data = await res.json();
+
+    if (!hasLoggedFirstSync && data.leads_cache) {
+      hasLoggedFirstSync = true;
+      console.log(`📡 Sincronizado com o CRM na nuvem com sucesso! (${data.leads_cache.length} leads monitorados)`);
+    }
 
     // Se a sincronização teve sucesso, limpa os itens já entregues
     sentOutboxIds = sentOutboxIds.filter((id) => !payload.sent_outbox_ids.includes(id));
@@ -293,7 +299,9 @@ async function syncWithCrm() {
       }
     }
   } catch (err) {
-    // Falha silenciosa de rede/timeout
+    if (!hasLoggedFirstSync) {
+      console.warn(`⚠️ Falha de rede ao conectar com o CRM: ${err?.message || err}`);
+    }
   } finally {
     isSyncing = false;
   }
