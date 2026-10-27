@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
-import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste } from 'lucide-react';
+import { parseConversationScript } from '../../utils/conversationScript';
+import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste, MessageSquare, Clock, Copy, Check, Send } from 'lucide-react';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -45,6 +46,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   const [showMagicPaste, setShowMagicPaste] = useState(false);
   const [rawPasteText, setRawPasteText] = useState('');
   const [magicLoading, setMagicLoading] = useState(false);
+  const [copiedStepIdx, setCopiedStepIdx] = useState<number | null>(null);
+  const [scriptViewMode, setScriptViewMode] = useState<'steps' | 'raw'>('steps');
 
   const handleParseRawLeadAI = async () => {
     if (!rawPasteText.trim()) return;
@@ -77,6 +80,20 @@ export const LeadModal: React.FC<LeadModalProps> = ({
     } finally {
       setMagicLoading(false);
     }
+  };
+
+  const handleCopyStepText = (index: number, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedStepIdx(index);
+    setTimeout(() => setCopiedStepIdx(null), 2000);
+  };
+
+  const handleDispatchStepWhatsApp = (text: string) => {
+    if (!whatsapp) return;
+    const cleanPhone = whatsapp.replace(/\D/g, '');
+    const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    const url = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
   };
 
   const handleGenerateLeadMsgAI = async (intent: string) => {
@@ -537,13 +554,120 @@ export const LeadModal: React.FC<LeadModalProps> = ({
                 </button>
               </div>
             </div>
-            <textarea
-              rows={3}
-              value={msgAMandar}
-              onChange={(e) => setMsgAMandar(e.target.value)}
-              placeholder="Script personalizado para abordagem ou follow-up..."
-              className="w-full bg-[#18181b] border border-[#27272a] rounded-lg p-2.5 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
-            />
+
+            {(() => {
+              const scriptSteps = parseConversationScript(msgAMandar);
+              if (scriptSteps && scriptSteps.length > 0) {
+                return (
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between pb-0.5">
+                      <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+                        <MessageSquare size={13} />
+                        <span>Roteiro Conversacional ({scriptSteps.filter(s => s.type === 'message').length} etapas)</span>
+                      </span>
+                      <div className="flex items-center gap-1 bg-[#18181b] p-0.5 rounded-lg border border-[#27272a] text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() => setScriptViewMode('steps')}
+                          className={`px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                            scriptViewMode === 'steps' ? 'bg-[#27272f] text-zinc-100 shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
+                          }`}
+                        >
+                          Ver em Etapas
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setScriptViewMode('raw')}
+                          className={`px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                            scriptViewMode === 'raw' ? 'bg-[#27272f] text-zinc-100 shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
+                          }`}
+                        >
+                          Editar Texto
+                        </button>
+                      </div>
+                    </div>
+
+                    {scriptViewMode === 'steps' ? (
+                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        {scriptSteps.map((step, idx) => {
+                          if (step.type === 'wait') {
+                            return (
+                              <div key={idx} className="py-0.5 flex items-center justify-center">
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 text-[10px] font-medium">
+                                  <Clock size={11} className="text-amber-400 shrink-0" />
+                                  <span>{step.content}</span>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          const isCopied = copiedStepIdx === idx;
+                          return (
+                            <div
+                              key={idx}
+                              className="p-2.5 bg-[#18181c] border border-[#27272f] rounded-xl space-y-1.5"
+                            >
+                              <div className="flex items-center justify-between gap-2 border-b border-[#23232a] pb-1.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="w-4 h-4 rounded-full bg-emerald-500/15 text-emerald-400 font-bold text-[9px] flex items-center justify-center font-mono">
+                                    {step.stepNumber || 1}
+                                  </span>
+                                  <span className="text-[11px] font-semibold text-zinc-200">
+                                    {step.title}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyStepText(idx, step.content)}
+                                    className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-zinc-100 text-[10px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                                  >
+                                    {isCopied ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                                    <span>{isCopied ? 'Copiada' : 'Copiar'}</span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDispatchStepWhatsApp(step.content)}
+                                    className="px-2 py-0.5 rounded bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[10px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                                  >
+                                    <Send size={10} />
+                                    <span>Zap</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              <p className="text-[11px] text-zinc-200 whitespace-pre-line leading-relaxed">
+                                {step.content}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <textarea
+                        rows={5}
+                        value={msgAMandar}
+                        onChange={(e) => setMsgAMandar(e.target.value)}
+                        placeholder="Script personalizado para abordagem ou follow-up..."
+                        className="w-full bg-[#18181b] border border-[#27272a] rounded-lg p-2.5 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
+                      />
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <textarea
+                  rows={3}
+                  value={msgAMandar}
+                  onChange={(e) => setMsgAMandar(e.target.value)}
+                  placeholder="Script personalizado para abordagem ou follow-up..."
+                  className="w-full bg-[#18181b] border border-[#27272a] rounded-lg p-2.5 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
+                />
+              );
+            })()}
           </div>
 
           <div>

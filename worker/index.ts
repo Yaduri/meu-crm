@@ -565,20 +565,33 @@ app.post('/api/ai/generate', async (c) => {
       const objectionText = String(body.objection || body.objectionText || '');
 
       const intentInstructions: Record<string, string> = {
-        primeiro_contato: `Gere uma mensagem de 1º contato frio no WhatsApp seguindo EXATAMENTE o estilo de abordagem real de Yago Duarte:
+        primeiro_contato: `Você NÃO deve criar uma mensagem única e longa para ser disparada toda de uma vez.
+Em vez disso, você deve criar um SCRIPT CONVERSACIONAL EM ETAPAS (bate-papo real de WhatsApp entre Yago Duarte e o cliente). O tom deve ser leve, conversado, natural, próximo e profissional (sem excesso de formalidade e sem parecer vendedor chato ou robô).
 
-Estrutura de referência usada por Yago:
-"Encontrei seu trabalho enquanto conhecia profissionais da área de [nicho].
-Vi que você já tem uma presença bem construída no Instagram e também boas avaliações no Google. Gostei bastante da variedade de serviços que você oferece.
-Percebi que vocês ainda não possuem um site próprio. Isso pode fazer com que parte das pessoas que pesquisam pela empresa no Google não encontre rapidamente informações sobre serviços e atendimento.
-Trabalho com desenvolvimento de sites e tive uma ideia de como transformar essa presença em um site próprio, apresentando melhor os serviços, seus diferenciais e facilitando o acesso às informações e ao agendamento.
-Posso te mostrar um exemplo de site que desenvolvi para a área de [área/nicho correspondente]?"
+O script deve conter EXATAMENTE estas 3 etapas:
+
+[MENSAGEM 1 - Enviar primeiro]
+(Quebre o gelo com simpatia dizendo que encontrou o trabalho deles enquanto conhecia profissionais da área de [nicho]. Faça um elogio sincero ao perfil no Instagram e avaliações no Google. Termine com uma pergunta aberta e curiosa para puxar assunto de forma natural: "Uma dúvida por curiosidade: hoje a maior parte dos clientes novos de vocês costuma vir mais por indicação (boca a boca) ou pelo Instagram mesmo?").
+
+---
+[AGUARDAR RESPOSTA DO CLIENTE]
+---
+
+[MENSAGEM 2 - Após o cliente responder de onde vêm os clientes]
+(Comente a resposta dele de forma simpática. Diga que perguntou isso porque percebeu que eles ainda não possuem um site próprio oficial. Toque no ponto da CREDIBILIDADE, AUTORIDADE e PROFISSIONALISMO: no Google, quando uma pessoa pesquisa por [serviços do nicho na cidade] querendo atendimento rápido, ter uma página própria passa muito mais confiança na hora de decidir agendar, além de pegar quem já está procurando no momento exato).
+
+---
+[AGUARDAR RESPOSTA DO CLIENTE]
+---
+
+[MENSAGEM 3 - Apresentar seu trabalho e pedir permissão para enviar exemplo]
+(Fale que trabalha com desenvolvimento de sites focados exatamente em passar essa credibilidade e facilitar o agendamento direto no WhatsApp. Diga que teve uma ideia bem legal para o segmento deles e pergunte de forma leve se pode mostrar um EXEMPLO de site que desenvolveu para a área de [nicho]: "Posso te mandar um exemplo de site que desenvolvi para a área de [nicho], só para você dar uma olhada de como ficaria?").
 
 Regras obrigatórias:
 1. Adapte os termos específicos ao nicho (${lead.nicho || 'Negócios Locais'}) e ao nome da empresa (${lead.nome || 'Cliente'}).
-2. Se o lead tiver site cadastrado (${lead.site_atual || ''}), mencione de forma construtiva que o site atual pode estar desatualizado ou não ser tão otimizado para celulares e agendamento rápido.
+2. Se o lead tiver site cadastrado (${lead.site_atual || ''}), na Mensagem 1 pergunte se os clientes chegam por indicação, Instagram ou pelo site; e na Mensagem 2 comente que percebeu que o site atual pode ser modernizado para passar mais credibilidade e converter melhor no celular.
 3. NUNCA diga que já fez uma prévia pronta exclusiva para a empresa dele. Você deve dizer que desenvolveu um EXEMPLO de site para a área dele e perguntar com simpatia se pode mostrar esse exemplo.
-4. Separe em pequenos parágrafos bem espaçados, com tom humano, natural e respeitoso.`,
+4. Mantenha os marcadores [MENSAGEM 1 - Enviar primeiro], [AGUARDAR RESPOSTA DO CLIENTE], [MENSAGEM 2 ...] e [MENSAGEM 3 ...], pois o painel utiliza esses marcadores para organizar o roteiro.`,
 
         envio_previa: `Gere uma mensagem de WhatsApp para apresentar o site de demonstração que você (Yago Duarte) desenvolveu como modelo para o nicho de ${lead.nicho || 'Negócios'}:
 ${lead.link_previa ? `Link do site de demonstração a incluir: ${lead.link_previa}` : '(Inclua o espaço para o link do site de demonstração)'}

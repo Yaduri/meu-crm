@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { ClientLead, Project, MonthlyInvoice, Installment } from '../../types/crm';
 import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
+import { parseConversationScript } from '../../utils/conversationScript';
 import { 
   Send, 
   Clock, 
@@ -15,7 +16,8 @@ import {
   Copy,
   Check,
   Loader2,
-  Zap
+  Zap,
+  MessageSquare
 } from 'lucide-react';
 
 interface LeadXRayData {
@@ -65,6 +67,8 @@ export const HojeView: React.FC<HojeViewProps> = ({
   const [aiError, setAiError] = useState<string | null>(null);
   const [autoAdvance, setAutoAdvance] = useState(true);
   const [actionToast, setActionToast] = useState<string | null>(null);
+  const [copiedStepIdx, setCopiedStepIdx] = useState<number | null>(null);
+  const [scriptViewMode, setScriptViewMode] = useState<'steps' | 'raw'>('steps');
   const todayStr = new Date().toISOString().slice(0, 10);
   
   // Classificar followups (apenas leads ativos em prospecção; ignora recusados/encerrados/fechados)
@@ -101,6 +105,20 @@ export const HojeView: React.FC<HojeViewProps> = ({
     onOpenWhatsApp(selectedLead);
     onRegistrarContato(selectedLead.id);
     advanceToNextInQueue('WhatsApp aberto e contato registrado');
+  };
+
+  const handleCopyStepText = (index: number, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedStepIdx(index);
+    setTimeout(() => setCopiedStepIdx(null), 2000);
+  };
+
+  const handleDispatchStepWhatsApp = (text: string) => {
+    if (!selectedLead?.whatsapp) return;
+    const cleanPhone = selectedLead.whatsapp.replace(/\D/g, '');
+    const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+    const url = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
   };
 
   const handleQuickReagendar = (days: number) => {
@@ -575,13 +593,121 @@ export const HojeView: React.FC<HojeViewProps> = ({
                   </div>
                 )}
 
-                <textarea
-                  rows={3}
-                  aria-label="Mensagem pronta para envio no WhatsApp"
-                  value={currentMessage}
-                  onChange={(e) => onUpdateLeadMessage?.(selectedLead.id, e.target.value)}
-                  className="w-full bg-[#09090b] border border-[#27272a] rounded-xl p-3.5 text-xs text-zinc-200 leading-relaxed font-sans focus:outline-hidden focus:border-emerald-500 resize-y"
-                />
+                {(() => {
+                  const scriptSteps = parseConversationScript(currentMessage);
+                  if (scriptSteps && scriptSteps.length > 0) {
+                    return (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between pb-1">
+                          <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+                            <MessageSquare size={14} />
+                            <span>Roteiro Conversacional ({scriptSteps.filter(s => s.type === 'message').length} mensagens)</span>
+                          </span>
+                          <div className="flex items-center gap-1 bg-[#18181b] p-0.5 rounded-lg border border-[#27272a] text-[11px]">
+                            <button
+                              type="button"
+                              onClick={() => setScriptViewMode('steps')}
+                              className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                                scriptViewMode === 'steps' ? 'bg-[#27272f] text-zinc-100 shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
+                              }`}
+                            >
+                              Ver em Etapas
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setScriptViewMode('raw')}
+                              className={`px-2.5 py-1 rounded-md font-medium transition-colors cursor-pointer ${
+                                scriptViewMode === 'raw' ? 'bg-[#27272f] text-zinc-100 shadow-xs' : 'text-zinc-400 hover:text-zinc-200'
+                              }`}
+                            >
+                              Editar Roteiro
+                            </button>
+                          </div>
+                        </div>
+
+                        {scriptViewMode === 'steps' ? (
+                          <div className="space-y-2.5">
+                            {scriptSteps.map((step, idx) => {
+                              if (step.type === 'wait') {
+                                return (
+                                  <div key={idx} className="py-1 flex items-center justify-center">
+                                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300 text-[11px] font-medium">
+                                      <Clock size={12} className="text-amber-400 shrink-0" />
+                                      <span>{step.content}</span>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              const isCopied = copiedStepIdx === idx;
+                              return (
+                                <div
+                                  key={idx}
+                                  className="p-3.5 bg-[#18181c] border border-[#27272f] rounded-xl space-y-2 shadow-xs"
+                                >
+                                  <div className="flex items-center justify-between gap-2 border-b border-[#23232a] pb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-400 font-bold text-[10px] flex items-center justify-center font-mono">
+                                        {step.stepNumber || 1}
+                                      </span>
+                                      <span className="text-xs font-semibold text-zinc-200">
+                                        {step.title}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleCopyStepText(idx, step.content)}
+                                        className="min-h-[28px] px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-zinc-100 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                                        title="Copiar apenas esta mensagem"
+                                      >
+                                        {isCopied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                                        <span>{isCopied ? 'Copiada!' : 'Copiar'}</span>
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDispatchStepWhatsApp(step.content)}
+                                        className="min-h-[28px] px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                                        title="Abrir WhatsApp com apenas esta mensagem"
+                                      >
+                                        <Send size={11} />
+                                        <span>Mandar no Zap</span>
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  <p className="text-xs text-zinc-200 whitespace-pre-line leading-relaxed">
+                                    {step.content}
+                                  </p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <textarea
+                            rows={8}
+                            aria-label="Mensagem pronta para envio no WhatsApp"
+                            value={currentMessage}
+                            onChange={(e) => onUpdateLeadMessage?.(selectedLead.id, e.target.value)}
+                            className="w-full bg-[#09090b] border border-[#27272a] rounded-xl p-3.5 text-xs text-zinc-200 leading-relaxed font-sans focus:outline-hidden focus:border-emerald-500 resize-y"
+                          />
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <textarea
+                      rows={4}
+                      aria-label="Mensagem pronta para envio no WhatsApp"
+                      value={currentMessage}
+                      onChange={(e) => onUpdateLeadMessage?.(selectedLead.id, e.target.value)}
+                      className="w-full bg-[#09090b] border border-[#27272a] rounded-xl p-3.5 text-xs text-zinc-200 leading-relaxed font-sans focus:outline-hidden focus:border-emerald-500 resize-y"
+                    />
+                  );
+                })()}
 
                 {/* Big Action Buttons */}
                 <div className="flex flex-wrap items-center gap-2.5 mt-4">

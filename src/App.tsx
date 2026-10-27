@@ -4,6 +4,7 @@ import { Sidebar } from './components/layout/Sidebar';
 import { HojeView } from './components/views/HojeView';
 import { LeadModal } from './components/modals/LeadModal';
 import { exportLeadsToCsv } from './lib/csvMigration';
+import { extractFirstMessageFromScript } from './utils/conversationScript';
 
 const ProspeccaoView = lazy(() => import('./components/views/ProspeccaoView').then(m => ({ default: m.ProspeccaoView })));
 const ProjetosView = lazy(() => import('./components/views/ProjetosView').then(m => ({ default: m.ProjetosView })));
@@ -312,7 +313,8 @@ export function App() {
     if (!lead.whatsapp) return;
     const cleanPhone = lead.whatsapp.replace(/\D/g, '');
     const phoneWithCountry = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    const textEncoded = encodeURIComponent(lead.msg_a_mandar || '');
+    const messageToSend = extractFirstMessageFromScript(lead.msg_a_mandar || '');
+    const textEncoded = encodeURIComponent(messageToSend);
     const url = `https://wa.me/${phoneWithCountry}?text=${textEncoded}`;
     
     window.open(url, '_blank');
