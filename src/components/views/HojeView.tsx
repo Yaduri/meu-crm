@@ -524,11 +524,23 @@ export const HojeView: React.FC<HojeViewProps> = ({
                   <button
                     type="button"
                     disabled={!!aiLoadingIntent}
-                    onClick={() => handleGenerateWhatsAppAI('primeiro_contato')}
+                    onClick={() => handleGenerateWhatsAppAI('primeiro_contato_duvida')}
+                    title="Opção 2: Abordagem de Dúvida Natural (Catálogo de Serviços / Fotos / WhatsApp)"
                     className="min-h-[32px] px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
                   >
-                    {aiLoadingIntent === 'primeiro_contato' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                    <span>1º Contato</span>
+                    {aiLoadingIntent === 'primeiro_contato_duvida' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    <span>1º Contato (Dúvida Serviços)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!!aiLoadingIntent}
+                    onClick={() => handleGenerateWhatsAppAI('primeiro_contato_google')}
+                    title="Opção 3: Abordagem Google Maps (Elogio a Avaliações & Oportunidade do Botão de Site Oficial)"
+                    className="min-h-[32px] px-2.5 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/25 text-sky-300 text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {aiLoadingIntent === 'primeiro_contato_google' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                    <span>1º Contato (Google Maps)</span>
                   </button>
 
                   <button

@@ -527,11 +527,22 @@ export const LeadModal: React.FC<LeadModalProps> = ({
                 <button
                   type="button"
                   disabled={!!aiLoadingIntent}
-                  onClick={() => handleGenerateLeadMsgAI('primeiro_contato')}
+                  onClick={() => handleGenerateLeadMsgAI('primeiro_contato_duvida')}
+                  title="Opção 2: Abordagem de Dúvida Natural (Catálogo de Serviços / Fotos)"
                   className="px-2 py-1 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-300 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {aiLoadingIntent === 'primeiro_contato' ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
-                  <span>1º Contato IA</span>
+                  {aiLoadingIntent === 'primeiro_contato_duvida' ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+                  <span>1º Contato (Dúvida)</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={!!aiLoadingIntent}
+                  onClick={() => handleGenerateLeadMsgAI('primeiro_contato_google')}
+                  title="Opção 3: Abordagem Google Maps (Elogio a Avaliações & Botão de Site Oficial)"
+                  className="px-2 py-1 rounded-md bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/25 text-sky-300 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {aiLoadingIntent === 'primeiro_contato_google' ? <Loader2 size={11} className="animate-spin" /> : <Sparkles size={11} />}
+                  <span>1º Contato (Google)</span>
                 </button>
                 <button
                   type="button"
