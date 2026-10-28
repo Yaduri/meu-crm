@@ -1,14 +1,12 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
-import { Menu, Plus, Search, Smartphone } from 'lucide-react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { Menu, Plus, Search } from 'lucide-react';
 import { Sidebar } from './components/layout/Sidebar';
 import { HojeView } from './components/views/HojeView';
 import { LeadModal } from './components/modals/LeadModal';
-import { WhatsAppModal } from './components/modals/WhatsAppModal';
 import { exportLeadsToCsv } from './lib/csvMigration';
 import { extractFirstMessageFromScript } from './utils/conversationScript';
 
 const ProspeccaoView = lazy(() => import('./components/views/ProspeccaoView').then(m => ({ default: m.ProspeccaoView })));
-const ConversasView = lazy(() => import('./components/views/ConversasView').then(m => ({ default: m.ConversasView })));
 const ProjetosView = lazy(() => import('./components/views/ProjetosView').then(m => ({ default: m.ProjetosView })));
 const FinanceiroView = lazy(() => import('./components/views/FinanceiroView').then(m => ({ default: m.FinanceiroView })));
 const CarteiraView = lazy(() => import('./components/views/CarteiraView').then(m => ({ default: m.CarteiraView })));
@@ -33,8 +31,7 @@ import type {
   MaintenanceRequest,
   Proposal,
   BriefingData,
-  CrmSettings,
-  WhatsAppBridgeStatus
+  CrmSettings
 } from './types/crm';
 import { DEFAULT_STATUSES, DEFAULT_CRM_SETTINGS, isLeadActiveForFollowup } from './types/crm';
 
@@ -185,26 +182,6 @@ export function App() {
   const [selectedBriefingProject, setSelectedBriefingProject] = useState<Project | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [whatsAppStatus, setWhatsAppStatus] = useState<WhatsAppBridgeStatus | null>(null);
-  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
-
-  const fetchWhatsAppStatus = useCallback(async () => {
-    try {
-      const res = await fetch('/api/whatsapp/status');
-      if (res.ok) {
-        const data = await res.json() as WhatsAppBridgeStatus;
-        setWhatsAppStatus(data);
-      }
-    } catch {
-      // Silencioso
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchWhatsAppStatus();
-    const interval = setInterval(fetchWhatsAppStatus, 10000);
-    return () => clearInterval(interval);
-  }, [fetchWhatsAppStatus]);
 
   // Atalhos Globais (Ctrl+K, N, Escape)
   useEffect(() => {
@@ -1001,15 +978,6 @@ export function App() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsWhatsAppModalOpen(true)}
-            aria-label="Status do WhatsApp"
-            className="min-h-[38px] min-w-[38px] flex items-center justify-center rounded-lg bg-[#18181b] border border-[#27272a] text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer"
-            title="Conexão do WhatsApp"
-          >
-            <Smartphone size={16} className={whatsAppStatus?.connected ? 'text-emerald-400' : whatsAppStatus?.online ? 'text-amber-400' : 'text-zinc-500'} />
-          </button>
-          <button
-            type="button"
             onClick={() => setIsCommandPaletteOpen(true)}
             aria-label="Buscar lead"
             className="min-h-[38px] min-w-[38px] flex items-center justify-center rounded-lg bg-[#18181b] border border-[#27272a] text-zinc-300 hover:text-zinc-100 transition-colors cursor-pointer"
@@ -1041,8 +1009,6 @@ export function App() {
         onOpenMigration={() => setIsMigrationOpen(true)}
         onExportCsv={handleExportCsv}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-        onOpenWhatsApp={() => setIsWhatsAppModalOpen(true)}
-        whatsAppStatus={whatsAppStatus}
         isOpenMobile={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
@@ -1062,7 +1028,6 @@ export function App() {
             onMudarStatus={handleMoveLeadStatus}
             onUpdateLeadMessage={handleUpdateLeadMessage}
             onOpenProposta={(lead) => setSelectedProposalLead(lead)}
-            onOpenWhatsAppModal={() => setIsWhatsAppModalOpen(true)}
             onEditLead={(lead) => {
               setEditingLead(lead);
               setIsModalOpen(true);
@@ -1103,19 +1068,6 @@ export function App() {
               });
               setIsModalOpen(true);
             }}
-          />
-        )}
-
-        {currentView === 'conversas' && (
-          <ConversasView
-            leads={leads}
-            whatsAppStatus={whatsAppStatus}
-            onOpenWhatsAppModal={() => setIsWhatsAppModalOpen(true)}
-            onEditLead={(lead) => {
-              setEditingLead(lead);
-              setIsModalOpen(true);
-            }}
-            onOpenProposta={(lead) => setSelectedProposalLead(lead)}
           />
         )}
 
@@ -1282,14 +1234,6 @@ export function App() {
             }}
           />
         )}
-
-        {/* Modal de Conexão WhatsApp Local (Baileys) */}
-        <WhatsAppModal
-          isOpen={isWhatsAppModalOpen}
-          onClose={() => setIsWhatsAppModalOpen(false)}
-          status={whatsAppStatus}
-          onRefresh={fetchWhatsAppStatus}
-        />
       </Suspense>
     </div>
   );

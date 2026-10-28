@@ -46,47 +46,6 @@ export interface ProjectTask {
   feito: boolean;
 }
 
-export interface WhatsAppMessage {
-  id: string;
-  lead_id: string;
-  whatsapp: string;
-  from_me: number; // 1 = enviado por você, 0 = recebido do lead
-  body: string;
-  timestamp: number;
-  status: string; // 'pending' | 'sent' | 'received' | 'failed'
-  created_at: string;
-  media_type?: 'image' | 'audio' | 'document' | 'sticker' | null;
-  media_url?: string | null;
-  media_filename?: string | null;
-  media_mimetype?: string | null;
-}
-
-export interface WhatsAppConversationSummary {
-  lead_id: string;
-  lead_nome: string;
-  lead_nicho: string;
-  whatsapp: string;
-  last_message: {
-    body: string;
-    timestamp: number;
-    from_me: number;
-    status: string;
-    created_at: string;
-    media_type?: 'image' | 'audio' | 'document' | 'sticker' | null;
-    media_url?: string | null;
-    media_filename?: string | null;
-  };
-}
-
-export interface WhatsAppBridgeStatus {
-  connected: boolean;
-  status: 'connected' | 'qr_ready' | 'connecting' | 'disconnected' | 'offline' | 'error';
-  phone: string | null;
-  qr_code: string | null;
-  last_ping: number | null;
-  online: boolean;
-}
-
 export interface Project {
   id: string;
   client_id: string;
