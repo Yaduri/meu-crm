@@ -54,6 +54,7 @@ export function parseOldCsv(csvText: string): MigrationSummary {
     if (nicho.toLowerCase().includes('advoc')) nicho = 'Advogado';
     if (nicho.toLowerCase().includes('psico')) nicho = 'Psicólogo';
     if (nicho.toLowerCase().includes('estet')) nicho = 'Estética';
+    if (nicho.toLowerCase().includes('mecanic') || nicho.toLowerCase().includes('oficin') || nicho.toLowerCase().includes('auto center') || nicho.toLowerCase().includes('funilaria')) nicho = 'Mecânica / Oficina';
 
     const rawWhats = normalizedRow['whatsapp'] || '';
     const rawLinkPerfil = normalizedRow['link_do_perfil'] || normalizedRow['link_perfil'] || '';

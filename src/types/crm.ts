@@ -257,6 +257,7 @@ export const NICHOS_PADRAO = [
   'Arquitetura',
   'Médico',
   'Nutricionista',
+  'Mecânica / Oficina',
   'Outro',
 ];
 
