@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { ClientLead } from '../../types/crm';
 import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
+import { formatDateBR } from '../../utils/dateFormat';
 import {
   Send,
   Search,
@@ -541,7 +542,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
                   <td className="py-3 px-4 font-mono text-zinc-300" onClick={(e) => e.stopPropagation()}>
                     <div className="inline-flex items-center gap-2">
                       <span>
-                        {lead.ultimo_contato ? lead.ultimo_contato.split('-').reverse().join('/') : '-'}
+                        {formatDateBR(lead.ultimo_contato)}
                       </span>
                       <button
                         type="button"
@@ -585,7 +586,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
                           ) : (
                             <Calendar size={11} className="shrink-0" />
                           )}
-                          <span>{followupStr.split('-').reverse().join('/')}</span>
+                          <span>{formatDateBR(followupStr)}</span>
                           {isOverdue && daysDiff > 0 && (
                             <span className="ml-0.5 px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-bold">
                               {daysDiff}d

@@ -142,8 +142,8 @@ export const LeadModal: React.FC<LeadModalProps> = ({
       setPresencaDigital(initialLead.presenca_digital || 'Sem site');
       setOrigem(initialLead.origem || 'Google Maps');
       setStatusId(initialLead.status_id || 'abordar');
-      setUltimoContato(initialLead.ultimo_contato || '');
-      setProximoFollowup(initialLead.proximo_followup || '');
+      setUltimoContato(initialLead.ultimo_contato ? initialLead.ultimo_contato.slice(0, 10) : '');
+      setProximoFollowup(initialLead.proximo_followup ? initialLead.proximo_followup.slice(0, 10) : '');
       setImplantacao(initialLead.implantacao !== undefined ? initialLead.implantacao.toString() : '1200');
       setMensalidade(initialLead.mensalidade !== undefined ? initialLead.mensalidade.toString() : '89');
       setLinkPrevia(initialLead.link_previa || '');

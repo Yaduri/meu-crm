@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ClientLead, Project, MonthlyInvoice, Installment } from '../../types/crm';
 import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
 import { parseConversationScript } from '../../utils/conversationScript';
+import { formatDateBR } from '../../utils/dateFormat';
 import { 
   Send, 
   Clock, 
@@ -396,7 +397,7 @@ export const HojeView: React.FC<HojeViewProps> = ({
                   </div>
 
                   <div className="flex items-center justify-between text-[11px] text-zinc-400 mt-3 pt-2 border-t border-zinc-800/50">
-                    <span>Último: {lead.ultimo_contato || 'Sem registro'}</span>
+                    <span>Último: {formatDateBR(lead.ultimo_contato)}</span>
                     <button
                       type="button"
                       onClick={(e) => {
@@ -869,7 +870,7 @@ export const HojeView: React.FC<HojeViewProps> = ({
                         Status Atual: {DEFAULT_STATUSES.find(s => s.id === selectedLead.status_id)?.label || selectedLead.status_id}
                       </div>
                       <div className="text-[11px] text-zinc-400 font-mono">
-                        Próximo Follow-up: {selectedLead.proximo_followup ? selectedLead.proximo_followup.split('-').reverse().join('/') : 'Não agendado'}
+                        Próximo Follow-up: {formatDateBR(selectedLead.proximo_followup)}
                       </div>
                     </div>
                   </div>
@@ -877,10 +878,10 @@ export const HojeView: React.FC<HojeViewProps> = ({
                     <div className="w-2 h-2 rounded-full bg-zinc-600 mt-1.5 shrink-0"></div>
                     <div>
                       <div className="text-zinc-200 font-medium">
-                        Último contato registrado: {selectedLead.ultimo_contato ? selectedLead.ultimo_contato.split('-').reverse().join('/') : 'Ainda não abordado'}
+                        Último contato registrado: {formatDateBR(selectedLead.ultimo_contato)}
                       </div>
                       <div className="text-[11px] text-zinc-400 font-mono">
-                        Cadastrado em {selectedLead.created_at ? selectedLead.created_at.split('-').reverse().join('/') : '-'}
+                        Cadastrado em {formatDateBR(selectedLead.created_at)}
                       </div>
                     </div>
                   </div>

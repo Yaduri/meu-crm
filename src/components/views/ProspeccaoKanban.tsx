@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { ClientLead } from '../../types/crm';
 import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
+import { formatDateBR, formatDateShortBR } from '../../utils/dateFormat';
 import { 
   Send, 
   Search, 
@@ -268,7 +269,7 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
                                         ) : (
                                           <Calendar size={10} className="shrink-0" />
                                         )}
-                                        <span>{followupStr.split('-').reverse().join('/')}</span>
+                                        <span>{formatDateBR(followupStr)}</span>
                                         {isOverdue && daysDiff > 0 && (
                                           <span className="ml-0.5 px-1 rounded-full bg-rose-500/20 text-rose-300 text-[9px] font-bold">
                                             {daysDiff}d
@@ -280,7 +281,7 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
 
                                   {lead.ultimo_contato && (
                                     <span className="text-[10px] font-mono text-zinc-400" title="Último contato">
-                                      Últ: {lead.ultimo_contato.split('-').reverse().slice(0, 2).join('/')}
+                                      Últ: {formatDateShortBR(lead.ultimo_contato)}
                                     </span>
                                   )}
                                 </div>
