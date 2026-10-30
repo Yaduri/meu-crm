@@ -885,7 +885,7 @@ export function App() {
       beneficios_mensalidade: [
         'Hospedagem ultra rápida Cloudflare + SSL grátis',
         'Suporte técnico direto no WhatsApp e pequenos ajustes mensais',
-        'Backups diários e proteção ativa contra invasões'
+        'Domínio .com.br incluso'
       ],
       status: 'enviada',
       created_at: new Date().toISOString()

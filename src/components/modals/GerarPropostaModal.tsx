@@ -36,7 +36,7 @@ const DEFAULT_ITENS: ProposalItem[] = [
 const DEFAULT_BENEFICIOS: string[] = [
   'Hospedagem ultra rápida Cloudflare + SSL grátis',
   'Suporte técnico direto no WhatsApp e pequenos ajustes mensais',
-  'Backups diários e proteção ativa contra invasões'
+  'Domínio .com.br incluso'
 ];
 
 type ActiveTab = 'geral' | 'itens' | 'hospedagem';

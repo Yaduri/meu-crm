@@ -82,9 +82,9 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col selection:bg-emerald-500/30 selection:text-emerald-200">
+    <div className="w-full min-h-screen bg-[#09090b] text-zinc-100 flex flex-col selection:bg-emerald-500/30 selection:text-emerald-200 print:min-h-0 print:bg-[#09090b] print:text-zinc-100">
       {/* Top Banner sutil */}
-      <div className="border-b border-[#27272a] bg-[#0d0d10]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between">
+      <div className="border-b border-[#27272a] bg-[#0d0d10]/80 backdrop-blur-md sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between print:static print:bg-[#0d0d10] print:border-b print:border-[#27272a] print:px-8 print:py-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700/60 overflow-hidden flex items-center justify-center p-1">
             <img 
@@ -122,9 +122,9 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
       </div>
 
       {/* Main Container */}
-      <main className="max-w-4xl w-full mx-auto px-6 py-10 space-y-10 flex-1">
+      <main className="max-w-4xl w-full mx-auto px-6 py-10 space-y-10 flex-1 print:max-w-none print:w-full print:px-8 print:py-6 print:space-y-6">
         {/* Header Hero */}
-        <div className="text-center space-y-3 pt-4 pb-2">
+        <div className="text-center space-y-3 pt-4 pb-2 print-avoid-break">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
             <Sparkles size={13} />
             <span>Proposta Comercial Exclusiva</span>
@@ -142,13 +142,13 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
 
         {/* Apresentação / Contexto */}
         {proposal.apresentacao && (
-          <div className="p-6 bg-[#121215] border border-[#27272a] rounded-2xl leading-relaxed text-zinc-300 text-sm shadow-xs">
+          <div className="p-6 bg-[#121215] border border-[#27272a] rounded-2xl leading-relaxed text-zinc-300 text-sm shadow-xs print-avoid-break">
             <p className="whitespace-pre-line">{proposal.apresentacao}</p>
           </div>
         )}
 
         {/* O que está incluso (Escopo) */}
-        <section className="space-y-4">
+        <section className="space-y-4 print-avoid-break">
           <div className="flex items-center gap-2 text-zinc-200 font-bold text-base">
             <Layers size={18} className="text-emerald-400" />
             <h2>O que está incluso no projeto</h2>
@@ -162,7 +162,7 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
               return (
                 <div 
                   key={item.id}
-                  className="p-4 bg-[#121215] border border-[#27272a] rounded-xl flex items-start gap-3 hover:border-zinc-700 transition-colors"
+                  className="p-4 bg-[#121215] border border-[#27272a] rounded-xl flex items-start gap-3 hover:border-zinc-700 transition-colors print-avoid-break"
                 >
                   <div className="p-1 rounded-full bg-emerald-500/10 text-emerald-400 mt-0.5 shrink-0">
                     <CheckCircle2 size={16} />
@@ -178,7 +178,7 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
         </section>
 
         {/* Cronograma e Prazos */}
-        <section className="bg-[#121215] border border-[#27272a] rounded-2xl p-6">
+        <section className="bg-[#121215] border border-[#27272a] rounded-2xl p-6 print-avoid-break">
           <div className="flex items-center gap-2 text-zinc-200 font-bold text-base mb-4">
             <Clock size={18} className="text-emerald-400" />
             <h2>Cronograma e Metodologia de Trabalho</h2>
@@ -206,7 +206,7 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
         </section>
 
         {/* Valores e Investimento */}
-        <section className="space-y-4">
+        <section className="space-y-4 print-avoid-break">
           <div className="text-center space-y-1 mb-6">
             <h2 className="text-2xl font-bold text-zinc-100">Investimento Transparente</h2>
             <p className="text-xs text-zinc-400">Sem surpresas ou letras miúdas. Pagamento facilitado em duas etapas.</p>
@@ -214,7 +214,7 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Card Implantação */}
-            <div className="p-6 bg-[#121215] border border-emerald-500/40 rounded-2xl relative shadow-lg shadow-emerald-500/5">
+            <div className="p-6 bg-[#121215] border border-emerald-500/40 rounded-2xl relative shadow-lg shadow-emerald-500/5 print-avoid-break">
               <div className="inline-block text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full mb-3">
                 Criação & Desenvolvimento
               </div>
@@ -237,7 +237,7 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
             </div>
 
             {/* Card Mensalidade Hospedagem */}
-            <div className="p-6 bg-[#121215] border border-[#27272a] rounded-2xl">
+            <div className="p-6 bg-[#121215] border border-[#27272a] rounded-2xl print-avoid-break">
               <div className="inline-block text-[11px] font-bold text-zinc-300 bg-zinc-800 px-2.5 py-0.5 rounded-full mb-3">
                 Hospedagem & Manutenção Contínua
               </div>
@@ -268,7 +268,7 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
-                      <span>Sem fidelidade obrigatória</span>
+                      <span>Domínio .com.br incluso</span>
                     </div>
                   </>
                 )}
@@ -278,7 +278,7 @@ export const PublicProposalView: React.FC<PublicProposalViewProps> = ({
         </section>
 
         {/* CTA Final */}
-        <div className="bg-gradient-to-b from-[#18181b] to-[#121215] border border-emerald-500/30 rounded-3xl p-8 text-center space-y-4 shadow-xl">
+        <div className="bg-gradient-to-b from-[#18181b] to-[#121215] border border-emerald-500/30 rounded-3xl p-8 text-center space-y-4 shadow-xl print-avoid-break">
           <h3 className="text-2xl font-bold text-zinc-100">Pronto para transformar sua presença digital?</h3>
           <p className="text-zinc-400 text-xs max-w-md mx-auto">
             Clique no botão abaixo para aprovar a proposta e falarmos diretamente no WhatsApp para dar início ao seu projeto hoje mesmo.

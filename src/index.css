@@ -75,14 +75,34 @@ body {
   }
 }
 
+@page {
+  margin: 0;
+  size: auto;
+}
+
 @media print {
+  html,
   body {
-    background: #ffffff !important;
-    color: #111827 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #09090b !important;
+    color: #f4f4f5 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    width: 100% !important;
+    min-height: 100% !important;
   }
+
   .no-print {
     display: none !important;
+  }
+
+  /* Evitar quebras de página desagradáveis no meio de cards e seções */
+  .print-avoid-break,
+  section,
+  .rounded-2xl,
+  .rounded-xl {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 }
