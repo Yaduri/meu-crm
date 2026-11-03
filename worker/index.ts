@@ -552,6 +552,174 @@ app.delete('/api/files/:key', async (c) => {
   return c.json({ success: true });
 });
 
+// ==========================================
+// PROSPECÇÃO AUTOMÁTICA: CNPJ & GOOGLE MAPS
+// ==========================================
+
+// 1. Busca Avançada de Empresas por CNPJ (Fichário / Receita Federal)
+app.get('/api/prospeccao/cnpj-search', async (c) => {
+  try {
+    const url = new URL(c.req.url);
+    const uf = url.searchParams.get('uf') || 'SP';
+    const cidade = url.searchParams.get('cidade') || 'Campo Limpo Paulista';
+    const cnae = url.searchParams.get('cnae') || '4520001';
+    const porte = url.searchParams.get('porte') || '';
+    const temTelefone = url.searchParams.get('tem_telefone') === 'true';
+    const temSite = url.searchParams.get('tem_site');
+    const pagina = url.searchParams.get('pagina') || '1';
+    const ordem = url.searchParams.get('ordem') || 'capital_desc';
+
+    const apiUrl = new URL('https://cnpj.genesisinnovation.io/api/v1/busca-avancada');
+    apiUrl.searchParams.set('uf', uf);
+    apiUrl.searchParams.set('cidade', cidade);
+    apiUrl.searchParams.set('cnae', cnae);
+    apiUrl.searchParams.set('pagina', pagina);
+    apiUrl.searchParams.set('ordem', ordem);
+    if (porte) apiUrl.searchParams.set('porte', porte);
+    if (temTelefone) apiUrl.searchParams.set('tem_telefone', 'true');
+    if (temSite === 'true' || temSite === 'false') {
+      apiUrl.searchParams.set('tem_site', temSite);
+    }
+
+    const res = await fetch(apiUrl.toString(), {
+      headers: {
+        'User-Agent': 'MeuCRM-Prospector/1.0 (Cloudflare Worker; contact: yaduri16@gmail.com)',
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      return c.json({ ok: false, error: `Erro na API CNPJ (${res.status}): ${errText.slice(0, 200)}` }, res.status as any);
+    }
+
+    const data = await res.json() as {
+      total: number;
+      pagina: number;
+      por_pagina: number;
+      paginas: number;
+      resultados?: Array<Record<string, unknown>>;
+    };
+
+    const resultados = (data.resultados || []).map((item) => {
+      const rawCnpj = String(item.cnpj || '');
+      const rawNomeFantasia = String(item.nome_fantasia || '').trim();
+      const rawRazaoSocial = String(item.razao_social || '').trim();
+      const nomeExibicao = rawNomeFantasia || rawRazaoSocial;
+      const rawPhone = String(item.telefone || '').trim();
+      const cleanPhone = rawPhone.replace(/\D/g, '');
+      const dataAberturaRaw = String(item.data_abertura || '');
+      let dataAberturaFmt = dataAberturaRaw;
+      if (dataAberturaRaw.length === 8) {
+        dataAberturaFmt = `${dataAberturaRaw.slice(6, 8)}/${dataAberturaRaw.slice(4, 6)}/${dataAberturaRaw.slice(0, 4)}`;
+      }
+
+      const queryMaps = `${nomeExibicao} ${item.municipio || cidade} ${item.uf || uf}`;
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queryMaps)}`;
+      const whatsappUrl = cleanPhone.length >= 10 ? `https://wa.me/55${cleanPhone}` : '';
+
+      return {
+        cnpj: rawCnpj,
+        razao_social: rawRazaoSocial,
+        nome_fantasia: rawNomeFantasia,
+        nome_exibicao: nomeExibicao,
+        municipio: String(item.municipio || cidade),
+        uf: String(item.uf || uf),
+        porte: String(item.porte || '-'),
+        capital_social: Number(String(item.capital_social || '0').replace(',', '.')),
+        capital_social_brl: String(item.capital_social_brl || ''),
+        data_abertura: dataAberturaFmt,
+        telefone: rawPhone || null,
+        telefone_limpo: cleanPhone || null,
+        maps_url: mapsUrl,
+        whatsapp_url: whatsappUrl,
+        origem_fichario_url: String(item.url || `https://cnpj.genesisinnovation.io/cnpj/${rawCnpj}`)
+      };
+    });
+
+    return c.json({
+      ok: true,
+      total: data.total,
+      pagina: data.pagina,
+      por_pagina: data.por_pagina,
+      paginas: data.paginas,
+      resultados
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha ao buscar dados no CNPJ';
+    return c.json({ ok: false, error: message }, 500);
+  }
+});
+
+// 2. Detalhes Enriquecidos do CNPJ (Endereço completo, Bairro, Site e Qualidade)
+app.get('/api/prospeccao/cnpj-enrich/:cnpj', async (c) => {
+  const cnpj = c.req.param('cnpj').replace(/\D/g, '');
+  if (!cnpj) return c.json({ ok: false, error: 'CNPJ inválido' }, 400);
+
+  try {
+    const res = await fetch(`https://cnpj.genesisinnovation.io/api/v1/cnpj/${cnpj}`, {
+      headers: {
+        'User-Agent': 'MeuCRM-Prospector/1.0',
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      return c.json({ ok: false, error: `Falha ao consultar CNPJ (${res.status})` }, res.status as any);
+    }
+
+    const data = await res.json() as Record<string, unknown>;
+    return c.json({ ok: true, data });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao enriquecer CNPJ';
+    return c.json({ ok: false, error: message }, 500);
+  }
+});
+
+// 3. Enriquecimento Automático com Google Maps (via Gemini)
+app.post('/api/prospeccao/maps-enrich', async (c) => {
+  try {
+    const body = await c.req.json<{
+      nome: string;
+      cidade: string;
+      endereco?: string;
+      nicho?: string;
+    }>();
+
+    const nome = String(body.nome || '').trim();
+    const cidade = String(body.cidade || 'Campo Limpo Paulista').trim();
+    const endereco = String(body.endereco || '').trim();
+    const nicho = String(body.nicho || 'Negócios').trim();
+
+    if (!nome) return c.json({ ok: false, error: 'Nome da empresa é obrigatório' }, 400);
+
+    const prompt = `Você é um analista especialista em prospecção B2B e presença no Google Maps.
+Analise a presença comercial e os dados públicos da empresa no Google Maps para o web designer Yago Duarte prospectar:
+- Empresa: "${nome}"
+- Cidade: "${cidade}" - SP
+- Endereço / Bairro: "${endereco}"
+- Nicho de Atuação: "${nicho}"
+
+Com base nos dados típicos de perfil de empresas desse porte na região no Google Meu Negócio, gere um diagnóstico comercial e retorne APENAS um JSON válido nesta estrutura:
+{
+  "nome_maps": "${nome}",
+  "tem_site_no_maps": false,
+  "site_url": "",
+  "presenca_digital": "Sem site",
+  "whatsapp_sugerido": "",
+  "argumento_personalizado": "Argumento de 1 a 2 linhas específico para esta empresa no nicho de ${nicho} em ${cidade}",
+  "maps_search_url": "https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nome + ' ' + cidade)}"
+}`;
+
+    const raw = await callGemini(c.env, prompt, true);
+    const parsed = JSON.parse(raw);
+    return c.json({ ok: true, data: parsed });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha no enriquecimento Maps';
+    return c.json({ ok: false, error: message }, 500);
+  }
+});
+
 // Endpoint de Inteligência Artificial (Google Gemini gemini-3.5-flash-lite)
 app.post('/api/ai/generate', async (c) => {
   try {

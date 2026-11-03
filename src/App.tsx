@@ -526,6 +526,35 @@ export function App() {
     }
   };
 
+  const handleAddMultipleLeads = (newLeadsData: Partial<ClientLead>[]) => {
+    if (!newLeadsData || newLeadsData.length === 0) return;
+    const now = Date.now();
+    const createdLeads: ClientLead[] = newLeadsData.map((leadData, idx) => ({
+      id: `${now}-${idx}`,
+      nome: leadData.nome || 'Novo Lead',
+      nicho: leadData.nicho || 'Estética',
+      whatsapp: leadData.whatsapp || '',
+      instagram: leadData.instagram || '',
+      google_url: leadData.google_url || '',
+      site_atual: leadData.site_atual || '',
+      presenca_digital: leadData.presenca_digital || 'Sem site',
+      origem: leadData.origem || 'Google Maps',
+      status_id: leadData.status_id || 'abordar',
+      ultimo_contato: leadData.ultimo_contato,
+      proximo_followup: leadData.proximo_followup,
+      implantacao: leadData.implantacao || settings.implantacaoPadrao || 1200,
+      mensalidade: leadData.mensalidade || settings.mensalidadePadrao || 89,
+      msg_a_mandar: leadData.msg_a_mandar || '',
+      observacoes: leadData.observacoes || '',
+      followups_sem_resposta: 0,
+      fase: 'prospeccao',
+      created_at: new Date().toISOString().slice(0, 10),
+      updated_at: new Date().toISOString().slice(0, 10)
+    }));
+
+    setLeads(prev => [...createdLeads, ...prev]);
+  };
+
   const handleBulkUpdateLeads = (leadIds: string[], updates: Partial<ClientLead>) => {
     const idSet = new Set(leadIds);
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -1044,6 +1073,7 @@ export function App() {
             }}
             onMoveLeadStatus={handleMoveLeadStatus}
             onOpenWhatsApp={handleOpenWhatsApp}
+            onAddMultipleLeads={handleAddMultipleLeads}
             onBulkUpdateLeads={handleBulkUpdateLeads}
             onBulkDeleteLeads={handleBulkDeleteLeads}
             onNewLead={() => {

@@ -3,6 +3,7 @@ import type { ClientLead } from '../../types/crm';
 import { isLeadActiveForFollowup } from '../../types/crm';
 import { ProspeccaoKanban } from './ProspeccaoKanban';
 import { ProspeccaoTable } from './ProspeccaoTable';
+import { MineradorLeadsModal } from '../modals/MineradorLeadsModal';
 import { 
   Kanban, 
   Table as TableIcon, 
@@ -24,6 +25,7 @@ interface ProspeccaoViewProps {
   onOpenWhatsApp: (lead: ClientLead) => void;
   onNewLead: () => void;
   onNewLeadWithStatus: (statusId: string) => void;
+  onAddMultipleLeads?: (leads: Partial<ClientLead>[]) => void;
   onBulkUpdateLeads?: (leadIds: string[], updates: Partial<ClientLead>) => void;
   onBulkDeleteLeads?: (leadIds: string[]) => void;
 }
@@ -37,12 +39,14 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
   onOpenWhatsApp,
   onNewLead,
   onNewLeadWithStatus,
+  onAddMultipleLeads,
   onBulkUpdateLeads,
   onBulkDeleteLeads,
 }) => {
   const [viewMode, setViewMode] = useState<'tabela' | 'kanban'>('tabela');
   const [filterPill, setFilterPill] = useState<FilterPill>('todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showMineradorModal, setShowMineradorModal] = useState(false);
 
   const todayStr = new Date().toISOString().slice(0, 10);
 
@@ -120,8 +124,18 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
 
           <button
             type="button"
+            onClick={() => setShowMineradorModal(true)}
+            className="min-h-[38px] flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition-all shadow-md shadow-emerald-600/15 cursor-pointer"
+            title="Buscar empresas ativas no CNPJ (Fichário) e Google Maps para prospecção"
+          >
+            <Sparkles size={14} className="text-emerald-200" />
+            <span>Minerar Empresas (CNPJ & Maps)</span>
+          </button>
+
+          <button
+            type="button"
             onClick={onNewLead}
-            className="min-h-[38px] flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition-colors shadow-sm cursor-pointer"
+            className="min-h-[38px] flex items-center gap-1.5 bg-[#1f1f25] hover:bg-[#282830] border border-[#2e2e38] text-zinc-200 hover:text-white text-xs font-semibold py-2 px-3.5 rounded-xl transition-colors shadow-sm cursor-pointer"
           >
             <Plus size={15} />
             <span>Novo Lead</span>
@@ -296,6 +310,17 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
           />
         )}
       </div>
+
+      <MineradorLeadsModal
+        isOpen={showMineradorModal}
+        onClose={() => setShowMineradorModal(false)}
+        existingLeads={leads}
+        onAddMultipleLeads={(newLeads) => {
+          if (onAddMultipleLeads) {
+            onAddMultipleLeads(newLeads);
+          }
+        }}
+      />
     </div>
   );
 };
