@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Papa from 'papaparse';
 import type { ClientLead } from '../../types/crm';
 import {
   X,
@@ -14,7 +15,8 @@ import {
   Phone,
   Filter,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface MineradorLeadsModalProps {
@@ -60,22 +62,38 @@ interface NichoPredefinido {
   nome: string;
   cnae: string;
   nichoCRM: string;
+  tipoNegocio: string;
+  profissao: string;
+  tratamento?: string;
 }
 
 const NICHOS_PREDEFINIDOS: NichoPredefinido[] = [
-  { nome: 'Mecânica / Oficina Mecânica', cnae: '4520001', nichoCRM: 'Mecânica / Oficina' },
-  { nome: 'Estética Automotiva / Lava-Rápido', cnae: '4520005', nichoCRM: 'Estética Automotiva' },
-  { nome: 'Funilaria e Pintura', cnae: '4520002', nichoCRM: 'Mecânica / Oficina' },
-  { nome: 'Marmoraria (Mármores e Granitos)', cnae: '2391503', nichoCRM: 'Marmoraria' },
-  { nome: 'Marcenaria / Móveis Planejados', cnae: '3101200', nichoCRM: 'Marcenaria' },
-  { nome: 'Vidraçaria / Esquadrias de Alumínio', cnae: '4330499', nichoCRM: 'Vidraçaria' },
-  { nome: 'Odontologia / Dentista', cnae: '8630504', nichoCRM: 'Dentista' },
-  { nome: 'Clínica de Estética e Beleza', cnae: '9602502', nichoCRM: 'Estética' },
-  { nome: 'Advocacia / Escritório Jurídico', cnae: '6911701', nichoCRM: 'Advogado' },
-  { nome: 'Clínica Médica / Consultórios', cnae: '8630503', nichoCRM: 'Médico' },
-  { nome: 'Pet Shop e Veterinária', cnae: '7500100', nichoCRM: 'Veterinária' },
-  { nome: 'Restaurante / Pizzaria', cnae: '5611201', nichoCRM: 'Restaurante' }
+  { nome: 'Mecânica / Oficina Mecânica', cnae: '4520001', nichoCRM: 'Mecânica / Oficina', tipoNegocio: 'oficina mecânica', profissao: 'mecânico' },
+  { nome: 'Estética Automotiva / Lava-Rápido', cnae: '4520005', nichoCRM: 'Estética Automotiva', tipoNegocio: 'estética automotiva', profissao: 'detailer' },
+  { nome: 'Funilaria e Pintura', cnae: '4520002', nichoCRM: 'Mecânica / Oficina', tipoNegocio: 'funilaria', profissao: 'funileiro' },
+  { nome: 'Marmoraria (Mármores e Granitos)', cnae: '2391503', nichoCRM: 'Marmoraria', tipoNegocio: 'marmoraria', profissao: 'marmorista' },
+  { nome: 'Marcenaria / Móveis Planejados', cnae: '3101200', nichoCRM: 'Marcenaria', tipoNegocio: 'marcenaria', profissao: 'marceneiro' },
+  { nome: 'Vidraçaria / Esquadrias de Alumínio', cnae: '4330499', nichoCRM: 'Vidraçaria', tipoNegocio: 'vidraçaria', profissao: 'vidraceiro' },
+  { nome: 'Odontologia / Dentista', cnae: '8630504', nichoCRM: 'Dentista', tipoNegocio: 'consultório', profissao: 'dentista', tratamento: 'Dr.' },
+  { nome: 'Clínica de Estética e Beleza', cnae: '9602502', nichoCRM: 'Estética', tipoNegocio: 'clínica de estética', profissao: 'esteticista' },
+  { nome: 'Advocacia / Escritório Jurídico', cnae: '6911701', nichoCRM: 'Advogado', tipoNegocio: 'escritório', profissao: 'advogado', tratamento: 'Dr.' },
+  { nome: 'Clínica Médica / Consultórios', cnae: '8630503', nichoCRM: 'Médico', tipoNegocio: 'consultório', profissao: 'médico', tratamento: 'Dr.' },
+  { nome: 'Pet Shop e Veterinária', cnae: '7500100', nichoCRM: 'Veterinária', tipoNegocio: 'clínica veterinária', profissao: 'veterinário', tratamento: 'Dr.' },
+  { nome: 'Restaurante / Pizzaria', cnae: '5611201', nichoCRM: 'Restaurante', tipoNegocio: 'restaurante', profissao: 'proprietário' }
 ];
+
+const formatPhoneForModelo = (rawPhone?: string | null): string => {
+  if (!rawPhone) return '';
+  const digits = rawPhone.replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
+    return digits;
+  }
+  if (digits.length === 10 || digits.length === 11) {
+    return `55${digits}`;
+  }
+  return digits;
+};
 
 export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
   isOpen,
@@ -272,6 +290,57 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
     }
   };
 
+  const buildRowForModelo = (empresa: EmpresaResultado) => {
+    const enrich = enrichDetails[empresa.cnpj];
+    const currentNichoObj = isCustomCnae ? null : NICHOS_PREDEFINIDOS[selectedNichoIndex];
+
+    return {
+      empresa: empresa.nome_exibicao || empresa.razao_social,
+      tipo_negocio: currentNichoObj?.tipoNegocio || 'empresa',
+      decisor: enrich?.decisor || '',
+      tratamento: currentNichoObj?.tratamento || '',
+      genero: '',
+      profissao: currentNichoObj?.profissao || '',
+      segmento: (currentNichoCRM || 'Geral').toLowerCase(),
+      cidade: `${empresa.municipio}/${empresa.uf || 'SP'}`,
+      telefone: formatPhoneForModelo(enrich?.telefone || empresa.telefone_limpo || empresa.telefone),
+      site: enrich?.site_url || '',
+      instagram: enrich?.instagram || '',
+      nota_google: enrich?.nota_avaliacao ?? '',
+      avaliacoes: enrich?.total_avaliacoes ?? '',
+      link_maps: empresa.maps_url || '',
+      observacao: `CNPJ: ${empresa.cnpj} (${empresa.porte}). Capital Social: ${empresa.capital_social_brl || 'R$ ' + empresa.capital_social}. Aberta em: ${empresa.data_abertura}.${enrich?.endereco ? ' Endereço: ' + enrich.endereco : ''}`,
+      abordagem: '',
+      status: 'a_abordar',
+      tipo_enviado: '',
+      mensagem_enviada: '',
+      enviado_em: ''
+    };
+  };
+
+  const handleExportCsv = (list: EmpresaResultado[], filenameSuffix = '') => {
+    if (list.length === 0) return;
+
+    const rows = list.map(buildRowForModelo);
+
+    const csvString = '\uFEFF' + Papa.unparse(rows, {
+      quotes: false,
+      header: true
+    });
+
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const sanitizedCidade = cidade.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const sanitizedNicho = currentNichoCRM.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    link.href = url;
+    link.setAttribute('download', `leads-${sanitizedCidade}-${sanitizedNicho}${filenameSuffix}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div
       role="dialog"
@@ -446,19 +515,42 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-zinc-400 font-mono text-[11px]">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-zinc-400 font-mono text-[11px] hidden sm:inline mr-1">
                 {totalEncontrados} empresas ativas em {cidade}
               </span>
 
+              {/* Botão Exportar Planilha (CSV) */}
+              <button
+                type="button"
+                onClick={() =>
+                  handleExportCsv(
+                    selectedCnpjs.size > 0
+                      ? resultados.filter(r => selectedCnpjs.has(r.cnpj))
+                      : resultados,
+                    selectedCnpjs.size > 0 ? '-selecionados' : '-pagina'
+                  )
+                }
+                className="min-h-[32px] bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 font-medium text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                title="Exportar leads no formato do modelo de planilha CSV"
+              >
+                <FileSpreadsheet size={13} className="text-emerald-400" />
+                <span>
+                  {selectedCnpjs.size > 0
+                    ? `Exportar Selecionadas (${selectedCnpjs.size})`
+                    : `Exportar Planilha (${resultados.length})`}
+                </span>
+              </button>
+
+              {/* Botão Importar Selecionadas */}
               {selectedCnpjs.size > 0 && (
                 <button
                   type="button"
                   onClick={handleImportBatch}
-                  className="min-h-[32px] bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="min-h-[32px] bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs shadow-emerald-600/20"
                 >
                   <Plus size={13} />
-                  <span>Importar ({selectedCnpjs.size}) para o CRM</span>
+                  <span>Importar Selecionadas ({selectedCnpjs.size})</span>
                 </button>
               )}
             </div>
@@ -620,6 +712,17 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
                         <span>Raio-X IA</span>
                       </button>
                     )}
+
+                    {/* Botão Exportar Lead Individual */}
+                    <button
+                      type="button"
+                      onClick={() => handleExportCsv([empresa], `-${empresa.cnpj}`)}
+                      className="min-h-[32px] px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/80 text-zinc-300 hover:text-zinc-100 text-xs font-medium flex items-center gap-1 transition-colors cursor-pointer"
+                      title="Exportar esta empresa para planilha CSV modelo"
+                    >
+                      <FileSpreadsheet size={12} className="text-emerald-400" />
+                      <span className="hidden sm:inline">CSV</span>
+                    </button>
 
                     {/* Botão Importar Lead */}
                     <button
