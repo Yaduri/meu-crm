@@ -720,6 +720,299 @@ Com base nos dados típicos de perfil de empresas desse porte na região no Goog
   }
 });
 
+// ==========================================
+// INTEGRAÇÃO N8N - PROSPECÇÃO BIDIRECIONAL
+// ==========================================
+
+// 1. Fila de leads pendentes para o N8N processar (caso queira pull automático)
+app.get('/api/prospeccao/fila-n8n', async (c) => {
+  try {
+    const limitParam = c.req.query('limit');
+    const limit = limitParam ? parseInt(limitParam, 10) : 50;
+    const nichoFilter = c.req.query('nicho');
+    const format = c.req.query('format'); // 'n8n' ou 'json'
+
+    let query = "SELECT id, data_json FROM leads WHERE status_id = 'abordar' AND fase = 'prospeccao'";
+    const params: unknown[] = [];
+    if (nichoFilter) {
+      query += " AND nicho = ?";
+      params.push(nichoFilter);
+    }
+    query += " ORDER BY created_at ASC LIMIT ?";
+    params.push(limit);
+
+    const rows = await c.env.DB.prepare(query).bind(...params).all<{ id: string; data_json: string }>();
+
+    const formatPhone = (raw?: string | null): string => {
+      if (!raw) return '';
+      const digits = raw.replace(/\D/g, '');
+      if (!digits) return '';
+      if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) return digits;
+      if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+      return digits;
+    };
+
+    const fila = rows.results.map(r => {
+      let lead: Record<string, unknown> = {};
+      try {
+        lead = JSON.parse(r.data_json);
+      } catch {
+        lead = {};
+      }
+
+      const nome = String(lead.nome || '');
+      const nicho = String(lead.nicho || 'Geral');
+      const whatsapp = formatPhone(String(lead.whatsapp || ''));
+      
+      return {
+        id: r.id,
+        empresa: nome,
+        tipo_negocio: String(lead.tipo_negocio || 'empresa'),
+        decisor: String(lead.decisor || ''),
+        tratamento: String(lead.tratamento || ''),
+        genero: String(lead.genero || ''),
+        profissao: String(lead.profissao || ''),
+        segmento: nicho.toLowerCase(),
+        cidade: String(lead.cidade || 'Campo Limpo Paulista/SP'),
+        telefone: whatsapp,
+        site: String(lead.site_atual || ''),
+        instagram: String(lead.instagram || ''),
+        nota_google: lead.nota_google ?? '',
+        avaliacoes: lead.avaliacoes ?? '',
+        link_maps: String(lead.google_url || ''),
+        observacao: String(lead.observacoes || ''),
+        abordagem: String(lead.msg_a_mandar || ''),
+        status: '', // Vazio para o N8N capturar no filtro ['', 'pendente']
+        tipo_enviado: '',
+        mensagem_enviada: '',
+        enviado_em: ''
+      };
+    });
+
+    if (format === 'n8n') {
+      return c.json(fila);
+    }
+
+    return c.json({
+      ok: true,
+      total: fila.length,
+      fila
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha ao buscar fila N8N';
+    return c.json({ ok: false, error: message }, 500);
+  }
+});
+
+// 2. Envio de leads selecionados para o Webhook do N8N
+app.post('/api/prospeccao/enviar-n8n', async (c) => {
+  try {
+    const body = await c.req.json<{
+      leads: Array<Record<string, unknown>>;
+      webhookUrl?: string;
+    }>();
+
+    const leads = body.leads || [];
+    if (!Array.isArray(leads) || leads.length === 0) {
+      return c.json({ ok: false, error: 'Nenhum lead fornecido para envio' }, 400);
+    }
+
+    let targetUrl = body.webhookUrl;
+    if (!targetUrl) {
+      try {
+        const row = await c.env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'crm_settings'").first<{ value: string }>();
+        if (row?.value) {
+          const parsed = JSON.parse(row.value);
+          if (parsed.n8nWebhookUrl) targetUrl = parsed.n8nWebhookUrl;
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (!targetUrl) {
+      targetUrl = 'https://n8n.yagoduarte.com.br/webhook/prospeccao-leads';
+    }
+
+    // Garante que o status vá vazio se for envio de abordagem para o N8N
+    const payload = leads.map(l => ({
+      ...l,
+      status: l.status === 'a_abordar' || !l.status ? '' : l.status
+    }));
+
+    const res = await fetch(targetUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'MeuCRM-N8N-Sync/1.0'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const resText = await res.text();
+    let resJson: unknown = null;
+    try {
+      resJson = JSON.parse(resText);
+    } catch {
+      resJson = resText;
+    }
+
+    return c.json({
+      ok: res.ok,
+      status: res.status,
+      enviados: payload.length,
+      targetUrl,
+      n8n_response: resJson
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao despachar leads para N8N';
+    return c.json({ ok: false, error: message }, 500);
+  }
+});
+
+// 3. Webhook de retorno do N8N para o CRM (Sincronização em tempo real)
+app.post('/api/prospeccao/webhook-n8n', async (c) => {
+  try {
+    const body = await c.req.json<Record<string, unknown>>();
+    const event = String(body.event || body.status || '').toLowerCase().trim();
+    const leadId = body.id ? String(body.id) : null;
+    const rawTelefone = String(body.telefone || body.numero || body.jid || '').split('@')[0].replace(/\D/g, '');
+    const mensagem = String(body.mensagem || body.texto || body.mensagem_enviada || '').trim();
+    const tipoEnviado = body.tipo || body.tipo_enviado;
+    const motivo = String(body.motivo || body.lead || body.dados || '').trim();
+
+    if (!leadId && rawTelefone.length < 8) {
+      return c.json({ ok: false, error: 'Identificador do lead (id ou telefone/jid) não informado' }, 400);
+    }
+
+    // Busca lead no D1
+    let leadRow: { id: string; status_id: string; data_json: string } | null = null;
+    if (leadId) {
+      leadRow = await c.env.DB.prepare('SELECT id, status_id, data_json FROM leads WHERE id = ?').bind(leadId).first();
+    }
+
+    if (!leadRow && rawTelefone.length >= 8) {
+      const last8 = rawTelefone.slice(-8);
+      const candidates = await c.env.DB.prepare("SELECT id, status_id, data_json FROM leads WHERE data_json LIKE ? LIMIT 10")
+        .bind(`%${last8}%`)
+        .all<{ id: string; status_id: string; data_json: string }>();
+
+      if (candidates.results.length > 0) {
+        leadRow = candidates.results.find(row => {
+          try {
+            const parsed = JSON.parse(row.data_json);
+            const w = String(parsed.whatsapp || '').replace(/\D/g, '');
+            return w.includes(last8);
+          } catch {
+            return false;
+          }
+        }) || candidates.results[0];
+      }
+    }
+
+    if (!leadRow) {
+      return c.json({ ok: false, error: 'Lead não encontrado no CRM com o número/ID informado' }, 404);
+    }
+
+    let parsedLead: Record<string, unknown> = {};
+    try {
+      parsedLead = JSON.parse(leadRow.data_json);
+    } catch {
+      parsedLead = {};
+    }
+
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
+    const in2Days = new Date(now.getTime() + 2 * 86400000).toISOString().slice(0, 10);
+    const in3Days = new Date(now.getTime() + 3 * 86400000).toISOString().slice(0, 10);
+
+    let newStatusId = leadRow.status_id;
+    let nextFollowup = parsedLead.proximo_followup ? String(parsedLead.proximo_followup) : null;
+
+    if (['abordado', 'enviado'].includes(event)) {
+      newStatusId = 'abordado';
+      parsedLead.ultimo_contato = todayStr;
+      parsedLead.followups_sem_resposta = 0;
+      nextFollowup = in2Days;
+      if (mensagem) {
+        parsedLead.msg_a_mandar = mensagem;
+        const obsAtual = String(parsedLead.observacoes || '');
+        parsedLead.observacoes = obsAtual 
+          ? `${obsAtual}\n[N8N ${todayStr}]: Abordagem tipo ${tipoEnviado || 'auto'} enviada.`
+          : `[N8N ${todayStr}]: Abordagem tipo ${tipoEnviado || 'auto'} enviada.`;
+      }
+    } else if (['sem_whatsapp', 'invalido'].includes(event)) {
+      newStatusId = 'recusou_outro';
+      const obsAtual = String(parsedLead.observacoes || '');
+      parsedLead.observacoes = `${obsAtual}\n[N8N]: Número sem WhatsApp ativo.`.trim();
+      nextFollowup = null;
+    } else if (['ja_conversou'].includes(event)) {
+      if (newStatusId === 'abordar') {
+        newStatusId = 'abordado';
+      }
+    } else if (['resposta', 'resposta_lead', 'conversa', 'mensagem_recebida'].includes(event)) {
+      newStatusId = 'conversa';
+      parsedLead.ultimo_contato = todayStr;
+      parsedLead.followups_sem_resposta = 0;
+      nextFollowup = in2Days;
+      if (mensagem) {
+        const obsAtual = String(parsedLead.observacoes || '');
+        parsedLead.observacoes = `${obsAtual}\n[Cliente respondeu ${todayStr}]: ${mensagem}`.trim();
+      }
+    } else if (['lead', 'interessado', 'qualificado', 'chamar_dono', 'handoff'].includes(event)) {
+      newStatusId = 'negociacao';
+      parsedLead.ultimo_contato = todayStr;
+      nextFollowup = todayStr; // Prioridade imediata
+      const obsAtual = String(parsedLead.observacoes || '');
+      const tag = event === 'chamar_dono' || event === 'handoff' ? '🚨 ATENÇÃO DONO' : '⭐ LEAD QUALIFICADO IA';
+      parsedLead.observacoes = `${obsAtual}\n[N8N ${tag} - ${todayStr}]: ${motivo || mensagem || 'Cliente interessado'}`.trim();
+    } else if (['followup', 'followup_enviado'].includes(event)) {
+      parsedLead.ultimo_contato = todayStr;
+      const count = typeof parsedLead.followups_sem_resposta === 'number' ? parsedLead.followups_sem_resposta + 1 : 1;
+      parsedLead.followups_sem_resposta = count;
+      nextFollowup = count >= 3 ? null : (count === 1 ? in2Days : in3Days);
+      if (mensagem) {
+        const obsAtual = String(parsedLead.observacoes || '');
+        parsedLead.observacoes = `${obsAtual}\n[N8N Follow-up #${count} - ${todayStr}]: ${mensagem}`.trim();
+      }
+    } else if (['encerrado', 'recusou', 'sem_interesse'].includes(event)) {
+      newStatusId = 'recusou_sem_interesse';
+      nextFollowup = null;
+      if (motivo) {
+        const obsAtual = String(parsedLead.observacoes || '');
+        parsedLead.observacoes = `${obsAtual}\n[N8N Encerrado ${todayStr}]: ${motivo}`.trim();
+      }
+    }
+
+    parsedLead.status_id = newStatusId;
+    parsedLead.proximo_followup = nextFollowup || undefined;
+    parsedLead.updated_at = new Date().toISOString();
+
+    // Atualiza D1
+    await c.env.DB.prepare(
+      'UPDATE leads SET status_id = ?, proximo_followup = ?, data_json = ?, updated_at = ? WHERE id = ?'
+    ).bind(
+      newStatusId,
+      nextFollowup,
+      JSON.stringify(parsedLead),
+      parsedLead.updated_at,
+      leadRow.id
+    ).run();
+
+    return c.json({
+      ok: true,
+      lead_id: leadRow.id,
+      lead_nome: parsedLead.nome,
+      status_anterior: leadRow.status_id,
+      status_novo: newStatusId,
+      proximo_followup: nextFollowup
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao processar webhook N8N';
+    return c.json({ ok: false, error: message }, 500);
+  }
+});
+
 // Endpoint de Inteligência Artificial (Google Gemini gemini-3.5-flash-lite)
 app.post('/api/ai/generate', async (c) => {
   try {

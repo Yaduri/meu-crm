@@ -16,7 +16,8 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Send
 } from 'lucide-react';
 
 interface MineradorLeadsModalProps {
@@ -120,6 +121,8 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
   const [importedCnpjs, setImportedCnpjs] = useState<Set<string>>(new Set());
   const [enrichingCnpj, setEnrichingCnpj] = useState<string | null>(null);
   const [enrichDetails, setEnrichDetails] = useState<Record<string, any>>({});
+  const [sendingN8n, setSendingN8n] = useState(false);
+  const [n8nSuccessMsg, setN8nSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen && resultados.length === 0) {
@@ -311,7 +314,7 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
       link_maps: empresa.maps_url || '',
       observacao: `CNPJ: ${empresa.cnpj} (${empresa.porte}). Capital Social: ${empresa.capital_social_brl || 'R$ ' + empresa.capital_social}. Aberta em: ${empresa.data_abertura}.${enrich?.endereco ? ' Endereço: ' + enrich.endereco : ''}`,
       abordagem: '',
-      status: 'a_abordar',
+      status: '',
       tipo_enviado: '',
       mensagem_enviada: '',
       enviado_em: ''
@@ -339,6 +342,66 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  const handleSendToN8n = async (onlySelected = false) => {
+    const listToSend = onlySelected && selectedCnpjs.size > 0
+      ? resultados.filter(r => selectedCnpjs.has(r.cnpj))
+      : resultados;
+
+    if (listToSend.length === 0) return;
+
+    setSendingN8n(true);
+    setN8nSuccessMsg(null);
+    try {
+      // 1. Salva automaticamente no CRM se ainda não foi importado
+      const toImport = listToSend.filter(r => !importedCnpjs.has(r.cnpj));
+      if (toImport.length > 0) {
+        const newLeads: Partial<ClientLead>[] = toImport.map(empresa => {
+          const enriched = enrichDetails[empresa.cnpj];
+          return {
+            nome: empresa.nome_exibicao,
+            nicho: currentNichoCRM,
+            whatsapp: empresa.telefone_limpo || '',
+            presenca_digital: apenasSemSite ? 'Sem site' : 'Só Google Meu Negócio',
+            origem: 'Google Maps',
+            status_id: 'abordar',
+            implantacao: 1200,
+            mensalidade: 89,
+            google_url: empresa.maps_url,
+            observacoes: `CNPJ: ${empresa.cnpj} (${empresa.porte}). Cidade: ${empresa.municipio} - SP. Capital Social: ${empresa.capital_social_brl || 'R$ ' + empresa.capital_social}. Aberta em: ${empresa.data_abertura}.${enriched?.endereco ? ` Endereço: ${enriched.endereco}` : ''}`
+          };
+        });
+        onAddMultipleLeads(newLeads);
+        setImportedCnpjs(prev => {
+          const next = new Set(prev);
+          toImport.forEach(r => next.add(r.cnpj));
+          return next;
+        });
+      }
+
+      // 2. Prepara dados no formato do N8N (status vazio para entrar no fluxo de abordagem)
+      const payloadRows = listToSend.map(buildRowForModelo);
+
+      // 3. Despacha para o N8N via backend
+      const res = await fetch('/api/prospeccao/enviar-n8n', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leads: payloadRows })
+      });
+
+      const json = await res.json();
+      if (res.ok && json.ok) {
+        setN8nSuccessMsg(`🚀 ${payloadRows.length} leads enviados para o fluxo do N8N!`);
+        setTimeout(() => setN8nSuccessMsg(null), 5000);
+      } else {
+        alert(json.error || 'Erro ao enviar para o N8N. Verifique se o webhook do túnel está ativo.');
+      }
+    } catch {
+      alert('Falha na comunicação com o N8N.');
+    } finally {
+      setSendingN8n(false);
+    }
   };
 
   return (
@@ -542,6 +605,24 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
                 </span>
               </button>
 
+              {/* Botão Enviar para o N8N */}
+              <button
+                type="button"
+                disabled={sendingN8n}
+                onClick={() => handleSendToN8n(selectedCnpjs.size > 0)}
+                className="min-h-[32px] bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shadow-indigo-600/30 disabled:opacity-50"
+                title="Enviar leads diretamente para o fluxo de abordagem no N8N"
+              >
+                {sendingN8n ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                <span>
+                  {sendingN8n
+                    ? 'Enviando ao N8N...'
+                    : selectedCnpjs.size > 0
+                    ? `Enviar N8N (${selectedCnpjs.size})`
+                    : `Enviar N8N (${resultados.length})`}
+                </span>
+              </button>
+
               {/* Botão Importar Selecionadas */}
               {selectedCnpjs.size > 0 && (
                 <button
@@ -550,10 +631,18 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
                   className="min-h-[32px] bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs shadow-emerald-600/20"
                 >
                   <Plus size={13} />
-                  <span>Importar Selecionadas ({selectedCnpjs.size})</span>
+                  <span>Importar CRM ({selectedCnpjs.size})</span>
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Feedback de sucesso do N8N */}
+        {n8nSuccessMsg && (
+          <div className="px-5 py-2.5 bg-indigo-500/15 border-b border-indigo-500/30 text-indigo-300 text-xs flex items-center gap-2 animate-fade-in shrink-0">
+            <Check size={14} className="text-indigo-400 shrink-0" />
+            <span className="font-medium">{n8nSuccessMsg}</span>
           </div>
         )}
 

@@ -224,6 +224,67 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
     }
   };
 
+  const [sendingN8n, setSendingN8n] = useState(false);
+
+  const handleBulkSendN8n = async () => {
+    if (selectedIds.size === 0) return;
+    const selectedLeads = leads.filter(l => selectedIds.has(l.id));
+
+    setSendingN8n(true);
+    try {
+      const formatPhone = (raw?: string | null): string => {
+        if (!raw) return '';
+        const digits = raw.replace(/\D/g, '');
+        if (!digits) return '';
+        if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) return digits;
+        if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+        return digits;
+      };
+
+      const payload = selectedLeads.map(l => ({
+        id: l.id,
+        empresa: l.nome,
+        tipo_negocio: 'empresa',
+        decisor: '',
+        tratamento: '',
+        genero: '',
+        profissao: '',
+        segmento: (l.nicho || 'geral').toLowerCase(),
+        cidade: 'Campo Limpo Paulista/SP',
+        telefone: formatPhone(l.whatsapp),
+        site: l.site_atual || '',
+        instagram: l.instagram || '',
+        nota_google: '',
+        avaliacoes: '',
+        link_maps: l.google_url || '',
+        observacao: l.observacoes || '',
+        abordagem: l.msg_a_mandar || '',
+        status: '', // Vazio conforme regra do N8N
+        tipo_enviado: '',
+        mensagem_enviada: '',
+        enviado_em: ''
+      }));
+
+      const res = await fetch('/api/prospeccao/enviar-n8n', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leads: payload })
+      });
+
+      const json = await res.json();
+      if (res.ok && json.ok) {
+        alert(`🚀 ${selectedLeads.length} leads enviados para o fluxo do N8N com sucesso!`);
+        setSelectedIds(new Set());
+      } else {
+        alert(json.error || 'Erro ao enviar para o N8N. Verifique o túnel.');
+      }
+    } catch {
+      alert('Falha ao comunicar com o N8N.');
+    } finally {
+      setSendingN8n(false);
+    }
+  };
+
   const handleBulkDelete = () => {
     if (!onBulkDeleteLeads || selectedIds.size === 0) return;
     if (window.confirm(`Deseja realmente excluir os ${selectedIds.size} leads selecionados?`)) {
@@ -292,6 +353,17 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
             >
               <DollarSign size={12} className="text-emerald-400" />
               <span>Definir Valor</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={sendingN8n}
+              onClick={handleBulkSendN8n}
+              className="min-h-[32px] px-2.5 py-1 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white flex items-center gap-1.5 font-semibold text-xs cursor-pointer shadow-xs shadow-indigo-600/30 disabled:opacity-50"
+              title="Disparar leads selecionados para o fluxo de abordagem do N8N"
+            >
+              <Send size={12} />
+              <span>{sendingN8n ? 'Enviando...' : `Enviar N8N (${selectedIds.size})`}</span>
             </button>
 
             <button

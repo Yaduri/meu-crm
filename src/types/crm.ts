@@ -268,6 +268,8 @@ export interface CrmSettings {
   implantacaoPadrao: number;
   mensalidadePadrao: number;
   diaVencimentoPadrao: number;
+  n8nWebhookUrl?: string;
+  n8nApiSecret?: string;
 }
 
 export const DEFAULT_CRM_SETTINGS: CrmSettings = {
@@ -277,4 +279,6 @@ export const DEFAULT_CRM_SETTINGS: CrmSettings = {
   implantacaoPadrao: 1200,
   mensalidadePadrao: 89,
   diaVencimentoPadrao: 10,
+  n8nWebhookUrl: 'https://n8n.yagoduarte.com.br/webhook/prospeccao-leads',
+  n8nApiSecret: '',
 };

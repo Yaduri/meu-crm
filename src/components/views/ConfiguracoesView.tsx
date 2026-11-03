@@ -9,7 +9,9 @@ import {
   Smartphone, 
   DollarSign, 
   Database,
-  ShieldCheck
+  ShieldCheck,
+  Bot,
+  Copy
 } from 'lucide-react';
 import type { CrmSettings } from '../../types/crm';
 export { DEFAULT_CRM_SETTINGS } from '../../types/crm';
@@ -209,6 +211,64 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
                     onChange={(e) => setFormData({ ...formData, diaVencimentoPadrao: Number(e.target.value) })}
                     className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-zinc-100 font-mono focus:outline-hidden focus:border-emerald-500"
                   />
+                </div>
+              </div>
+
+              {/* Integração N8N (Prospecção Automática) */}
+              <div className="pt-4 border-t border-[#27272a] space-y-3">
+                <div className="flex items-center gap-2 text-sm font-bold text-zinc-100">
+                  <Bot size={16} className="text-indigo-400" />
+                  <span>Integração N8N & Automação WhatsApp</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-normal">
+                    Sincronização Bidirecional
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-zinc-300 font-medium mb-1">
+                      URL do Webhook do N8N (Disparo de Leads)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.n8nWebhookUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, n8nWebhookUrl: e.target.value })}
+                      placeholder="https://n8n.yagoduarte.com.br/webhook/prospeccao-leads"
+                      className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-zinc-100 text-xs font-mono focus:outline-hidden focus:border-indigo-500"
+                    />
+                    <span className="text-[11px] text-zinc-500 mt-1 block">
+                      Ao clicar em "Enviar N8N", o CRM posta os leads diretamente aqui.
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-300 font-medium mb-1">
+                      Webhook de Retorno do CRM (Para nós do N8N)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value="https://crm.yagoduarte.com.br/api/prospeccao/webhook-n8n"
+                        className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-3 py-2 text-zinc-300 text-xs font-mono focus:outline-hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText('https://crm.yagoduarte.com.br/api/prospeccao/webhook-n8n');
+                          alert('URL do Webhook copiada para a área de transferência!');
+                        }}
+                        className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs rounded-xl border border-zinc-700 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+                        title="Copiar URL"
+                      >
+                        <Copy size={13} />
+                        <span>Copiar</span>
+                      </button>
+                    </div>
+                    <span className="text-[11px] text-zinc-500 mt-1 block">
+                      Recebe atualizações de "abordado", "sem_whatsapp", "resposta", etc.
+                    </span>
+                  </div>
                 </div>
               </div>
 
