@@ -240,14 +240,16 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
     const payload: LeadParaRevisaoN8n[] = selectedLeads.map(l => {
       const dadosSeg = inferirDadosSegmento(l.nicho);
       const decisorInferido = inferirDecisor(l.nome);
+      const tratamentoInferido = decisorInferido.tratamento || dadosSeg.tratamento || '';
+      const generoInferido = decisorInferido.genero || (tratamentoInferido === 'Dra.' || tratamentoInferido === 'Sra.' ? 'F' : tratamentoInferido === 'Dr.' || tratamentoInferido === 'Sr.' ? 'M' : '');
 
       return {
         id: l.id,
         empresa: l.nome,
         tipo_negocio: dadosSeg.tipoNegocio,
         decisor: decisorInferido.decisor || '',
-        tratamento: decisorInferido.tratamento || dadosSeg.tratamento || '',
-        genero: decisorInferido.genero || '',
+        tratamento: tratamentoInferido,
+        genero: generoInferido,
         profissao: dadosSeg.profissao,
         segmento: dadosSeg.segmento,
         cidade: l.cidade || 'Campo Limpo Paulista/SP',

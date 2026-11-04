@@ -218,10 +218,10 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
                       </button>
                     </div>
 
-                    {/* Grid of Editable Fields */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs">
+                    {/* Grid of Editable Fields - Linha 1 */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5 text-xs">
                       {/* 1. Decisor (Com destaque quando vazio) */}
-                      <div className="lg:col-span-2">
+                      <div className="sm:col-span-2 lg:col-span-2">
                         <label className="block text-[11px] font-medium text-zinc-300 mb-1 flex items-center gap-1">
                           <User size={11} className={semDecisor ? 'text-amber-400' : 'text-emerald-400'} />
                           <span>Decisor (Responsável)</span>
@@ -230,7 +230,15 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
                         <input
                           type="text"
                           value={lead.decisor || ''}
-                          onChange={(e) => handleUpdateField(originalIdx, 'decisor', e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleUpdateField(originalIdx, 'decisor', val);
+                            if (!lead.genero) {
+                              const primeiro = val.trim().split(' ')[0] || '';
+                              if (/a$/i.test(primeiro)) handleUpdateField(originalIdx, 'genero', 'F');
+                              else if (/o$/i.test(primeiro)) handleUpdateField(originalIdx, 'genero', 'M');
+                            }
+                          }}
                           placeholder="Ex: Amanda Alves, Carlos Souza..."
                           className={`w-full rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden transition-colors ${
                             semDecisor
@@ -240,14 +248,41 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
                         />
                       </div>
 
-                      {/* 2. Tratamento */}
+                      {/* 2. Gênero (M / F / Auto) */}
+                      <div>
+                        <label className="block text-[11px] font-medium text-zinc-300 mb-1 flex items-center gap-1">
+                          <span>Gênero</span>
+                        </label>
+                        <select
+                          value={lead.genero || ''}
+                          onChange={(e) => handleUpdateField(originalIdx, 'genero', e.target.value)}
+                          className={`w-full rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-hidden transition-colors ${
+                            lead.genero === 'F'
+                              ? 'bg-pink-500/10 border border-pink-500/40 text-pink-300 focus:border-pink-400'
+                              : lead.genero === 'M'
+                              ? 'bg-sky-500/10 border border-sky-500/40 text-sky-300 focus:border-sky-400'
+                              : 'bg-[#18181b] border border-zinc-700 text-zinc-300 focus:border-indigo-500'
+                          }`}
+                        >
+                          <option value="">Auto / —</option>
+                          <option value="M">M (o Carlos)</option>
+                          <option value="F">F (a Paula)</option>
+                        </select>
+                      </div>
+
+                      {/* 3. Tratamento */}
                       <div>
                         <label className="block text-[11px] font-medium text-zinc-400 mb-1">
                           Tratamento
                         </label>
                         <select
                           value={lead.tratamento || ''}
-                          onChange={(e) => handleUpdateField(originalIdx, 'tratamento', e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleUpdateField(originalIdx, 'tratamento', val);
+                            if (val === 'Dra.' || val === 'Sra.') handleUpdateField(originalIdx, 'genero', 'F');
+                            else if (val === 'Dr.' || val === 'Sr.') handleUpdateField(originalIdx, 'genero', 'M');
+                          }}
                           className="w-full bg-[#18181b] border border-zinc-700 rounded-lg px-2 py-1.5 text-xs text-zinc-200 focus:outline-hidden focus:border-indigo-500"
                         >
                           <option value="">Nenhum</option>
@@ -258,7 +293,7 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
                         </select>
                       </div>
 
-                      {/* 3. Tipo de Negócio */}
+                      {/* 4. Tipo de Negócio */}
                       <div>
                         <label className="block text-[11px] font-medium text-zinc-300 mb-1 flex items-center gap-1">
                           <Building2 size={11} className="text-indigo-400" />
@@ -273,7 +308,7 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
                         />
                       </div>
 
-                      {/* 4. Profissão */}
+                      {/* 5. Profissão */}
                       <div>
                         <label className="block text-[11px] font-medium text-zinc-300 mb-1 flex items-center gap-1">
                           <Sparkles size={11} className="text-indigo-400" />
@@ -288,7 +323,7 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
                         />
                       </div>
 
-                      {/* 5. Segmento */}
+                      {/* 6. Segmento */}
                       <div>
                         <label className="block text-[11px] font-medium text-zinc-400 mb-1">
                           Segmento

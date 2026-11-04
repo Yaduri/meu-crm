@@ -288,8 +288,10 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
   const buildRowForModelo = (empresa: EmpresaResultado): LeadParaRevisaoN8n => {
     const enrich = enrichDetails[empresa.cnpj];
     const dadosSeg = inferirDadosSegmento(currentNichoCRM);
-    const decisorInferido = enrich?.decisor || inferirDecisor(empresa.nome_exibicao || empresa.razao_social).decisor || '';
-    const tratamentoInferido = enrich?.tratamento || dadosSeg.tratamento || '';
+    const decisorObj = inferirDecisor(empresa.nome_exibicao || empresa.razao_social);
+    const decisorInferido = enrich?.decisor || decisorObj.decisor || '';
+    const tratamentoInferido = enrich?.tratamento || decisorObj.tratamento || dadosSeg.tratamento || '';
+    const generoInferido = enrich?.genero || decisorObj.genero || (tratamentoInferido === 'Dra.' || tratamentoInferido === 'Sra.' ? 'F' : tratamentoInferido === 'Dr.' || tratamentoInferido === 'Sr.' ? 'M' : '');
 
     return {
       id: empresa.cnpj,
@@ -297,7 +299,7 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
       tipo_negocio: dadosSeg.tipoNegocio,
       decisor: decisorInferido,
       tratamento: tratamentoInferido,
-      genero: '',
+      genero: generoInferido,
       profissao: dadosSeg.profissao,
       segmento: dadosSeg.segmento,
       cidade: `${empresa.municipio}/${empresa.uf || 'SP'}`,
