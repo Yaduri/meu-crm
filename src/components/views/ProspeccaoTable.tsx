@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { ClientLead } from '../../types/crm';
 import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
 import { formatDateBR } from '../../utils/dateFormat';
+import { RevisarEnvioN8nModal, type LeadParaRevisaoN8n } from '../modals/RevisarEnvioN8nModal';
+import { inferirDadosSegmento, inferirDecisor, formatarTelefoneParaN8n } from '../../utils/segmentoHelper';
 import {
   Send,
   Search,
@@ -225,33 +227,28 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
   };
 
   const [sendingN8n, setSendingN8n] = useState(false);
+  const [isRevisaoModalOpen, setIsRevisaoModalOpen] = useState(false);
+  const [leadsParaRevisao, setLeadsParaRevisao] = useState<LeadParaRevisaoN8n[]>([]);
 
-  const handleBulkSendN8n = async () => {
+  const handleBulkSendN8n = () => {
     if (selectedIds.size === 0) return;
     const selectedLeads = leads.filter(l => selectedIds.has(l.id));
 
-    setSendingN8n(true);
-    try {
-      const formatPhone = (raw?: string | null): string => {
-        if (!raw) return '';
-        const digits = raw.replace(/\D/g, '');
-        if (!digits) return '';
-        if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) return digits;
-        if (digits.length === 10 || digits.length === 11) return `55${digits}`;
-        return digits;
-      };
+    const payload: LeadParaRevisaoN8n[] = selectedLeads.map(l => {
+      const dadosSeg = inferirDadosSegmento(l.nicho);
+      const decisorInferido = inferirDecisor(l.nome);
 
-      const payload = selectedLeads.map(l => ({
+      return {
         id: l.id,
         empresa: l.nome,
-        tipo_negocio: 'empresa',
-        decisor: '',
-        tratamento: '',
-        genero: '',
-        profissao: '',
-        segmento: (l.nicho || 'geral').toLowerCase(),
+        tipo_negocio: dadosSeg.tipoNegocio,
+        decisor: decisorInferido.decisor || '',
+        tratamento: decisorInferido.tratamento || dadosSeg.tratamento || '',
+        genero: decisorInferido.genero || '',
+        profissao: dadosSeg.profissao,
+        segmento: dadosSeg.segmento,
         cidade: 'Campo Limpo Paulista/SP',
-        telefone: formatPhone(l.whatsapp),
+        telefone: formatarTelefoneParaN8n(l.whatsapp),
         site: l.site_atual || '',
         instagram: l.instagram || '',
         nota_google: '',
@@ -263,23 +260,32 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
         tipo_enviado: '',
         mensagem_enviada: '',
         enviado_em: ''
-      }));
+      };
+    });
 
+    setLeadsParaRevisao(payload);
+    setIsRevisaoModalOpen(true);
+  };
+
+  const handleConfirmarEnvioRevisado = async (leadsRevisados: LeadParaRevisaoN8n[]) => {
+    setSendingN8n(true);
+    try {
       const res = await fetch('/api/prospeccao/enviar-n8n', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leads: payload })
+        body: JSON.stringify({ leads: leadsRevisados })
       });
 
       const json = await res.json();
       if (res.ok && json.ok) {
-        alert(`🚀 ${selectedLeads.length} leads enviados para o fluxo do N8N com sucesso!`);
+        alert(`🚀 ${leadsRevisados.length} leads enviados para o fluxo do N8N com sucesso!`);
         setSelectedIds(new Set());
       } else {
-        alert(json.error || 'Erro ao enviar para o N8N. Verifique o túnel.');
+        throw new Error(json.error || 'Erro ao enviar para o N8N. Verifique o túnel.');
       }
-    } catch {
-      alert('Falha ao comunicar com o N8N.');
+    } catch (err: any) {
+      alert(err?.message || 'Falha ao comunicar com o N8N.');
+      throw err;
     } finally {
       setSendingN8n(false);
     }
@@ -792,6 +798,14 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
           </div>
         )}
       </div>
+
+      {/* Modal de Revisão antes do Envio para o N8N */}
+      <RevisarEnvioN8nModal
+        isOpen={isRevisaoModalOpen}
+        onClose={() => setIsRevisaoModalOpen(false)}
+        leadsIniciais={leadsParaRevisao}
+        onConfirmSend={handleConfirmarEnvioRevisado}
+      />
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import type { ClientLead } from '../../types/crm';
+import { RevisarEnvioN8nModal, type LeadParaRevisaoN8n } from './RevisarEnvioN8nModal';
+import { inferirDadosSegmento, inferirDecisor, formatarTelefoneParaN8n } from '../../utils/segmentoHelper';
 import {
   X,
   Search,
@@ -83,19 +85,6 @@ const NICHOS_PREDEFINIDOS: NichoPredefinido[] = [
   { nome: 'Restaurante / Pizzaria', cnae: '5611201', nichoCRM: 'Restaurante', tipoNegocio: 'restaurante', profissao: 'proprietário' }
 ];
 
-const formatPhoneForModelo = (rawPhone?: string | null): string => {
-  if (!rawPhone) return '';
-  const digits = rawPhone.replace(/\D/g, '');
-  if (!digits) return '';
-  if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) {
-    return digits;
-  }
-  if (digits.length === 10 || digits.length === 11) {
-    return `55${digits}`;
-  }
-  return digits;
-};
-
 export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
   isOpen,
   onClose,
@@ -123,6 +112,8 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
   const [enrichDetails, setEnrichDetails] = useState<Record<string, any>>({});
   const [sendingN8n, setSendingN8n] = useState(false);
   const [n8nSuccessMsg, setN8nSuccessMsg] = useState<string | null>(null);
+  const [isRevisaoModalOpen, setIsRevisaoModalOpen] = useState(false);
+  const [leadsParaRevisao, setLeadsParaRevisao] = useState<LeadParaRevisaoN8n[]>([]);
 
   useEffect(() => {
     if (isOpen && resultados.length === 0) {
@@ -293,20 +284,23 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
     }
   };
 
-  const buildRowForModelo = (empresa: EmpresaResultado) => {
+  const buildRowForModelo = (empresa: EmpresaResultado): LeadParaRevisaoN8n => {
     const enrich = enrichDetails[empresa.cnpj];
-    const currentNichoObj = isCustomCnae ? null : NICHOS_PREDEFINIDOS[selectedNichoIndex];
+    const dadosSeg = inferirDadosSegmento(currentNichoCRM);
+    const decisorInferido = enrich?.decisor || inferirDecisor(empresa.nome_exibicao || empresa.razao_social).decisor || '';
+    const tratamentoInferido = enrich?.tratamento || dadosSeg.tratamento || '';
 
     return {
+      id: empresa.cnpj,
       empresa: empresa.nome_exibicao || empresa.razao_social,
-      tipo_negocio: currentNichoObj?.tipoNegocio || 'empresa',
-      decisor: enrich?.decisor || '',
-      tratamento: currentNichoObj?.tratamento || '',
+      tipo_negocio: dadosSeg.tipoNegocio,
+      decisor: decisorInferido,
+      tratamento: tratamentoInferido,
       genero: '',
-      profissao: currentNichoObj?.profissao || '',
-      segmento: (currentNichoCRM || 'Geral').toLowerCase(),
+      profissao: dadosSeg.profissao,
+      segmento: dadosSeg.segmento,
       cidade: `${empresa.municipio}/${empresa.uf || 'SP'}`,
-      telefone: formatPhoneForModelo(enrich?.telefone || empresa.telefone_limpo || empresa.telefone),
+      telefone: formatarTelefoneParaN8n(enrich?.telefone || empresa.telefone_limpo || empresa.telefone),
       site: enrich?.site_url || '',
       instagram: enrich?.instagram || '',
       nota_google: enrich?.nota_avaliacao ?? '',
@@ -344,32 +338,39 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
     URL.revokeObjectURL(url);
   };
 
-  const handleSendToN8n = async (onlySelected = false) => {
+  const handleOpenRevisaoN8n = (onlySelected = false) => {
     const listToSend = onlySelected && selectedCnpjs.size > 0
       ? resultados.filter(r => selectedCnpjs.has(r.cnpj))
       : resultados;
 
     if (listToSend.length === 0) return;
 
+    const rows = listToSend.map(buildRowForModelo);
+    setLeadsParaRevisao(rows);
+    setIsRevisaoModalOpen(true);
+  };
+
+  const handleConfirmarEnvioRevisadoN8n = async (leadsRevisados: LeadParaRevisaoN8n[]) => {
     setSendingN8n(true);
-    setN8nSuccessMsg(null);
     try {
       // 1. Salva automaticamente no CRM se ainda não foi importado
-      const toImport = listToSend.filter(r => !importedCnpjs.has(r.cnpj));
+      const cnpjsNoLote = new Set(leadsRevisados.map(l => l.id).filter(Boolean));
+      const toImport = resultados.filter(r => cnpjsNoLote.has(r.cnpj) && !importedCnpjs.has(r.cnpj));
       if (toImport.length > 0) {
         const newLeads: Partial<ClientLead>[] = toImport.map(empresa => {
+          const revisado = leadsRevisados.find(lr => lr.id === empresa.cnpj);
           const enriched = enrichDetails[empresa.cnpj];
           return {
-            nome: empresa.nome_exibicao,
-            nicho: currentNichoCRM,
-            whatsapp: empresa.telefone_limpo || '',
+            nome: revisado?.empresa || empresa.nome_exibicao,
+            nicho: revisado?.segmento || currentNichoCRM,
+            whatsapp: revisado?.telefone || empresa.telefone_limpo || '',
             presenca_digital: apenasSemSite ? 'Sem site' : 'Só Google Meu Negócio',
             origem: 'Google Maps',
             status_id: 'abordar',
             implantacao: 1200,
             mensalidade: 89,
             google_url: empresa.maps_url,
-            observacoes: `CNPJ: ${empresa.cnpj} (${empresa.porte}). Cidade: ${empresa.municipio} - SP. Capital Social: ${empresa.capital_social_brl || 'R$ ' + empresa.capital_social}. Aberta em: ${empresa.data_abertura}.${enriched?.endereco ? ` Endereço: ${enriched.endereco}` : ''}`
+            observacoes: `Decisor: ${revisado?.decisor || 'Não informado'} | Profissão: ${revisado?.profissao || ''} | CNPJ: ${empresa.cnpj} (${empresa.porte}). Cidade: ${empresa.municipio} - SP. Capital Social: ${empresa.capital_social_brl || 'R$ ' + empresa.capital_social}. Aberta em: ${empresa.data_abertura}.${enriched?.endereco ? ` Endereço: ${enriched.endereco}` : ''}`
           };
         });
         onAddMultipleLeads(newLeads);
@@ -380,19 +381,16 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
         });
       }
 
-      // 2. Prepara dados no formato do N8N (status vazio para entrar no fluxo de abordagem)
-      const payloadRows = listToSend.map(buildRowForModelo);
-
-      // 3. Despacha para o N8N via backend
+      // 2. Despacha dados revisados para o N8N via backend
       const res = await fetch('/api/prospeccao/enviar-n8n', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leads: payloadRows })
+        body: JSON.stringify({ leads: leadsRevisados })
       });
 
       const json = await res.json();
       if (res.ok && json.ok) {
-        setN8nSuccessMsg(`🚀 ${payloadRows.length} leads enviados para o fluxo do N8N!`);
+        setN8nSuccessMsg(`🚀 ${leadsRevisados.length} leads revisados enviados para o fluxo do N8N!`);
         setTimeout(() => setN8nSuccessMsg(null), 5000);
       } else {
         alert(json.error || 'Erro ao enviar para o N8N. Verifique se o webhook do túnel está ativo.');
@@ -609,17 +607,17 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
               <button
                 type="button"
                 disabled={sendingN8n}
-                onClick={() => handleSendToN8n(selectedCnpjs.size > 0)}
+                onClick={() => handleOpenRevisaoN8n(selectedCnpjs.size > 0)}
                 className="min-h-[32px] bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shadow-indigo-600/30 disabled:opacity-50"
-                title="Enviar leads diretamente para o fluxo de abordagem no N8N"
+                title="Revisar dados e enviar leads para o fluxo de abordagem no N8N"
               >
                 {sendingN8n ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
                 <span>
                   {sendingN8n
                     ? 'Enviando ao N8N...'
                     : selectedCnpjs.size > 0
-                    ? `Enviar N8N (${selectedCnpjs.size})`
-                    : `Enviar N8N (${resultados.length})`}
+                    ? `Revisar e Enviar N8N (${selectedCnpjs.size})`
+                    : `Revisar e Enviar N8N (${resultados.length})`}
                 </span>
               </button>
 
@@ -865,6 +863,14 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
           </div>
         )}
       </div>
+
+      {/* Modal de Revisão antes do Envio para o N8N */}
+      <RevisarEnvioN8nModal
+        isOpen={isRevisaoModalOpen}
+        onClose={() => setIsRevisaoModalOpen(false)}
+        leadsIniciais={leadsParaRevisao}
+        onConfirmSend={handleConfirmarEnvioRevisadoN8n}
+      />
     </div>
   );
 };
