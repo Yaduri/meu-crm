@@ -7,8 +7,6 @@ import {
   Phone,
   MapPin,
   Trash2,
-  AlertTriangle,
-  CheckCircle2,
   Loader2,
   Sparkles,
   Info
@@ -53,13 +51,11 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
 }) => {
   const [leads, setLeads] = useState<LeadParaRevisaoN8n[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filtroSemDecisor, setFiltroSemDecisor] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       // Clona os leads para permitir edição isolada
       setLeads(JSON.parse(JSON.stringify(leadsIniciais)));
-      setFiltroSemDecisor(false);
     }
   }, [isOpen, leadsIniciais]);
 
@@ -76,12 +72,6 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
   const handleRemoveLead = (indexToRemove: number) => {
     setLeads(prev => prev.filter((_, idx) => idx !== indexToRemove));
   };
-
-  const totalSemDecisor = leads.filter(l => !l.decisor || !l.decisor.trim()).length;
-
-  const leadsExibidos = filtroSemDecisor
-    ? leads.map((lead, originalIdx) => ({ lead, originalIdx })).filter(item => !item.lead.decisor || !item.lead.decisor.trim())
-    : leads.map((lead, originalIdx) => ({ lead, originalIdx }));
 
   const handleSubmit = async () => {
     if (leads.length === 0) {
@@ -121,7 +111,7 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
                 </span>
               </h2>
               <p className="text-xs text-zinc-400 mt-0.5">
-                Confira o nome do decisor, tipo de negócio e profissão. As abordagens automáticas do N8N usam exatamente esses dados.
+                Confira os dados antes do disparo. O Decisor é opcional: caso não preenchido, o N8N abordará pelo nome do negócio.
               </p>
             </div>
           </div>
@@ -136,40 +126,12 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
           </button>
         </div>
 
-        {/* Warning / Decision Maker Alert Bar */}
-        <div className="px-5 py-3 bg-[#131317] border-b border-[#27272a] flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
-          <div className="flex items-center gap-2">
-            {totalSemDecisor > 0 ? (
-              <div className="flex items-center gap-2 text-amber-300 bg-amber-500/10 border border-amber-500/25 px-3 py-1.5 rounded-lg font-medium">
-                <AlertTriangle size={14} className="shrink-0 text-amber-400" />
-                <span>
-                  <strong>{totalSemDecisor} de {leads.length}</strong> leads estão sem nome do decisor preenchido.
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-lg font-medium">
-                <CheckCircle2 size={14} className="shrink-0 text-emerald-400" />
-                <span>Todos os leads estão com decisor preenchido!</span>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {totalSemDecisor > 0 && (
-              <button
-                type="button"
-                onClick={() => setFiltroSemDecisor(prev => !prev)}
-                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
-                  filtroSemDecisor
-                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-200'
-                    : 'bg-[#18181b] hover:bg-[#242428] border-zinc-700 text-zinc-300'
-                }`}
-              >
-                {filtroSemDecisor ? 'Mostrar Todos' : 'Ver apenas sem decisor'}
-              </button>
-            )}
-            <span className="text-[11px] text-zinc-400 font-mono hidden sm:inline">
-              Dica: O N8N usa o nome do decisor para personalizar a 1ª abordagem.
+        {/* Tip Bar */}
+        <div className="px-5 py-2.5 bg-[#131317] border-b border-[#27272a] flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
+          <div className="flex items-center gap-2 text-zinc-300">
+            <Info size={14} className="text-indigo-400 shrink-0" />
+            <span>
+              O campo <strong>Decisor é opcional</strong>. Se você não souber o nome do dono, pode deixar em branco — o N8N abordará automaticamente pelo nome do negócio (ex: <em>&ldquo;Falo com a clínica X?&rdquo;</em>).
             </span>
           </div>
         </div>
@@ -183,22 +145,16 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
             </div>
           ) : (
             <div className="space-y-3">
-              {leadsExibidos.map(({ lead, originalIdx }, displayIndex) => {
-                const semDecisor = !lead.decisor || !lead.decisor.trim();
-
+              {leads.map((lead, originalIdx) => {
                 return (
                   <div
                     key={lead.id || originalIdx}
-                    className={`p-3.5 sm:p-4 rounded-xl border transition-all ${
-                      semDecisor
-                        ? 'bg-[#17151a] border-amber-500/30'
-                        : 'bg-[#141418] border-[#27272a] hover:border-zinc-700'
-                    }`}
+                    className="p-3.5 sm:p-4 rounded-xl border border-[#27272a] bg-[#141418] hover:border-zinc-700 transition-all"
                   >
                     <div className="flex items-center justify-between gap-3 mb-2.5 pb-2 border-b border-zinc-800/80">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="w-5 h-5 rounded-md bg-zinc-800 border border-zinc-700 text-zinc-300 text-[10px] font-mono flex items-center justify-center shrink-0">
-                          {displayIndex + 1}
+                          {originalIdx + 1}
                         </span>
                         <span className="font-semibold text-xs text-zinc-100 truncate">
                           {lead.empresa}
@@ -220,12 +176,12 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
 
                     {/* Grid of Editable Fields - Linha 1 */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2.5 text-xs">
-                      {/* 1. Decisor (Com destaque quando vazio) */}
+                      {/* 1. Decisor (Opcional) */}
                       <div className="sm:col-span-2 lg:col-span-2">
                         <label className="block text-[11px] font-medium text-zinc-300 mb-1 flex items-center gap-1">
-                          <User size={11} className={semDecisor ? 'text-amber-400' : 'text-emerald-400'} />
+                          <User size={11} className="text-indigo-400" />
                           <span>Decisor (Responsável)</span>
-                          {semDecisor && <span className="text-[10px] text-amber-400 font-normal">*preencha</span>}
+                          <span className="text-[10px] text-zinc-500 font-normal">(opcional)</span>
                         </label>
                         <input
                           type="text"
@@ -239,12 +195,8 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
                               else if (/o$/i.test(primeiro)) handleUpdateField(originalIdx, 'genero', 'M');
                             }
                           }}
-                          placeholder="Ex: Amanda Alves, Carlos Souza..."
-                          className={`w-full rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden transition-colors ${
-                            semDecisor
-                              ? 'bg-amber-500/10 border border-amber-500/40 focus:border-amber-400'
-                              : 'bg-[#18181b] border border-zinc-700 focus:border-indigo-500'
-                          }`}
+                          placeholder="Opcional (ex: Amanda Alves, Carlos...)"
+                          className="w-full rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 bg-[#18181b] border border-zinc-700 focus:border-indigo-500 focus:outline-hidden transition-colors"
                         />
                       </div>
 
@@ -394,12 +346,9 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
         {/* Footer */}
         <div className="px-5 py-3.5 border-t border-[#27272a] bg-[#141418] flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-zinc-200">{leads.length} leads prontos</span>
-            {totalSemDecisor > 0 && (
-              <span className="text-amber-400 font-medium">
-                ({totalSemDecisor} sem decisor)
-              </span>
-            )}
+            <span className="font-semibold text-zinc-200">
+              {leads.length} {leads.length === 1 ? 'lead pronto' : 'leads prontos'} para envio
+            </span>
           </div>
 
           <div className="flex items-center gap-2.5">
