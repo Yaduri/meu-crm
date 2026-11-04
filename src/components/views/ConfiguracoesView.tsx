@@ -41,6 +41,30 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
   const [savedFeedback, setSavedFeedback] = useState(false);
   const [cloudFiles, setCloudFiles] = useState<Array<{ key: string; filename: string; size: number; created_at: string }>>([]);
   const [uploadingCloud, setUploadingCloud] = useState(false);
+  const [testingN8n, setTestingN8n] = useState(false);
+  const [testN8nResult, setTestN8nResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const handleTestN8n = async () => {
+    setTestingN8n(true);
+    setTestN8nResult(null);
+    try {
+      const res = await fetch('/api/prospeccao/testar-n8n', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ webhookUrl: formData.n8nWebhookUrl })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setTestN8nResult({ ok: true, message: '✅ ' + (data.message || 'Webhook conectado com sucesso!') });
+      } else {
+        setTestN8nResult({ ok: false, message: '❌ ' + (data.error || 'Falha ao conectar no webhook do N8N.') });
+      }
+    } catch {
+      setTestN8nResult({ ok: false, message: '❌ Erro de rede ao testar webhook do N8N.' });
+    } finally {
+      setTestingN8n(false);
+    }
+  };
 
   React.useEffect(() => {
     fetch('/api/state')
@@ -226,9 +250,19 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-zinc-300 font-medium mb-1">
-                      URL do Webhook do N8N (Disparo de Leads)
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-zinc-300 font-medium">
+                        URL do Webhook do N8N (Disparo de Leads)
+                      </label>
+                      <button
+                        type="button"
+                        disabled={testingN8n}
+                        onClick={handleTestN8n}
+                        className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        {testingN8n ? 'Testando...' : 'Testar Conexão'}
+                      </button>
+                    </div>
                     <input
                       type="url"
                       value={formData.n8nWebhookUrl || ''}
@@ -239,6 +273,12 @@ export const ConfiguracoesView: React.FC<ConfiguracoesViewProps> = ({
                     <span className="text-[11px] text-zinc-500 mt-1 block">
                       Ao clicar em "Enviar N8N", o CRM posta os leads diretamente aqui.
                     </span>
+
+                    {testN8nResult && (
+                      <div className={`mt-2 p-2 rounded-lg text-xs ${testN8nResult.ok ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300' : 'bg-rose-500/10 border border-rose-500/20 text-rose-300'}`}>
+                        {testN8nResult.message}
+                      </div>
+                    )}
                   </div>
 
                   <div>

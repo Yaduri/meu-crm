@@ -857,8 +857,26 @@ app.post('/api/prospeccao/enviar-n8n', async (c) => {
       resJson = resText;
     }
 
+    if (!res.ok) {
+      let errMsg = `O N8N respondeu com erro HTTP ${res.status}`;
+      if (resJson && typeof resJson === 'object') {
+        const j = resJson as Record<string, unknown>;
+        if (j.message) errMsg += `: ${j.message}`;
+        if (j.hint) errMsg += `\n\n📌 Dica: ${j.hint}`;
+      } else if (typeof resJson === 'string' && resJson.trim()) {
+        errMsg += `: ${resJson.slice(0, 200)}`;
+      }
+      return c.json({
+        ok: false,
+        error: errMsg,
+        status: res.status,
+        targetUrl,
+        n8n_response: resJson
+      }, res.status >= 400 && res.status < 600 ? res.status as any : 502);
+    }
+
     return c.json({
-      ok: res.ok,
+      ok: true,
       status: res.status,
       enviados: payload.length,
       targetUrl,
@@ -867,6 +885,67 @@ app.post('/api/prospeccao/enviar-n8n', async (c) => {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro ao despachar leads para N8N';
     return c.json({ ok: false, error: message }, 500);
+  }
+});
+
+// 2.1 Teste de conexão com o Webhook do N8N
+app.post('/api/prospeccao/testar-n8n', async (c) => {
+  try {
+    const body = await c.req.json<{ webhookUrl?: string }>();
+    let targetUrl = body.webhookUrl;
+    if (!targetUrl) {
+      const row = await c.env.DB.prepare("SELECT value FROM crm_kv WHERE key = 'crm_settings'").first<{ value: string }>();
+      if (row?.value) {
+        const parsed = JSON.parse(row.value);
+        if (parsed.n8nWebhookUrl) targetUrl = parsed.n8nWebhookUrl;
+      }
+    }
+    if (!targetUrl) {
+      targetUrl = 'https://n8n.yagoduarte.com.br/webhook/prospeccao-leads';
+    }
+
+    const testPayload = [{ _teste_crm: true, ping: 'ok', data: new Date().toISOString() }];
+
+    const res = await fetch(targetUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'MeuCRM-N8N-Tester/1.0'
+      },
+      body: JSON.stringify(testPayload)
+    });
+
+    const resText = await res.text();
+    let resJson: unknown = null;
+    try {
+      resJson = JSON.parse(resText);
+    } catch {
+      resJson = resText;
+    }
+
+    if (!res.ok) {
+      let hint = '';
+      if (resJson && typeof resJson === 'object') {
+        const j = resJson as Record<string, unknown>;
+        hint = String(j.hint || j.message || '');
+      }
+      return c.json({
+        ok: false,
+        status: res.status,
+        targetUrl,
+        error: `O N8N retornou status HTTP ${res.status}. ${hint || 'Verifique se o webhook foi criado e se o fluxo está ATIVO (toggle Ligado no N8N).'}`
+      });
+    }
+
+    return c.json({
+      ok: true,
+      status: res.status,
+      targetUrl,
+      message: 'Conexão com o Webhook do N8N realizada com sucesso!'
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Falha na conexão com N8N';
+    return c.json({ ok: false, error: message });
   }
 });
 
