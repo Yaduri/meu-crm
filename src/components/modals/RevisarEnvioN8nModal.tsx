@@ -303,32 +303,50 @@ export const RevisarEnvioN8nModal: React.FC<RevisarEnvioN8nModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Secondary details row: Cidade, Telefone */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 mt-2 pt-2 border-t border-zinc-800/50 text-[11px] text-zinc-400">
-                      <div className="flex items-center gap-1.5">
-                        <Phone size={11} className="text-emerald-400 shrink-0" />
-                        <input
-                          type="text"
-                          value={lead.telefone || ''}
-                          onChange={(e) => handleUpdateField(originalIdx, 'telefone', e.target.value)}
-                          className="w-full bg-transparent border-0 px-1 py-0.5 text-xs text-zinc-200 font-mono focus:outline-hidden focus:ring-1 focus:ring-zinc-700 rounded"
-                          placeholder="Telefone 55..."
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
-                        <MapPin size={11} className="text-rose-400 shrink-0" />
+                    {/* Row 2: Cidade / UF, Telefone, Observações */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 mt-2.5 pt-2.5 border-t border-zinc-800/60 text-xs">
+                      {/* Cidade / UF - Com destaque e campo próprio */}
+                      <div className="lg:col-span-2">
+                        <label className="block text-[11px] font-medium text-zinc-300 mb-1 flex items-center gap-1">
+                          <MapPin size={11} className="text-rose-400 shrink-0" />
+                          <span>Cidade / UF</span>
+                        </label>
                         <input
                           type="text"
                           value={lead.cidade || ''}
                           onChange={(e) => handleUpdateField(originalIdx, 'cidade', e.target.value)}
-                          className="w-full bg-transparent border-0 px-1 py-0.5 text-xs text-zinc-200 focus:outline-hidden focus:ring-1 focus:ring-zinc-700 rounded"
-                          placeholder="Cidade/UF"
+                          placeholder="Ex: Campo Limpo Paulista/SP, Jundiaí/SP"
+                          className="w-full bg-[#18181b] border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-hidden focus:border-indigo-500"
                         />
                       </div>
 
-                      <div className="md:col-span-2 text-zinc-500 truncate" title={lead.observacao}>
-                        {lead.observacao || 'Sem observações adicionais.'}
+                      {/* Telefone (WhatsApp) */}
+                      <div className="lg:col-span-2">
+                        <label className="block text-[11px] font-medium text-zinc-300 mb-1 flex items-center gap-1">
+                          <Phone size={11} className="text-emerald-400 shrink-0" />
+                          <span>WhatsApp (55 + DDD + Número)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={lead.telefone || ''}
+                          onChange={(e) => handleUpdateField(originalIdx, 'telefone', e.target.value)}
+                          placeholder="5511999998888"
+                          className="w-full bg-[#18181b] border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-100 font-mono placeholder:text-zinc-600 focus:outline-hidden focus:border-indigo-500"
+                        />
+                      </div>
+
+                      {/* Observações */}
+                      <div className="lg:col-span-2">
+                        <label className="block text-[11px] font-medium text-zinc-400 mb-1">
+                          Observações
+                        </label>
+                        <input
+                          type="text"
+                          value={lead.observacao || ''}
+                          onChange={(e) => handleUpdateField(originalIdx, 'observacao', e.target.value)}
+                          placeholder="Notas ou detalhes da empresa..."
+                          className="w-full bg-[#18181b] border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 placeholder:text-zinc-600 focus:outline-hidden focus:border-indigo-500 truncate"
+                        />
                       </div>
                     </div>
                   </div>

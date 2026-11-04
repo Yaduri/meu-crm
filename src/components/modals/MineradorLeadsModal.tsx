@@ -241,6 +241,7 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
       return {
         nome: empresa.nome_exibicao,
         nicho: currentNichoCRM,
+        cidade: `${empresa.municipio}/${empresa.uf || 'SP'}`,
         whatsapp: empresa.telefone_limpo || '',
         presenca_digital: apenasSemSite ? 'Sem site' : 'Só Google Meu Negócio',
         origem: 'Google Maps',
@@ -363,6 +364,7 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
           return {
             nome: revisado?.empresa || empresa.nome_exibicao,
             nicho: revisado?.segmento || currentNichoCRM,
+            cidade: revisado?.cidade || `${empresa.municipio}/${empresa.uf || 'SP'}`,
             whatsapp: revisado?.telefone || empresa.telefone_limpo || '',
             presenca_digital: apenasSemSite ? 'Sem site' : 'Só Google Meu Negócio',
             origem: 'Google Maps',

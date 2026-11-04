@@ -563,6 +563,20 @@ export function App() {
     );
   };
 
+  const handleBatchUpdateLeads = (updates: Array<{ id: string; changes: Partial<ClientLead> }>) => {
+    const updateMap = new Map(updates.map(u => [u.id, u.changes]));
+    const todayStr = new Date().toISOString().slice(0, 10);
+    setLeads(prev =>
+      prev.map(l => {
+        const chg = updateMap.get(l.id);
+        if (chg) {
+          return { ...l, ...chg, updated_at: todayStr };
+        }
+        return l;
+      })
+    );
+  };
+
   const handleBulkDeleteLeads = (leadIds: string[]) => {
     const idSet = new Set(leadIds);
     setLeads(prev => prev.filter(l => !idSet.has(l.id)));
@@ -1075,6 +1089,7 @@ export function App() {
             onOpenWhatsApp={handleOpenWhatsApp}
             onAddMultipleLeads={handleAddMultipleLeads}
             onBulkUpdateLeads={handleBulkUpdateLeads}
+            onBatchUpdateLeads={handleBatchUpdateLeads}
             onBulkDeleteLeads={handleBulkDeleteLeads}
             onNewLead={() => {
               setEditingLead(null);

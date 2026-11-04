@@ -20,6 +20,7 @@ import {
   Zap,
   Sun,
   Check,
+  MapPin,
 } from 'lucide-react';
 
 interface ProspeccaoTableProps {
@@ -28,6 +29,7 @@ interface ProspeccaoTableProps {
   onOpenWhatsApp: (lead: ClientLead) => void;
   onMoveLeadStatus: (leadId: string, targetStatusId: string) => void;
   onBulkUpdateLeads?: (leadIds: string[], updates: Partial<ClientLead>) => void;
+  onBatchUpdateLeads?: (updates: Array<{ id: string; changes: Partial<ClientLead> }>) => void;
   onBulkDeleteLeads?: (leadIds: string[]) => void;
 }
 
@@ -52,6 +54,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
   onOpenWhatsApp,
   onMoveLeadStatus,
   onBulkUpdateLeads,
+  onBatchUpdateLeads,
   onBulkDeleteLeads,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -247,7 +250,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
         genero: decisorInferido.genero || '',
         profissao: dadosSeg.profissao,
         segmento: dadosSeg.segmento,
-        cidade: 'Campo Limpo Paulista/SP',
+        cidade: l.cidade || 'Campo Limpo Paulista/SP',
         telefone: formatarTelefoneParaN8n(l.whatsapp),
         site: l.site_atual || '',
         instagram: l.instagram || '',
@@ -278,6 +281,24 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
 
       const json = await res.json();
       if (res.ok && json.ok) {
+        // Atualiza os leads locais do CRM com os dados que foram revisados (cidade, decisor, telefone, etc.)
+        if (onBatchUpdateLeads) {
+          const updates = leadsRevisados
+            .filter(lr => Boolean(lr.id))
+            .map(lr => ({
+              id: lr.id!,
+              changes: {
+                cidade: lr.cidade,
+                whatsapp: lr.telefone,
+                nicho: lr.segmento,
+                observacoes: lr.observacao
+              }
+            }));
+          if (updates.length > 0) {
+            onBatchUpdateLeads(updates);
+          }
+        }
+
         alert(`🚀 ${leadsRevisados.length} leads enviados para o fluxo do N8N com sucesso!`);
         setSelectedIds(new Set());
       } else {
@@ -580,7 +601,13 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
                     />
                   </td>
                   <td className="py-3 px-4 font-semibold text-zinc-100">
-                    <span>{lead.nome}</span>
+                    <div className="leading-tight">{lead.nome}</div>
+                    {lead.cidade && (
+                      <div className="text-[10px] font-normal text-zinc-400 flex items-center gap-1 mt-0.5">
+                        <MapPin size={10} className="text-rose-400 shrink-0" />
+                        <span className="truncate">{lead.cidade}</span>
+                      </div>
+                    )}
                   </td>
                   <td className="py-3 px-4">
                     <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-medium text-[11px]">

@@ -27,6 +27,7 @@ interface ProspeccaoViewProps {
   onNewLeadWithStatus: (statusId: string) => void;
   onAddMultipleLeads?: (leads: Partial<ClientLead>[]) => void;
   onBulkUpdateLeads?: (leadIds: string[], updates: Partial<ClientLead>) => void;
+  onBatchUpdateLeads?: (updates: Array<{ id: string; changes: Partial<ClientLead> }>) => void;
   onBulkDeleteLeads?: (leadIds: string[]) => void;
 }
 
@@ -41,6 +42,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
   onNewLeadWithStatus,
   onAddMultipleLeads,
   onBulkUpdateLeads,
+  onBatchUpdateLeads,
   onBulkDeleteLeads,
 }) => {
   const [viewMode, setViewMode] = useState<'tabela' | 'kanban'>('tabela');
@@ -306,6 +308,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
             onOpenWhatsApp={onOpenWhatsApp}
             onMoveLeadStatus={onMoveLeadStatus}
             onBulkUpdateLeads={onBulkUpdateLeads}
+            onBatchUpdateLeads={onBatchUpdateLeads}
             onBulkDeleteLeads={onBulkDeleteLeads}
           />
         )}

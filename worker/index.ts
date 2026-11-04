@@ -1308,6 +1308,7 @@ Retorne APENAS um JSON válido com esta estrutura exata:
 {
   "nome": "Nome da empresa ou profissional",
   "nicho": "Nicho principal em português (ex: Estética, Odontologia, Advocacia, Barbearia, Academia, Imobiliária, Restaurante, Oficina, etc.)",
+  "cidade": "Cidade/UF da empresa ou vazio se não identificada (ex: Campo Limpo Paulista/SP)",
   "whatsapp": "Apenas dígitos do telefone/WhatsApp com DDD (ex: 11999998888) ou vazio se não houver",
   "instagram": "@usuario se encontrado ou vazio",
   "site_atual": "domínio/URL do site se houver ou vazio",

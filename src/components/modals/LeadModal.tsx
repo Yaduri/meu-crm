@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
 import { parseConversationScript } from '../../utils/conversationScript';
-import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste, MessageSquare, Clock, Copy, Check, Send } from 'lucide-react';
+import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste, MessageSquare, Clock, Copy, Check, Send, MapPin } from 'lucide-react';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -25,6 +25,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
 }) => {
   const [nome, setNome] = useState(initialLead?.nome || '');
   const [nicho, setNicho] = useState(initialLead?.nicho || 'Estética');
+  const [cidade, setCidade] = useState(initialLead?.cidade || '');
   const [whatsapp, setWhatsapp] = useState(initialLead?.whatsapp || '');
   const [instagram, setInstagram] = useState(initialLead?.instagram || '');
   const [googleUrl, setGoogleUrl] = useState(initialLead?.google_url || '');
@@ -66,6 +67,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
       if (res.ok && parsed) {
         if (parsed.nome) setNome(parsed.nome);
         if (parsed.nicho) setNicho(parsed.nicho);
+        if (parsed.cidade) setCidade(parsed.cidade);
         if (parsed.whatsapp) setWhatsapp(String(parsed.whatsapp).replace(/\D/g, ''));
         if (parsed.instagram) setInstagram(parsed.instagram);
         if (parsed.site_atual) setSiteAtual(parsed.site_atual);
@@ -135,6 +137,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
     if (initialLead) {
       setNome(initialLead.nome || '');
       setNicho(initialLead.nicho || 'Estética');
+      setCidade(initialLead.cidade || '');
       setWhatsapp(initialLead.whatsapp || '');
       setInstagram(initialLead.instagram || '');
       setGoogleUrl(initialLead.google_url || '');
@@ -153,6 +156,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
     } else {
       setNome('');
       setNicho('Estética');
+      setCidade('');
       setWhatsapp('');
       setInstagram('');
       setGoogleUrl('');
@@ -193,6 +197,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
     onSave({
       nome,
       nicho,
+      cidade: cidade.trim() || undefined,
       whatsapp,
       instagram,
       google_url: googleUrl,
@@ -318,7 +323,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
               <label className="block text-zinc-300 font-medium mb-1">WhatsApp</label>
               <input
@@ -327,6 +332,20 @@ export const LeadModal: React.FC<LeadModalProps> = ({
                 onChange={(e) => setWhatsapp(e.target.value)}
                 placeholder="Ex: 11999998888"
                 className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500 font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-zinc-300 font-medium mb-1 flex items-center gap-1">
+                <MapPin size={12} className="text-rose-400 shrink-0" />
+                <span>Cidade / UF</span>
+              </label>
+              <input
+                type="text"
+                value={cidade}
+                onChange={(e) => setCidade(e.target.value)}
+                placeholder="Ex: Campo Limpo Paulista/SP"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-500 focus:outline-hidden focus:border-emerald-500"
               />
             </div>
 

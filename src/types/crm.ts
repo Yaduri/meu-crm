@@ -75,6 +75,7 @@ export interface ClientLead {
   id: string;
   nome: string;
   nicho: string;
+  cidade?: string;                 // Cidade/UF (ex: Campo Limpo Paulista/SP, Jundiaí/SP)
   whatsapp: string;
   instagram?: string;
   google_url?: string;
