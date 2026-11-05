@@ -60,6 +60,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('todos');
   const [selectedNicho, setSelectedNicho] = useState<string>('todos');
+  const [selectedPresenca, setSelectedPresenca] = useState<string>('todos');
   const [sortField, setSortField] = useState<SortField>('nome');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_STEP);
@@ -163,7 +164,8 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
         (l.whatsapp && l.whatsapp.includes(searchTerm));
       const matchStatus = selectedStatus === 'todos' || l.status_id === selectedStatus;
       const matchNicho = selectedNicho === 'todos' || l.nicho === selectedNicho;
-      return matchSearch && matchStatus && matchNicho;
+      const matchPresenca = selectedPresenca === 'todos' || (l.presenca_digital || 'Sem site') === selectedPresenca;
+      return matchSearch && matchStatus && matchNicho && matchPresenca;
     })
     .sort((a, b) => {
       const multiplier = sortOrder === 'asc' ? 1 : -1;
@@ -456,6 +458,23 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
             {uniqueNichos.map(nicho => (
               <option key={nicho} value={nicho}>{nicho}</option>
             ))}
+          </select>
+
+          <select
+            aria-label="Filtrar por presença digital"
+            value={selectedPresenca}
+            onChange={(e) => {
+              setSelectedPresenca(e.target.value);
+              setVisibleCount(PAGE_STEP);
+            }}
+            className="min-h-[34px] bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+          >
+            <option value="todos">Todas as presenças</option>
+            <option value="Sem site">Sem site</option>
+            <option value="Site desatualizado/lento">Site desatualizado/lento</option>
+            <option value="Só Instagram">Só Instagram</option>
+            <option value="Só Google Meu Negócio">Só Google Meu Negócio</option>
+            <option value="Site bom">Site bom</option>
           </select>
         </div>
 

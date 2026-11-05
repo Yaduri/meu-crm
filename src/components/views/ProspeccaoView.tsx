@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { ClientLead } from '../../types/crm';
+import type { ClientLead, PresencaDigital } from '../../types/crm';
 import { isLeadActiveForFollowup } from '../../types/crm';
 import { ProspeccaoKanban } from './ProspeccaoKanban';
 import { ProspeccaoTable } from './ProspeccaoTable';
@@ -15,7 +15,8 @@ import {
   Globe, 
   UserPlus, 
   Search, 
-  X 
+  X,
+  ChevronDown
 } from 'lucide-react';
 
 interface ProspeccaoViewProps {
@@ -33,6 +34,14 @@ interface ProspeccaoViewProps {
 
 type FilterPill = 'todos' | 'hoje' | 'atrasado' | 'negociacao' | 'semsite' | 'abordar';
 
+const PRESENCA_OPTIONS: PresencaDigital[] = [
+  'Sem site',
+  'Site desatualizado/lento',
+  'Só Instagram',
+  'Só Google Meu Negócio',
+  'Site bom'
+];
+
 export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
   leads,
   onSelectLead,
@@ -48,6 +57,7 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
   const [viewMode, setViewMode] = useState<'tabela' | 'kanban'>('tabela');
   const [filterPill, setFilterPill] = useState<FilterPill>('todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPresenca, setSelectedPresenca] = useState<string>('todos');
   const [showMineradorModal, setShowMineradorModal] = useState(false);
 
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -59,6 +69,13 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
   const countSemSite = leads.filter(l => l.presenca_digital === 'Sem site' || !l.site_atual).length;
   const countAAbordar = leads.filter(l => l.status_id === 'abordar').length;
 
+  // Contagem por Presença Digital
+  const countPresenca = leads.reduce((acc, l) => {
+    const p = l.presenca_digital || 'Sem site';
+    acc[p] = (acc[p] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   // Filtragem dos leads em tempo real
   const filteredLeads = leads.filter(l => {
     if (filterPill === 'hoje' && !(isLeadActiveForFollowup(l) && l.proximo_followup === todayStr)) return false;
@@ -66,6 +83,12 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
     if (filterPill === 'negociacao' && l.status_id !== 'negociacao' && l.status_id !== 'proposta_enviada') return false;
     if (filterPill === 'semsite' && l.presenca_digital !== 'Sem site' && l.site_atual) return false;
     if (filterPill === 'abordar' && l.status_id !== 'abordar') return false;
+
+    // Filtro por Presença Digital
+    if (selectedPresenca !== 'todos') {
+      const presenca = l.presenca_digital || 'Sem site';
+      if (presenca !== selectedPresenca) return false;
+    }
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -266,27 +289,71 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
           </button>
         </div>
 
-        {/* Real-time Search Input Row */}
-        <div className="relative max-w-xl w-full">
-          <Search size={15} className="absolute left-3.5 top-2.5 text-zinc-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar por nome, nicho ou WhatsApp..."
-            className="w-full bg-[#121215] border border-[#27272a] rounded-xl pl-10 pr-9 py-2 text-xs text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              aria-label="Limpar busca"
-              className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-200 cursor-pointer"
-              title="Limpar busca"
-            >
-              <X size={14} />
-            </button>
-          )}
+        {/* Real-time Search & Filter Controls Row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="relative flex-1 max-w-md w-full">
+            <Search size={15} className="absolute left-3.5 top-2.5 text-zinc-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar por nome, nicho ou WhatsApp..."
+              className="w-full bg-[#121215] border border-[#27272a] rounded-xl pl-10 pr-9 py-2 text-xs text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Limpar busca"
+                className="absolute right-3 top-2.5 text-zinc-400 hover:text-zinc-200 cursor-pointer"
+                title="Limpar busca"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Filtro por Presença Digital */}
+          <div className="flex items-center gap-2">
+            <div className="relative min-w-[240px]">
+              <Globe size={14} className={`absolute left-3 top-2.5 pointer-events-none ${selectedPresenca !== 'todos' ? 'text-emerald-400' : 'text-zinc-400'}`} />
+              <select
+                aria-label="Filtrar por Presença Digital"
+                value={selectedPresenca}
+                onChange={(e) => {
+                  setSelectedPresenca(e.target.value);
+                  if (filterPill === 'semsite' && e.target.value !== 'Sem site') {
+                    setFilterPill('todos');
+                  }
+                }}
+                className={`w-full min-h-[38px] bg-[#121215] border text-xs font-medium rounded-xl pl-9 pr-8 py-2 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all cursor-pointer appearance-none ${
+                  selectedPresenca !== 'todos'
+                    ? 'border-emerald-500/60 text-emerald-300 bg-emerald-500/10 shadow-sm shadow-emerald-500/10'
+                    : 'border-[#27272a] text-zinc-300 hover:border-[#3f3f46]'
+                }`}
+              >
+                <option value="todos">Presença: Todas ({leads.length})</option>
+                {PRESENCA_OPTIONS.map(p => (
+                  <option key={p} value={p}>
+                    {p} ({countPresenca[p] || 0})
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={13} className="absolute right-2.5 top-3.5 text-zinc-400 pointer-events-none" />
+            </div>
+
+            {selectedPresenca !== 'todos' && (
+              <button
+                type="button"
+                onClick={() => setSelectedPresenca('todos')}
+                className="text-[11px] text-zinc-300 hover:text-white bg-zinc-800/90 hover:bg-zinc-700 px-2.5 py-2 rounded-xl border border-zinc-700 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+                title="Limpar filtro de presença digital"
+              >
+                <X size={12} />
+                <span>Limpar</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
