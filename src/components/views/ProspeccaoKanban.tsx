@@ -14,6 +14,7 @@ import {
   Sun,
   X,
   Check,
+  MapPin,
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
@@ -227,6 +228,12 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
                                 <div className="font-semibold text-xs text-zinc-100 leading-snug">
                                   {lead.nome}
                                 </div>
+                                {lead.cidade && (
+                                  <div className="text-[10px] font-normal text-zinc-400 flex items-center gap-1 mt-0.5">
+                                    <MapPin size={10} className="text-rose-400 shrink-0" />
+                                    <span className="truncate">{lead.cidade}</span>
+                                  </div>
+                                )}
 
                                 <div className="flex items-center justify-between mt-2">
                                   <span className="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-medium">

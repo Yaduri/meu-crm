@@ -207,3 +207,25 @@ export function formatarTelefoneParaN8n(rawPhone?: string | null): string {
   }
   return digits;
 }
+
+/**
+ * Extrai a cidade/UF do lead se disponível no campo dedicado ou nas observações/nome.
+ * Nunca inventa uma cidade padrão se não houver dados.
+ */
+export function extrairCidadeLead(lead?: { cidade?: string; observacoes?: string; nome?: string } | null): string {
+  if (!lead) return '';
+
+  if (lead.cidade && lead.cidade.trim()) {
+    return lead.cidade.trim();
+  }
+
+  // Tenta extrair de observacoes (ex: "Cidade: Bragança Paulista - SP" ou "Cidade: Bragança Paulista/SP")
+  if (lead.observacoes) {
+    const match = lead.observacoes.match(/cidade:\s*([^.\n,]+(?:\s*[-/]\s*[a-zA-Z]{2})?)/i);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+
+  return '';
+}

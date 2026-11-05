@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { Menu, Plus, Search } from 'lucide-react';
 import { Sidebar } from './components/layout/Sidebar';
 import { HojeView } from './components/views/HojeView';
@@ -231,27 +231,105 @@ export function App() {
 
   // Persistência Local + Sincronização Automática em Nuvem (Cloudflare D1)
   const [d1Hydrated, setD1Hydrated] = useState(false);
+  const deletedLeadIdsRef = useRef<Set<string>>(new Set());
+
+  const syncWithD1 = useCallback(async () => {
+    try {
+      const res = await fetch('/api/state');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.success && data.hasData && data.state) {
+        if (Array.isArray(data.state.leads) && data.state.leads.length > 0) {
+          setLeads(prevLeads => {
+            // Filtra leads que foram excluídos pelo usuário nesta sessão
+            const validServerLeads = (data.state.leads as ClientLead[]).filter(
+              sl => !deletedLeadIdsRef.current.has(sl.id)
+            );
+
+            // Se ainda não tinha leads carregados, carrega do servidor
+            if (prevLeads.length === 0) {
+              return validServerLeads;
+            }
+
+            const serverMap = new Map<string, ClientLead>(validServerLeads.map((l: ClientLead) => [l.id, l]));
+            let hasChanged = false;
+
+            // 1. Atualiza dados de leads existentes se o servidor tiver atualização mais nova
+            const merged = prevLeads
+              .filter(localLead => !deletedLeadIdsRef.current.has(localLead.id))
+              .map(localLead => {
+                const serverLead = serverMap.get(localLead.id);
+                if (!serverLead) return localLead;
+
+                const serverUpdated = serverLead.updated_at || '';
+                const localUpdated = localLead.updated_at || '';
+
+                if (
+                  serverLead.status_id !== localLead.status_id ||
+                  serverLead.proximo_followup !== localLead.proximo_followup ||
+                  serverLead.observacoes !== localLead.observacoes ||
+                  serverUpdated > localUpdated
+                ) {
+                  hasChanged = true;
+                  return { ...localLead, ...serverLead };
+                }
+                return localLead;
+              });
+
+            // 2. Se houver leads novos no servidor (criados fora desta aba) e que não foram excluídos
+            const localIdSet = new Set(prevLeads.map(l => l.id));
+            for (const serverLead of validServerLeads) {
+              if (!localIdSet.has(serverLead.id) && !deletedLeadIdsRef.current.has(serverLead.id)) {
+                merged.unshift(serverLead);
+                hasChanged = true;
+              }
+            }
+
+            return hasChanged ? merged : prevLeads;
+          });
+        }
+        if (Array.isArray(data.state.projects)) setProjects(data.state.projects);
+        if (Array.isArray(data.state.installments)) setInstallments(data.state.installments);
+        if (Array.isArray(data.state.invoices)) setInvoices(data.state.invoices);
+        if (Array.isArray(data.state.maintenanceRequests)) setMaintenanceRequests(data.state.maintenanceRequests);
+        if (Array.isArray(data.state.proposals)) setProposals(data.state.proposals);
+        if (Array.isArray(data.state.briefings)) setBriefings(data.state.briefings);
+        if (data.state.settings) setSettings(prev => ({ ...prev, ...data.state.settings }));
+      }
+    } catch (e) {
+      console.warn('Erro ao sincronizar com D1', e);
+    }
+  }, []);
 
   useEffect(() => {
-    fetch('/api/state')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.hasData && data.state) {
-          if (Array.isArray(data.state.leads) && data.state.leads.length > 0) setLeads(data.state.leads);
-          if (Array.isArray(data.state.projects)) setProjects(data.state.projects);
-          if (Array.isArray(data.state.installments)) setInstallments(data.state.installments);
-          if (Array.isArray(data.state.invoices)) setInvoices(data.state.invoices);
-          if (Array.isArray(data.state.maintenanceRequests)) setMaintenanceRequests(data.state.maintenanceRequests);
-          if (Array.isArray(data.state.proposals)) setProposals(data.state.proposals);
-          if (Array.isArray(data.state.briefings)) setBriefings(data.state.briefings);
-          if (data.state.settings) setSettings(prev => ({ ...prev, ...data.state.settings }));
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        setD1Hydrated(true);
-      });
-  }, []);
+    syncWithD1().finally(() => {
+      setD1Hydrated(true);
+    });
+  }, [syncWithD1]);
+
+  // Sincroniza em background (quando volta pra aba ou a cada 10s se visível)
+  useEffect(() => {
+    const handleFocus = () => {
+      syncWithD1();
+    };
+    window.addEventListener('focus', handleFocus);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') syncWithD1();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        syncWithD1();
+      }
+    }, 10000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(interval);
+    };
+  }, [syncWithD1]);
 
   useEffect(() => {
     if (!d1Hydrated) return;
@@ -270,7 +348,7 @@ export function App() {
           settings
         })
       }).catch(() => {});
-    }, 600);
+    }, 800);
     return () => clearTimeout(timer);
   }, [d1Hydrated, leads, projects, installments, invoices, maintenanceRequests, proposals, briefings, settings]);
 
@@ -358,7 +436,7 @@ export function App() {
           ...l,
           status_id: targetStatusId,
           proximo_followup: nextDateStr,
-          updated_at: new Date().toISOString().slice(0, 10)
+          updated_at: new Date().toISOString()
         };
       }
       return l;
@@ -383,7 +461,7 @@ export function App() {
           fase: 'projeto',
           implantacao: projectData.implantacao,
           mensalidade: projectData.mensalidade,
-          updated_at: new Date().toISOString().slice(0, 10)
+          updated_at: new Date().toISOString()
         };
       }
       return l;
@@ -471,7 +549,7 @@ export function App() {
         return {
           ...l,
           msg_a_mandar: newMessage,
-          updated_at: new Date().toISOString().slice(0, 10)
+          updated_at: new Date().toISOString()
         };
       }
       return l;
@@ -485,7 +563,8 @@ export function App() {
           return {
             ...l,
             ...leadData,
-            updated_at: new Date().toISOString().slice(0, 10)
+            cidade: leadData.cidade?.trim() || undefined,
+            updated_at: new Date().toISOString()
           } as ClientLead;
         }
         return l;
@@ -495,6 +574,7 @@ export function App() {
         id: Date.now().toString(),
         nome: leadData.nome || 'Novo Lead',
         nicho: leadData.nicho || 'Estética',
+        cidade: leadData.cidade?.trim() || undefined,
         whatsapp: leadData.whatsapp || '',
         instagram: leadData.instagram,
         google_url: leadData.google_url,
@@ -506,6 +586,8 @@ export function App() {
         proximo_followup: leadData.proximo_followup,
         implantacao: leadData.implantacao || settings.implantacaoPadrao || 1200,
         mensalidade: leadData.mensalidade || settings.mensalidadePadrao || 89,
+        link_previa: leadData.link_previa,
+        link_proposta: leadData.link_proposta,
         msg_a_mandar: leadData.msg_a_mandar,
         observacoes: leadData.observacoes,
         followups_sem_resposta: 0,
@@ -520,10 +602,13 @@ export function App() {
   };
 
   const handleDeleteLead = (leadId: string) => {
+    deletedLeadIdsRef.current.add(leadId);
     setLeads(prev => prev.filter(l => l.id !== leadId));
     if (selectedLeadId === leadId) {
       setSelectedLeadId(null);
     }
+    // Exclui imediatamente no D1 sem depender do timer de debounce
+    fetch(`/api/leads/${leadId}`, { method: 'DELETE' }).catch(() => {});
   };
 
   const handleAddMultipleLeads = (newLeadsData: Partial<ClientLead>[]) => {
@@ -533,6 +618,7 @@ export function App() {
       id: `${now}-${idx}`,
       nome: leadData.nome || 'Novo Lead',
       nicho: leadData.nicho || 'Estética',
+      cidade: leadData.cidade?.trim() || undefined,
       whatsapp: leadData.whatsapp || '',
       instagram: leadData.instagram || '',
       google_url: leadData.google_url || '',
@@ -544,6 +630,8 @@ export function App() {
       proximo_followup: leadData.proximo_followup,
       implantacao: leadData.implantacao || settings.implantacaoPadrao || 1200,
       mensalidade: leadData.mensalidade || settings.mensalidadePadrao || 89,
+      link_previa: leadData.link_previa || '',
+      link_proposta: leadData.link_proposta || '',
       msg_a_mandar: leadData.msg_a_mandar || '',
       observacoes: leadData.observacoes || '',
       followups_sem_resposta: 0,
@@ -557,20 +645,20 @@ export function App() {
 
   const handleBulkUpdateLeads = (leadIds: string[], updates: Partial<ClientLead>) => {
     const idSet = new Set(leadIds);
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const nowIso = new Date().toISOString();
     setLeads(prev =>
-      prev.map(l => (idSet.has(l.id) ? { ...l, ...updates, updated_at: todayStr } : l))
+      prev.map(l => (idSet.has(l.id) ? { ...l, ...updates, updated_at: nowIso } : l))
     );
   };
 
   const handleBatchUpdateLeads = (updates: Array<{ id: string; changes: Partial<ClientLead> }>) => {
     const updateMap = new Map(updates.map(u => [u.id, u.changes]));
-    const todayStr = new Date().toISOString().slice(0, 10);
+    const nowIso = new Date().toISOString();
     setLeads(prev =>
       prev.map(l => {
         const chg = updateMap.get(l.id);
         if (chg) {
-          return { ...l, ...chg, updated_at: todayStr };
+          return { ...l, ...chg, updated_at: nowIso };
         }
         return l;
       })
@@ -578,11 +666,18 @@ export function App() {
   };
 
   const handleBulkDeleteLeads = (leadIds: string[]) => {
+    leadIds.forEach(id => deletedLeadIdsRef.current.add(id));
     const idSet = new Set(leadIds);
     setLeads(prev => prev.filter(l => !idSet.has(l.id)));
     if (selectedLeadId && idSet.has(selectedLeadId)) {
       setSelectedLeadId(null);
     }
+    // Exclui imediatamente no D1 em lote
+    fetch('/api/leads/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: leadIds })
+    }).catch(() => {});
   };
 
   const handleExportFullBackup = () => {
@@ -700,7 +795,7 @@ export function App() {
           ...p,
           etapa: newStage,
           entrega: newStage === 'No ar / Entregue' ? new Date().toISOString().slice(0, 10) : p.entrega,
-          updated_at: new Date().toISOString().slice(0, 10)
+          updated_at: new Date().toISOString()
         };
       }
       return p;
@@ -713,7 +808,7 @@ export function App() {
         return {
           ...p,
           tasks: p.tasks.map(t => t.id === taskId ? { ...t, feito: !t.feito } : t),
-          updated_at: new Date().toISOString().slice(0, 10)
+          updated_at: new Date().toISOString()
         };
       }
       return p;
@@ -731,7 +826,7 @@ export function App() {
         return {
           ...p,
           tasks: [...(p.tasks || []), newTask],
-          updated_at: new Date().toISOString().slice(0, 10)
+          updated_at: new Date().toISOString()
         };
       }
       return p;
@@ -746,7 +841,7 @@ export function App() {
           link_figma: links.figma !== undefined ? links.figma : p.link_figma,
           link_homologacao: links.homologacao !== undefined ? links.homologacao : p.link_homologacao,
           link_producao: links.producao !== undefined ? links.producao : p.link_producao,
-          updated_at: new Date().toISOString().slice(0, 10)
+          updated_at: new Date().toISOString()
         };
       }
       return p;
@@ -1100,6 +1195,7 @@ export function App() {
                 id: '',
                 nome: '',
                 nicho: 'Estética',
+                cidade: '',
                 whatsapp: '',
                 presenca_digital: 'Sem site',
                 origem: 'Google Maps',

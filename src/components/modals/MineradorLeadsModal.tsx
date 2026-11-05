@@ -218,6 +218,7 @@ export const MineradorLeadsModal: React.FC<MineradorLeadsModalProps> = ({
     const newLead: Partial<ClientLead> = {
       nome: empresa.nome_exibicao,
       nicho: currentNichoCRM,
+      cidade: `${empresa.municipio}/${empresa.uf || 'SP'}`,
       whatsapp: empresa.telefone_limpo || '',
       presenca_digital: apenasSemSite ? 'Sem site' : 'Só Google Meu Negócio',
       origem: 'Google Maps',

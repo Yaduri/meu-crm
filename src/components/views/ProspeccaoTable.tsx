@@ -3,7 +3,7 @@ import type { ClientLead } from '../../types/crm';
 import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
 import { formatDateBR } from '../../utils/dateFormat';
 import { RevisarEnvioN8nModal, type LeadParaRevisaoN8n } from '../modals/RevisarEnvioN8nModal';
-import { inferirDadosSegmento, inferirDecisor, formatarTelefoneParaN8n } from '../../utils/segmentoHelper';
+import { inferirDadosSegmento, inferirDecisor, formatarTelefoneParaN8n, extrairCidadeLead } from '../../utils/segmentoHelper';
 import {
   Send,
   Search,
@@ -238,26 +238,31 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
     const selectedLeads = leads.filter(l => selectedIds.has(l.id));
 
     const payload: LeadParaRevisaoN8n[] = selectedLeads.map(l => {
+      const anyL = (l as unknown) as Record<string, unknown>;
       const dadosSeg = inferirDadosSegmento(l.nicho);
       const decisorInferido = inferirDecisor(l.nome);
-      const tratamentoInferido = decisorInferido.tratamento || dadosSeg.tratamento || '';
-      const generoInferido = decisorInferido.genero || (tratamentoInferido === 'Dra.' || tratamentoInferido === 'Sra.' ? 'F' : tratamentoInferido === 'Dr.' || tratamentoInferido === 'Sr.' ? 'M' : '');
+      const decisorFinal = (anyL.decisor as string) || decisorInferido.decisor || '';
+      const tratamentoFinal = (anyL.tratamento as string) || decisorInferido.tratamento || dadosSeg.tratamento || '';
+      const generoFinal = (anyL.genero as string) || decisorInferido.genero || (tratamentoFinal === 'Dra.' || tratamentoFinal === 'Sra.' ? 'F' : tratamentoFinal === 'Dr.' || tratamentoFinal === 'Sr.' ? 'M' : '');
+      const profissaoFinal = (anyL.profissao as string) || dadosSeg.profissao;
+      const tipoNegocioFinal = (anyL.tipo_negocio as string) || dadosSeg.tipoNegocio;
+      const segmentoFinal = (anyL.segmento as string) || dadosSeg.segmento;
 
       return {
         id: l.id,
         empresa: l.nome,
-        tipo_negocio: dadosSeg.tipoNegocio,
-        decisor: decisorInferido.decisor || '',
-        tratamento: tratamentoInferido,
-        genero: generoInferido,
-        profissao: dadosSeg.profissao,
-        segmento: dadosSeg.segmento,
-        cidade: l.cidade || 'Campo Limpo Paulista/SP',
+        tipo_negocio: tipoNegocioFinal,
+        decisor: decisorFinal,
+        tratamento: tratamentoFinal,
+        genero: generoFinal,
+        profissao: profissaoFinal,
+        segmento: segmentoFinal,
+        cidade: extrairCidadeLead(l),
         telefone: formatarTelefoneParaN8n(l.whatsapp),
         site: l.site_atual || '',
         instagram: l.instagram || '',
-        nota_google: '',
-        avaliacoes: '',
+        nota_google: (anyL.nota_google as string | number) || '',
+        avaliacoes: (anyL.avaliacoes as string | number) || '',
         link_maps: l.google_url || '',
         observacao: l.observacoes || '',
         abordagem: l.msg_a_mandar || '',

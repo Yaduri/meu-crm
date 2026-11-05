@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
 import { parseConversationScript } from '../../utils/conversationScript';
+import { extrairCidadeLead } from '../../utils/segmentoHelper';
 import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste, MessageSquare, Clock, Copy, Check, Send, MapPin } from 'lucide-react';
 
 interface LeadModalProps {
@@ -25,7 +26,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
 }) => {
   const [nome, setNome] = useState(initialLead?.nome || '');
   const [nicho, setNicho] = useState(initialLead?.nicho || 'Estética');
-  const [cidade, setCidade] = useState(initialLead?.cidade || '');
+  const [cidade, setCidade] = useState(initialLead ? extrairCidadeLead(initialLead) : '');
   const [whatsapp, setWhatsapp] = useState(initialLead?.whatsapp || '');
   const [instagram, setInstagram] = useState(initialLead?.instagram || '');
   const [googleUrl, setGoogleUrl] = useState(initialLead?.google_url || '');
@@ -137,7 +138,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
     if (initialLead) {
       setNome(initialLead.nome || '');
       setNicho(initialLead.nicho || 'Estética');
-      setCidade(initialLead.cidade || '');
+      setCidade(extrairCidadeLead(initialLead));
       setWhatsapp(initialLead.whatsapp || '');
       setInstagram(initialLead.instagram || '');
       setGoogleUrl(initialLead.google_url || '');

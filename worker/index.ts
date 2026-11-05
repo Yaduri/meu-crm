@@ -210,28 +210,51 @@ app.post('/api/state', async (c) => {
       const incomingLeads = body.leads as Array<Record<string, unknown>>;
       const incomingIds = new Set(incomingLeads.map(l => String(l.id)));
 
-      // Remover leads excluídos
-      const existingRows = await c.env.DB.prepare('SELECT id FROM leads').all<{ id: string }>();
+      // 1. Buscar IDs e updated_at atuais para gravação diferencial (Delta Save)
+      // Evita regravar leads inalterados, reduzindo o consumo de writes do D1 em mais de 99%
+      const existingRows = await c.env.DB.prepare('SELECT id, updated_at FROM leads').all<{ id: string; updated_at: string | null }>();
+      const existingMap = new Map<string, string | null>(existingRows.results.map(r => [r.id, r.updated_at]));
+
+      // 2. Remover leads excluídos
       for (const row of existingRows.results) {
         if (!incomingIds.has(row.id)) {
           statements.push(c.env.DB.prepare('DELETE FROM leads WHERE id = ?').bind(row.id));
         }
       }
 
+      // 3. Inserir ou atualizar SOMENTE os leads novos ou que foram modificados
       for (const lead of incomingLeads) {
         if (lead.id) {
+          const leadId = String(lead.id);
+          const leadUpdatedAt = lead.updated_at ? String(lead.updated_at) : now;
+          const existingUpdatedAt = existingMap.get(leadId);
+
+          // Se o lead já existe no banco e seu updated_at não é mais recente, pula a gravação
+          if (existingMap.has(leadId) && existingUpdatedAt && existingUpdatedAt >= leadUpdatedAt) {
+            continue;
+          }
+
           statements.push(
             c.env.DB.prepare(
-              'INSERT INTO leads (id, nome, nicho, status_id, fase, proximo_followup, data_json, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET nome = excluded.nome, nicho = excluded.nicho, status_id = excluded.status_id, fase = excluded.fase, proximo_followup = excluded.proximo_followup, data_json = excluded.data_json, updated_at = excluded.updated_at'
+              `INSERT INTO leads (id, nome, nicho, status_id, fase, proximo_followup, data_json, updated_at) 
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
+               ON CONFLICT(id) DO UPDATE SET 
+                 nome = excluded.nome, 
+                 nicho = excluded.nicho, 
+                 status_id = excluded.status_id, 
+                 fase = excluded.fase, 
+                 proximo_followup = excluded.proximo_followup, 
+                 data_json = excluded.data_json, 
+                 updated_at = excluded.updated_at`
             ).bind(
-              String(lead.id),
+              leadId,
               String(lead.nome || ''),
               String(lead.nicho || ''),
               String(lead.status_id || 'abordar'),
               String(lead.fase || 'prospeccao'),
               lead.proximo_followup ? String(lead.proximo_followup) : null,
               JSON.stringify(lead),
-              now
+              leadUpdatedAt
             )
           );
         }
@@ -288,6 +311,87 @@ app.post('/api/state', async (c) => {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro ao salvar no D1';
     return c.json({ success: false, error: message }, 500);
+  }
+});
+
+// Exclusão direta e imediata de lead individual no D1
+app.delete('/api/leads/:id', async (c) => {
+  try {
+    const id = c.req.param('id');
+    await c.env.DB.prepare('DELETE FROM leads WHERE id = ?').bind(id).run();
+    return c.json({ ok: true, id });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao excluir lead';
+    return c.json({ ok: false, error: message }, 500);
+  }
+});
+
+// Exclusão direta e imediata de leads em lote no D1
+app.post('/api/leads/delete', async (c) => {
+  try {
+    const body = await c.req.json<{ ids?: string[] }>();
+    const ids = body.ids || [];
+    if (ids.length === 0) return c.json({ ok: true, deleted: 0 });
+
+    const statements = ids.map(id => c.env.DB.prepare('DELETE FROM leads WHERE id = ?').bind(id));
+    for (let i = 0; i < statements.length; i += 50) {
+      await c.env.DB.batch(statements.slice(i, i + 50));
+    }
+    return c.json({ ok: true, deleted: ids.length });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao excluir leads em lote';
+    return c.json({ ok: false, error: message }, 500);
+  }
+});
+
+// Importação ou adição em lote de leads diretamente no D1
+app.post('/api/leads/import', async (c) => {
+  try {
+    const body = await c.req.json<{ leads?: Array<Record<string, unknown>> }>();
+    const leads = body.leads || [];
+    if (leads.length === 0) return c.json({ ok: true, imported: 0 });
+
+    const now = new Date().toISOString();
+    const statements: D1PreparedStatement[] = [];
+
+    for (const lead of leads) {
+      if (!lead.id) continue;
+      const leadId = String(lead.id);
+      const leadUpdatedAt = lead.updated_at ? String(lead.updated_at) : now;
+
+      statements.push(
+        c.env.DB.prepare(
+          `INSERT INTO leads (id, nome, nicho, status_id, fase, proximo_followup, data_json, updated_at) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
+           ON CONFLICT(id) DO UPDATE SET 
+             nome = excluded.nome, 
+             nicho = excluded.nicho, 
+             status_id = excluded.status_id, 
+             fase = excluded.fase, 
+             proximo_followup = excluded.proximo_followup, 
+             data_json = excluded.data_json, 
+             updated_at = excluded.updated_at`
+        ).bind(
+          leadId,
+          String(lead.nome || ''),
+          String(lead.nicho || ''),
+          String(lead.status_id || 'abordar'),
+          String(lead.fase || 'prospeccao'),
+          lead.proximo_followup ? String(lead.proximo_followup) : null,
+          JSON.stringify(lead),
+          leadUpdatedAt
+        )
+      );
+    }
+
+    for (let i = 0; i < statements.length; i += 50) {
+      await c.env.DB.batch(statements.slice(i, i + 50));
+    }
+
+    return c.json({ ok: true, imported: statements.length });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erro ao importar leads';
+    return c.json({ ok: false, error: message }, 500);
   }
 });
 
@@ -980,7 +1084,7 @@ app.post('/api/prospeccao/webhook-n8n', async (c) => {
         leadRow = candidates.results.find(row => {
           try {
             const parsed = JSON.parse(row.data_json);
-            const w = String(parsed.whatsapp || '').replace(/\D/g, '');
+            const w = String(parsed.whatsapp || parsed.telefone || '').replace(/\D/g, '');
             return w.includes(last8);
           } catch {
             return false;
