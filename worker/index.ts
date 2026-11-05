@@ -168,6 +168,7 @@ app.get('/api/state', async (c) => {
     const filesRows = await c.env.DB.prepare('SELECT key, filename, content_type, size, created_at FROM files ORDER BY created_at DESC').all();
     state.files = filesRows.results;
 
+    c.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     return c.json({
       success: true,
       hasData: Object.keys(state).length > 0 && Array.isArray(state.leads) && state.leads.length > 0,

@@ -231,11 +231,12 @@ export function App() {
 
   // Persistência Local + Sincronização Automática em Nuvem (Cloudflare D1)
   const [d1Hydrated, setD1Hydrated] = useState(false);
+  const d1HydratedRef = useRef(false);
   const deletedLeadIdsRef = useRef<Set<string>>(new Set());
 
   const syncWithD1 = useCallback(async () => {
     try {
-      const res = await fetch('/api/state');
+      const res = await fetch('/api/state', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
       if (data.success && data.hasData && data.state) {
@@ -246,29 +247,40 @@ export function App() {
               sl => !deletedLeadIdsRef.current.has(sl.id)
             );
 
-            // Se ainda não tinha leads carregados, carrega do servidor
-            if (prevLeads.length === 0) {
+            // Na PRIMEIRA carga do banco (hidratação inicial), o servidor D1 é a autoridade máxima.
+            // Substitui o cache local do localStorage para sincronizar instantaneamente entre PCs/dispositivos diferentes.
+            if (!d1HydratedRef.current || prevLeads.length === 0) {
               return validServerLeads;
             }
 
             const serverMap = new Map<string, ClientLead>(validServerLeads.map((l: ClientLead) => [l.id, l]));
             let hasChanged = false;
 
-            // 1. Atualiza dados de leads existentes se o servidor tiver atualização mais nova
+            if (validServerLeads.length !== prevLeads.length) {
+              return validServerLeads;
+            }
+
+            // 1. Atualiza dados de leads existentes se o servidor tiver qualquer modificação
             const merged = prevLeads
               .filter(localLead => !deletedLeadIdsRef.current.has(localLead.id))
               .map(localLead => {
                 const serverLead = serverMap.get(localLead.id);
-                if (!serverLead) return localLead;
+                if (!serverLead) {
+                  hasChanged = true;
+                  return localLead;
+                }
 
-                const serverUpdated = serverLead.updated_at || '';
-                const localUpdated = localLead.updated_at || '';
-
+                // Detecta qualquer alteração de status, follow-up, observações, N8N, presença digital ou timestamp
                 if (
                   serverLead.status_id !== localLead.status_id ||
                   serverLead.proximo_followup !== localLead.proximo_followup ||
                   serverLead.observacoes !== localLead.observacoes ||
-                  serverUpdated > localUpdated
+                  Boolean(serverLead.enviado_n8n) !== Boolean(localLead.enviado_n8n) ||
+                  serverLead.presenca_digital !== localLead.presenca_digital ||
+                  serverLead.site_atual !== localLead.site_atual ||
+                  serverLead.fase !== localLead.fase ||
+                  serverLead.nome !== localLead.nome ||
+                  (serverLead.updated_at || '') !== (localLead.updated_at || '')
                 ) {
                   hasChanged = true;
                   return { ...localLead, ...serverLead };
@@ -303,6 +315,7 @@ export function App() {
 
   useEffect(() => {
     syncWithD1().finally(() => {
+      d1HydratedRef.current = true;
       setD1Hydrated(true);
     });
   }, [syncWithD1]);
