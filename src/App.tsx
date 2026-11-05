@@ -183,13 +183,34 @@ export function App() {
   const [selectedBriefingProject, setSelectedBriefingProject] = useState<Project | null>(null);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('crm_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
 
-  // Atalhos Globais (Ctrl+K, N, Escape)
+  useEffect(() => {
+    try {
+      localStorage.setItem('crm_sidebar_collapsed', String(isSidebarCollapsed));
+    } catch {
+      // ignore
+    }
+  }, [isSidebarCollapsed]);
+
+  // Atalhos Globais (Ctrl+K, Ctrl+B, N, Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen(prev => !prev);
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setIsSidebarCollapsed(prev => !prev);
         return;
       }
 
@@ -1160,6 +1181,8 @@ export function App() {
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         isOpenMobile={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)}
       />
 
       <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-[#09090b] text-zinc-400 text-xs">Carregando módulo...</div>}>
