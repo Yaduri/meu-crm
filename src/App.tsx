@@ -262,9 +262,16 @@ export function App() {
       if (!res.ok) return;
       const data = await res.json();
       if (data.success && data.hasData && data.state) {
+        // Registra histórico de leads excluídos vindos do servidor (tombstones)
+        if (Array.isArray(data.state.deleted_lead_ids)) {
+          for (const id of data.state.deleted_lead_ids) {
+            deletedLeadIdsRef.current.add(String(id));
+          }
+        }
+
         if (Array.isArray(data.state.leads) && data.state.leads.length > 0) {
           setLeads(prevLeads => {
-            // Filtra leads que foram excluídos pelo usuário nesta sessão
+            // Filtra leads que foram excluídos pelo usuário nesta sessão ou no servidor
             const validServerLeads = (data.state.leads as ClientLead[]).filter(
               sl => !deletedLeadIdsRef.current.has(sl.id)
             );
@@ -283,14 +290,11 @@ export function App() {
             }
 
             // 1. Atualiza dados de leads existentes se o servidor tiver qualquer modificação
+            // e remove leads locais que não existem mais no servidor (foram excluídos em outro dispositivo)
             const merged = prevLeads
-              .filter(localLead => !deletedLeadIdsRef.current.has(localLead.id))
+              .filter(localLead => !deletedLeadIdsRef.current.has(localLead.id) && serverMap.has(localLead.id))
               .map(localLead => {
-                const serverLead = serverMap.get(localLead.id);
-                if (!serverLead) {
-                  hasChanged = true;
-                  return localLead;
-                }
+                const serverLead = serverMap.get(localLead.id)!;
 
                 // Detecta qualquer alteração de status, follow-up, observações, N8N, presença digital ou timestamp
                 if (
@@ -589,18 +593,28 @@ export function App() {
   };
 
   const handleSaveLead = (leadData: Partial<ClientLead>) => {
+    const nowIso = new Date().toISOString();
     if (editingLead && editingLead.id) {
+      let updatedSavedLead: ClientLead | null = null;
       setLeads(prev => prev.map(l => {
         if (l.id === editingLead.id) {
-          return {
+          updatedSavedLead = {
             ...l,
             ...leadData,
             cidade: leadData.cidade?.trim() || undefined,
-            updated_at: new Date().toISOString()
+            updated_at: nowIso
           } as ClientLead;
+          return updatedSavedLead;
         }
         return l;
       }));
+      if (updatedSavedLead) {
+        fetch('/api/leads/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ leads: [updatedSavedLead] })
+        }).catch(() => {});
+      }
     } else {
       const newLead: ClientLead = {
         id: Date.now().toString(),
@@ -622,13 +636,19 @@ export function App() {
         link_proposta: leadData.link_proposta,
         msg_a_mandar: leadData.msg_a_mandar,
         observacoes: leadData.observacoes,
+        enviado_n8n: leadData.enviado_n8n,
         followups_sem_resposta: 0,
         fase: 'prospeccao',
-        created_at: new Date().toISOString().slice(0, 10),
-        updated_at: new Date().toISOString().slice(0, 10)
+        created_at: nowIso.slice(0, 10),
+        updated_at: nowIso
       };
       setLeads(prev => [newLead, ...prev]);
       setSelectedLeadId(newLead.id);
+      fetch('/api/leads/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leads: [newLead] })
+      }).catch(() => {});
     }
     setEditingLead(null);
   };
@@ -646,6 +666,7 @@ export function App() {
   const handleAddMultipleLeads = (newLeadsData: Partial<ClientLead>[]) => {
     if (!newLeadsData || newLeadsData.length === 0) return;
     const now = Date.now();
+    const nowIso = new Date().toISOString();
     const createdLeads: ClientLead[] = newLeadsData.map((leadData, idx) => ({
       id: `${now}-${idx}`,
       nome: leadData.nome || 'Novo Lead',
@@ -668,11 +689,16 @@ export function App() {
       observacoes: leadData.observacoes || '',
       followups_sem_resposta: 0,
       fase: 'prospeccao',
-      created_at: new Date().toISOString().slice(0, 10),
-      updated_at: new Date().toISOString().slice(0, 10)
+      created_at: nowIso.slice(0, 10),
+      updated_at: nowIso
     }));
 
     setLeads(prev => [...createdLeads, ...prev]);
+    fetch('/api/leads/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leads: createdLeads })
+    }).catch(() => {});
   };
 
   const handleBulkUpdateLeads = (leadIds: string[], updates: Partial<ClientLead>) => {

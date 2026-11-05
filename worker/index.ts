@@ -118,6 +118,37 @@ app.get('/api/health', async (c) => {
   });
 });
 
+// Helpers para controle de leads excluídos (Tombstones contra ressurreição por cache de cliente)
+async function getDeletedLeadIds(db: D1Database): Promise<Set<string>> {
+  try {
+    const row = await db.prepare("SELECT value FROM crm_kv WHERE key = 'deleted_lead_ids'").first<{ value: string }>();
+    if (row?.value) {
+      const arr = JSON.parse(row.value);
+      if (Array.isArray(arr)) return new Set(arr.map(String));
+    }
+  } catch {
+    // ignore
+  }
+  return new Set();
+}
+
+async function markLeadsDeleted(db: D1Database, ids: string[]): Promise<void> {
+  if (!ids || ids.length === 0) return;
+  try {
+    const set = await getDeletedLeadIds(db);
+    for (const id of ids) {
+      if (id) set.add(String(id));
+    }
+    const arr = Array.from(set).slice(-5000); // mantém histórico recente de até 5000 exclusões
+    const now = new Date().toISOString();
+    await db.prepare(
+      "INSERT INTO crm_kv (key, value, updated_at) VALUES ('deleted_lead_ids', ?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
+    ).bind(JSON.stringify(arr), now).run();
+  } catch {
+    // ignore
+  }
+}
+
 // Carregar todo o estado sincronizado do CRM direto do Cloudflare D1
 app.get('/api/state', async (c) => {
   try {
@@ -168,6 +199,10 @@ app.get('/api/state', async (c) => {
     const filesRows = await c.env.DB.prepare('SELECT key, filename, content_type, size, created_at FROM files ORDER BY created_at DESC').all();
     state.files = filesRows.results;
 
+    // Lista de leads excluídos para os clientes expurgarem caches locais antigos
+    const deletedSet = await getDeletedLeadIds(c.env.DB);
+    state.deleted_lead_ids = Array.from(deletedSet);
+
     c.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     return c.json({
       success: true,
@@ -217,16 +252,29 @@ app.post('/api/state', async (c) => {
       const existingMap = new Map<string, string | null>(existingRows.results.map(r => [r.id, r.updated_at]));
 
       // 2. Remover leads excluídos
+      const deletedInThisSync: string[] = [];
       for (const row of existingRows.results) {
         if (!incomingIds.has(row.id)) {
           statements.push(c.env.DB.prepare('DELETE FROM leads WHERE id = ?').bind(row.id));
+          deletedInThisSync.push(row.id);
         }
       }
+      if (deletedInThisSync.length > 0) {
+        await markLeadsDeleted(c.env.DB, deletedInThisSync);
+      }
+
+      const deletedSet = await getDeletedLeadIds(c.env.DB);
 
       // 3. Inserir ou atualizar SOMENTE os leads novos ou que foram modificados
       for (const lead of incomingLeads) {
         if (lead.id) {
           const leadId = String(lead.id);
+
+          // Se o lead foi excluído no sistema, não permite que cache antigo do cliente o ressuscite
+          if (deletedSet.has(leadId)) {
+            continue;
+          }
+
           const leadUpdatedAt = lead.updated_at ? String(lead.updated_at) : now;
           const existingUpdatedAt = existingMap.get(leadId);
 
@@ -320,6 +368,7 @@ app.delete('/api/leads/:id', async (c) => {
   try {
     const id = c.req.param('id');
     await c.env.DB.prepare('DELETE FROM leads WHERE id = ?').bind(id).run();
+    await markLeadsDeleted(c.env.DB, [id]);
     return c.json({ ok: true, id });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erro ao excluir lead';
@@ -334,6 +383,7 @@ app.post('/api/leads/delete', async (c) => {
     const ids = body.ids || [];
     if (ids.length === 0) return c.json({ ok: true, deleted: 0 });
 
+    await markLeadsDeleted(c.env.DB, ids);
     const statements = ids.map(id => c.env.DB.prepare('DELETE FROM leads WHERE id = ?').bind(id));
     for (let i = 0; i < statements.length; i += 50) {
       await c.env.DB.batch(statements.slice(i, i + 50));
