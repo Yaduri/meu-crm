@@ -5,6 +5,7 @@ import { HojeView } from './components/views/HojeView';
 import { LeadModal } from './components/modals/LeadModal';
 import { exportLeadsToCsv } from './lib/csvMigration';
 import { extractFirstMessageFromScript } from './utils/conversationScript';
+import { calcularDataFollowup } from './utils/dateFormat';
 
 const ProspeccaoView = lazy(() => import('./components/views/ProspeccaoView').then(m => ({ default: m.ProspeccaoView })));
 const ProjetosView = lazy(() => import('./components/views/ProjetosView').then(m => ({ default: m.ProjetosView })));
@@ -439,9 +440,7 @@ export function App() {
     const statusCfg = DEFAULT_STATUSES.find(s => s.id === targetStatusId);
     const cadence = statusCfg ? statusCfg.cadenceDays : 2;
 
-    const nextDate = new Date();
-    nextDate.setDate(nextDate.getDate() + cadence);
-    const nextDateStr = cadence > 0 ? nextDate.toISOString().slice(0, 10) : undefined;
+    const nextDateStr = cadence > 0 ? calcularDataFollowup(cadence) : undefined;
 
     setLeads(prev => prev.map(l => {
       if (l.id === leadId) {
@@ -528,15 +527,14 @@ export function App() {
   };
 
   const handleReagendar = (leadId: string, days: number) => {
-    const nextDate = new Date();
-    nextDate.setDate(nextDate.getDate() + days);
-    const nextDateStr = nextDate.toISOString().slice(0, 10);
+    const nextDateStr = calcularDataFollowup(days);
 
     setLeads(prev => prev.map(l => {
       if (l.id === leadId) {
         return {
           ...l,
-          proximo_followup: nextDateStr
+          proximo_followup: nextDateStr,
+          updated_at: new Date().toISOString()
         };
       }
       return l;

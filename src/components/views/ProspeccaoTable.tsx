@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { ClientLead } from '../../types/crm';
 import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
-import { formatDateBR } from '../../utils/dateFormat';
+import { formatDateBR, calcularDataFollowup } from '../../utils/dateFormat';
 import { RevisarEnvioN8nModal, type LeadParaRevisaoN8n } from '../modals/RevisarEnvioN8nModal';
 import { inferirDadosSegmento, inferirDecisor, formatarTelefoneParaN8n, extrairCidadeLead } from '../../utils/segmentoHelper';
 import {
@@ -102,9 +102,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
     if (daysOffset === null) {
       onBulkUpdateLeads([leadId], { proximo_followup: undefined });
     } else {
-      const d = new Date();
-      d.setDate(d.getDate() + daysOffset);
-      const dateStr = d.toISOString().slice(0, 10);
+      const dateStr = calcularDataFollowup(daysOffset);
       onBulkUpdateLeads([leadId], { proximo_followup: dateStr });
     }
     setOpenFollowupLeadId(null);
@@ -215,9 +213,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
 
   const handleBulkFollowupDays = (daysOffset: number) => {
     if (!onBulkUpdateLeads || selectedIds.size === 0) return;
-    const d = new Date();
-    d.setDate(d.getDate() + daysOffset);
-    const dateStr = d.toISOString().slice(0, 10);
+    const dateStr = calcularDataFollowup(daysOffset);
     onBulkUpdateLeads(Array.from(selectedIds), { proximo_followup: dateStr });
     setSelectedIds(new Set());
   };

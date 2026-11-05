@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { ClientLead } from '../../types/crm';
 import { DEFAULT_STATUSES, isLeadActiveForFollowup } from '../../types/crm';
-import { formatDateBR, formatDateShortBR } from '../../utils/dateFormat';
+import { formatDateBR, formatDateShortBR, calcularDataFollowup } from '../../utils/dateFormat';
 import { 
   Send, 
   Search, 
@@ -79,9 +79,7 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
     if (daysOffset === null) {
       onBulkUpdateLeads([leadId], { proximo_followup: undefined });
     } else {
-      const d = new Date();
-      d.setDate(d.getDate() + daysOffset);
-      const dateStr = d.toISOString().slice(0, 10);
+      const dateStr = calcularDataFollowup(daysOffset);
       onBulkUpdateLeads([leadId], { proximo_followup: dateStr });
     }
     setOpenFollowupLeadId(null);

@@ -1131,8 +1131,21 @@ app.post('/api/prospeccao/webhook-n8n', async (c) => {
 
     const now = new Date();
     const todayStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
-    const in2Days = new Date(now.getTime() + 2 * 86400000).toISOString().slice(0, 10);
-    const in3Days = new Date(now.getTime() + 3 * 86400000).toISOString().slice(0, 10);
+
+    // Helper para calcular datas de follow-up pulando fins de semana (Sábado e Domingo jogam pra Segunda-feira)
+    const calcFollowupDate = (daysOffset: number): string => {
+      const target = new Date(now.getTime() + daysOffset * 86400000);
+      const day = target.getUTCDay(); // 0 = Domingo, 6 = Sábado
+      if (day === 6) {
+        target.setUTCDate(target.getUTCDate() + 2);
+      } else if (day === 0) {
+        target.setUTCDate(target.getUTCDate() + 1);
+      }
+      return target.toISOString().slice(0, 10);
+    };
+
+    const in2Days = calcFollowupDate(2);
+    const in3Days = calcFollowupDate(3);
 
     let newStatusId = leadRow.status_id;
     let nextFollowup = parsedLead.proximo_followup ? String(parsedLead.proximo_followup) : null;

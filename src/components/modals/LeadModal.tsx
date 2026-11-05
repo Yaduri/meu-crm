@@ -3,6 +3,7 @@ import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
 import { parseConversationScript } from '../../utils/conversationScript';
 import { extrairCidadeLead } from '../../utils/segmentoHelper';
+import { calcularDataFollowup } from '../../utils/dateFormat';
 import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste, MessageSquare, Clock, Copy, Check, Send, MapPin, Bot, User } from 'lucide-react';
 
 interface LeadModalProps {
@@ -515,9 +516,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
                       key={btn.label}
                       type="button"
                       onClick={() => {
-                        const d = new Date();
-                        d.setDate(d.getDate() + btn.days);
-                        setProximoFollowup(d.toISOString().slice(0, 10));
+                        setProximoFollowup(calcularDataFollowup(btn.days));
                       }}
                       className="px-1.5 py-0.5 rounded bg-[#27272a] hover:bg-zinc-700 text-zinc-200 text-[10px] font-mono cursor-pointer"
                     >
