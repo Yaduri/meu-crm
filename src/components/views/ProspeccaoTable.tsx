@@ -21,6 +21,8 @@ import {
   Sun,
   Check,
   MapPin,
+  Bot,
+  User,
 } from 'lucide-react';
 
 interface ProspeccaoTableProps {
@@ -61,6 +63,7 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<string>('todos');
   const [selectedNicho, setSelectedNicho] = useState<string>('todos');
   const [selectedPresenca, setSelectedPresenca] = useState<string>('todos');
+  const [selectedCanal, setSelectedCanal] = useState<'todos' | 'n8n' | 'manual'>('todos');
   const [sortField, setSortField] = useState<SortField>('nome');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_STEP);
@@ -165,7 +168,12 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
       const matchStatus = selectedStatus === 'todos' || l.status_id === selectedStatus;
       const matchNicho = selectedNicho === 'todos' || l.nicho === selectedNicho;
       const matchPresenca = selectedPresenca === 'todos' || (l.presenca_digital || 'Sem site') === selectedPresenca;
-      return matchSearch && matchStatus && matchNicho && matchPresenca;
+      const matchCanal = selectedCanal === 'todos'
+        ? true
+        : selectedCanal === 'n8n'
+          ? Boolean(l.enviado_n8n)
+          : !l.enviado_n8n;
+      return matchSearch && matchStatus && matchNicho && matchPresenca && matchCanal;
     })
     .sort((a, b) => {
       const multiplier = sortOrder === 'asc' ? 1 : -1;
@@ -300,7 +308,9 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
                 cidade: lr.cidade,
                 whatsapp: lr.telefone,
                 nicho: lr.segmento,
-                observacoes: lr.observacao
+                observacoes: lr.observacao,
+                enviado_n8n: true,
+                data_envio_n8n: new Date().toISOString()
               }
             }));
           if (updates.length > 0) {
@@ -476,6 +486,20 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
             <option value="Só Google Meu Negócio">Só Google Meu Negócio</option>
             <option value="Site bom">Site bom</option>
           </select>
+
+          <select
+            aria-label="Filtrar por canal"
+            value={selectedCanal}
+            onChange={(e) => {
+              setSelectedCanal(e.target.value as any);
+              setVisibleCount(PAGE_STEP);
+            }}
+            className="min-h-[34px] bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+          >
+            <option value="todos">Todos os canais</option>
+            <option value="n8n">🤖 Automação N8N</option>
+            <option value="manual">👤 Contato Manual</option>
+          </select>
         </div>
 
         <div className="text-xs text-zinc-400 font-medium font-mono">
@@ -627,7 +651,28 @@ export const ProspeccaoTable: React.FC<ProspeccaoTableProps> = ({
                     />
                   </td>
                   <td className="py-3 px-4 font-semibold text-zinc-100">
-                    <div className="leading-tight">{lead.nome}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="leading-tight">{lead.nome}</div>
+                      {lead.enviado_n8n ? (
+                        <span
+                          className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30"
+                          title={`Enviado para automação N8N${lead.data_envio_n8n ? ` em ${lead.data_envio_n8n.slice(0, 10)}` : ''}`}
+                        >
+                          <Bot size={10} className="text-indigo-400" />
+                          N8N
+                        </span>
+                      ) : (
+                        lead.status_id !== 'abordar' && (
+                          <span
+                            className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-800 text-zinc-400 border border-zinc-700/50"
+                            title="Contato realizado manualmente"
+                          >
+                            <User size={10} />
+                            Manual
+                          </span>
+                        )
+                      )}
+                    </div>
                     {lead.cidade && (
                       <div className="text-[10px] font-normal text-zinc-400 flex items-center gap-1 mt-0.5">
                         <MapPin size={10} className="text-rose-400 shrink-0" />

@@ -3,7 +3,7 @@ import type { ClientLead, PresencaDigital, LeadOrigem } from '../../types/crm';
 import { NICHOS_PADRAO, DEFAULT_STATUSES } from '../../types/crm';
 import { parseConversationScript } from '../../utils/conversationScript';
 import { extrairCidadeLead } from '../../utils/segmentoHelper';
-import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste, MessageSquare, Clock, Copy, Check, Send, MapPin } from 'lucide-react';
+import { X, AlertCircle, Trash2, FileText, Sparkles, Loader2, ClipboardPaste, MessageSquare, Clock, Copy, Check, Send, MapPin, Bot, User } from 'lucide-react';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -44,6 +44,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
   const [linkProposta, setLinkProposta] = useState(initialLead?.link_proposta || '');
   const [msgAMandar, setMsgAMandar] = useState(initialLead?.msg_a_mandar || '');
   const [observacoes, setObservacoes] = useState(initialLead?.observacoes || '');
+  const [enviadoN8n, setEnviadoN8n] = useState<boolean>(Boolean(initialLead?.enviado_n8n));
   const [aiLoadingIntent, setAiLoadingIntent] = useState<string | null>(null);
   const [showMagicPaste, setShowMagicPaste] = useState(false);
   const [rawPasteText, setRawPasteText] = useState('');
@@ -154,6 +155,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
       setLinkProposta(initialLead.link_proposta || '');
       setMsgAMandar(initialLead.msg_a_mandar || '');
       setObservacoes(initialLead.observacoes || '');
+      setEnviadoN8n(Boolean(initialLead.enviado_n8n));
     } else {
       setNome('');
       setNicho('Estética');
@@ -173,6 +175,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
       setLinkProposta('');
       setMsgAMandar('');
       setObservacoes('');
+      setEnviadoN8n(false);
     }
   }, [initialLead, isOpen]);
 
@@ -214,6 +217,7 @@ export const LeadModal: React.FC<LeadModalProps> = ({
       link_proposta: linkProposta,
       msg_a_mandar: msgAMandar,
       observacoes,
+      enviado_n8n: enviadoN8n,
     });
     onClose();
   };
@@ -414,6 +418,30 @@ export const LeadModal: React.FC<LeadModalProps> = ({
               placeholder="https://maps.google.com/..."
               className="w-full bg-[#18181b] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:border-emerald-500"
             />
+          </div>
+
+          {/* Canal de Prospecção (N8N vs Manual) */}
+          <div className="p-3 bg-[#16161a] border border-[#27272a] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <label className="block text-zinc-300 font-medium text-xs mb-0.5">Canal de Prospecção</label>
+              <p className="text-[11px] text-zinc-400">
+                {enviadoN8n
+                  ? 'Este lead foi enviado para automação pelo N8N.'
+                  : 'Prospecção manual direta (feita por você, sem robô).'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setEnviadoN8n(!enviadoN8n)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 border transition-all cursor-pointer whitespace-nowrap self-start sm:self-center ${
+                enviadoN8n
+                  ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/50 hover:bg-indigo-600/30'
+                  : 'bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700'
+              }`}
+            >
+              {enviadoN8n ? <Bot size={15} className="text-indigo-400" /> : <User size={15} className="text-zinc-400" />}
+              <span>{enviadoN8n ? '🤖 Automação N8N' : '👤 Contato Manual'}</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

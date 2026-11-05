@@ -16,7 +16,9 @@ import {
   UserPlus, 
   Search, 
   X,
-  ChevronDown
+  ChevronDown,
+  Bot,
+  User
 } from 'lucide-react';
 
 interface ProspeccaoViewProps {
@@ -32,7 +34,7 @@ interface ProspeccaoViewProps {
   onBulkDeleteLeads?: (leadIds: string[]) => void;
 }
 
-type FilterPill = 'todos' | 'hoje' | 'atrasado' | 'negociacao' | 'semsite' | 'abordar';
+type FilterPill = 'todos' | 'hoje' | 'atrasado' | 'negociacao' | 'semsite' | 'abordar' | 'n8n' | 'manual';
 
 const PRESENCA_OPTIONS: PresencaDigital[] = [
   'Sem site',
@@ -68,6 +70,8 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
   const countNegociacao = leads.filter(l => l.status_id === 'negociacao' || l.status_id === 'proposta_enviada').length;
   const countSemSite = leads.filter(l => l.presenca_digital === 'Sem site' || !l.site_atual).length;
   const countAAbordar = leads.filter(l => l.status_id === 'abordar').length;
+  const countN8N = leads.filter(l => Boolean(l.enviado_n8n)).length;
+  const countManual = leads.filter(l => l.status_id !== 'abordar' && !l.enviado_n8n).length;
 
   // Contagem por Presença Digital
   const countPresenca = leads.reduce((acc, l) => {
@@ -83,6 +87,8 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
     if (filterPill === 'negociacao' && l.status_id !== 'negociacao' && l.status_id !== 'proposta_enviada') return false;
     if (filterPill === 'semsite' && l.presenca_digital !== 'Sem site' && l.site_atual) return false;
     if (filterPill === 'abordar' && l.status_id !== 'abordar') return false;
+    if (filterPill === 'n8n' && !l.enviado_n8n) return false;
+    if (filterPill === 'manual' && (l.enviado_n8n || l.status_id === 'abordar')) return false;
 
     // Filtro por Presença Digital
     if (selectedPresenca !== 'todos') {
@@ -285,6 +291,44 @@ export const ProspeccaoView: React.FC<ProspeccaoViewProps> = ({
               filterPill === 'abordar' ? 'bg-emerald-500 text-white' : 'bg-emerald-500/20 text-emerald-300'
             }`}>
               {countAAbordar}
+            </span>
+          </button>
+
+          {/* N8N Automação */}
+          <button
+            type="button"
+            onClick={() => setFilterPill('n8n')}
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+              filterPill === 'n8n'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25 ring-1 ring-indigo-500'
+                : 'bg-[#141418] text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/30'
+            }`}
+          >
+            <Bot size={14} />
+            <span>N8N (Automação)</span>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono ml-0.5 ${
+              filterPill === 'n8n' ? 'bg-indigo-500 text-white' : 'bg-indigo-500/20 text-indigo-300'
+            }`}>
+              {countN8N}
+            </span>
+          </button>
+
+          {/* Manual */}
+          <button
+            type="button"
+            onClick={() => setFilterPill('manual')}
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+              filterPill === 'manual'
+                ? 'bg-zinc-700 text-white shadow-md shadow-zinc-700/25 ring-1 ring-zinc-500'
+                : 'bg-[#141418] text-zinc-400 hover:bg-zinc-800 border border-zinc-700/50'
+            }`}
+          >
+            <User size={14} />
+            <span>Contato Manual</span>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold font-mono ml-0.5 ${
+              filterPill === 'manual' ? 'bg-zinc-600 text-white' : 'bg-zinc-800 text-zinc-300'
+            }`}>
+              {countManual}
             </span>
           </button>
         </div>

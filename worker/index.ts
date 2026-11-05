@@ -979,6 +979,30 @@ app.post('/api/prospeccao/enviar-n8n', async (c) => {
       }, res.status >= 400 && res.status < 600 ? res.status as any : 502);
     }
 
+    // Marca os leads enviados no D1 como enviado_n8n = true
+    try {
+      const nowIso = new Date().toISOString();
+      const validIds = leads.map(l => l.id).filter(Boolean).map(String);
+      for (const lid of validIds) {
+        const row = await c.env.DB.prepare('SELECT data_json FROM leads WHERE id = ?').bind(lid).first<{ data_json: string }>();
+        if (row?.data_json) {
+          try {
+            const parsed = JSON.parse(row.data_json);
+            parsed.enviado_n8n = true;
+            parsed.data_envio_n8n = parsed.data_envio_n8n || nowIso;
+            parsed.updated_at = nowIso;
+            await c.env.DB.prepare('UPDATE leads SET data_json = ?, updated_at = ? WHERE id = ?')
+              .bind(JSON.stringify(parsed), nowIso, lid)
+              .run();
+          } catch {
+            // ignore JSON parse error
+          }
+        }
+      }
+    } catch {
+      // ignore update errors
+    }
+
     return c.json({
       ok: true,
       status: res.status,
@@ -1169,7 +1193,11 @@ app.post('/api/prospeccao/webhook-n8n', async (c) => {
 
     parsedLead.status_id = newStatusId;
     parsedLead.proximo_followup = nextFollowup || undefined;
+    parsedLead.enviado_n8n = true;
     parsedLead.updated_at = new Date().toISOString();
+    if (!parsedLead.data_envio_n8n) {
+      parsedLead.data_envio_n8n = parsedLead.updated_at;
+    }
 
     // Atualiza D1
     await c.env.DB.prepare(

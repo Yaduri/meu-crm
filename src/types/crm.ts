@@ -96,6 +96,8 @@ export interface ClientLead {
   etapa_entrega?: string;
   status_pagamento?: string;
   dia_vencimento?: number;
+  enviado_n8n?: boolean;           // Indica se o lead foi enviado para automação N8N
+  data_envio_n8n?: string;         // Data ISO do envio para N8N
   created_at: string;
   updated_at: string;
 }

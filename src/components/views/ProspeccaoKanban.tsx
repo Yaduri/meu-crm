@@ -15,6 +15,8 @@ import {
   X,
   Check,
   MapPin,
+  Bot,
+  User,
 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
@@ -41,6 +43,7 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
   const [showClosed, setShowClosed] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedNicho, setSelectedNicho] = useState<string>('todos');
+  const [selectedCanal, setSelectedCanal] = useState<'todos' | 'n8n' | 'manual'>('todos');
   const [columnLimits, setColumnLimits] = useState<Record<string, number>>({});
   const [openFollowupLeadId, setOpenFollowupLeadId] = useState<string | null>(null);
   const [customFollowupDate, setCustomFollowupDate] = useState<string>('');
@@ -104,7 +107,12 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
                           lead.nicho.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           (lead.whatsapp && lead.whatsapp.includes(searchTerm));
     const matchesNicho = selectedNicho === 'todos' || lead.nicho === selectedNicho;
-    return matchesSearch && matchesNicho;
+    const matchesCanal = selectedCanal === 'todos' 
+      ? true 
+      : selectedCanal === 'n8n' 
+        ? Boolean(lead.enviado_n8n) 
+        : !lead.enviado_n8n;
+    return matchesSearch && matchesNicho && matchesCanal;
   });
 
   // Separação de status
@@ -145,6 +153,17 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
             {uniqueNichos.map(nicho => (
               <option key={nicho} value={nicho}>{nicho}</option>
             ))}
+          </select>
+
+          <select
+            aria-label="Filtrar por automação ou manual"
+            value={selectedCanal}
+            onChange={(e) => setSelectedCanal(e.target.value as any)}
+            className="min-h-[34px] bg-[#18181b] border border-[#27272a] rounded-lg px-2.5 py-1.5 text-xs text-zinc-300 focus:outline-hidden focus:border-emerald-500 cursor-pointer"
+          >
+            <option value="todos">Todos os canais</option>
+            <option value="n8n">🤖 Automação N8N</option>
+            <option value="manual">👤 Contato Manual</option>
           </select>
         </div>
 
@@ -225,8 +244,29 @@ export const ProspeccaoKanban: React.FC<ProspeccaoKanbanProps> = ({
                                   snapshotDrag.isDragging ? 'shadow-2xl border-emerald-500 ring-2 ring-emerald-500/30' : ''
                                 }`}
                               >
-                                <div className="font-semibold text-xs text-zinc-100 leading-snug">
-                                  {lead.nome}
+                                <div className="flex items-start justify-between gap-1.5">
+                                  <div className="font-semibold text-xs text-zinc-100 leading-snug">
+                                    {lead.nome}
+                                  </div>
+                                  {lead.enviado_n8n ? (
+                                    <span
+                                      className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30"
+                                      title={`Enviado para automação N8N${lead.data_envio_n8n ? ` em ${lead.data_envio_n8n.slice(0, 10)}` : ''}`}
+                                    >
+                                      <Bot size={11} className="text-indigo-400" />
+                                      N8N
+                                    </span>
+                                  ) : (
+                                    lead.status_id !== 'abordar' && (
+                                      <span
+                                        className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium bg-zinc-800 text-zinc-400 border border-zinc-700/50"
+                                        title="Contato realizado manualmente"
+                                      >
+                                        <User size={10} />
+                                        Manual
+                                      </span>
+                                    )
+                                  )}
                                 </div>
                                 {lead.cidade && (
                                   <div className="text-[10px] font-normal text-zinc-400 flex items-center gap-1 mt-0.5">
