@@ -1239,15 +1239,35 @@ app.post('/api/prospeccao/webhook-n8n', async (c) => {
       parsedLead.observacoes = `${obsAtual}\n[N8N ${tag} - ${todayStr}]: ${motivo || mensagem || 'Cliente interessado'}`.trim();
     } else if (['followup', 'followup_enviado'].includes(event)) {
       parsedLead.ultimo_contato = todayStr;
-      const count = typeof parsedLead.followups_sem_resposta === 'number' ? parsedLead.followups_sem_resposta + 1 : 1;
+      const tentativaNum = body.tentativa !== undefined ? Number(body.tentativa) : null;
+      const count = (tentativaNum && !isNaN(tentativaNum))
+        ? tentativaNum
+        : (typeof parsedLead.followups_sem_resposta === 'number' ? parsedLead.followups_sem_resposta + 1 : 1);
       parsedLead.followups_sem_resposta = count;
-      nextFollowup = count >= 3 ? null : (count === 1 ? in2Days : in3Days);
+
+      // Cadência dos follow-ups:
+      // Tentativa 1 -> próximo em 2 dias úteis
+      // Tentativa 2 -> próximo em 4 dias úteis
+      // Tentativa >= 3 (ou se N8N marcou como encerrado) -> encerra sequência e move status se não respondido
+      if (count >= 3 || body.encerrado === true) {
+        nextFollowup = null;
+        if (newStatusId === 'abordado') {
+          newStatusId = 'parou_responder';
+        }
+      } else {
+        nextFollowup = count === 1 ? in2Days : calcFollowupDate(4);
+      }
+
+      if (body.proximo_followup) {
+        nextFollowup = String(body.proximo_followup).slice(0, 10);
+      }
+
       if (mensagem) {
         const obsAtual = String(parsedLead.observacoes || '');
         parsedLead.observacoes = `${obsAtual}\n[N8N Follow-up #${count} - ${todayStr}]: ${mensagem}`.trim();
       }
     } else if (['encerrado', 'recusou', 'sem_interesse'].includes(event)) {
-      newStatusId = 'recusou_sem_interesse';
+      newStatusId = (newStatusId === 'abordado' || newStatusId === 'conversa') ? 'parou_responder' : 'recusou_sem_interesse';
       nextFollowup = null;
       if (motivo) {
         const obsAtual = String(parsedLead.observacoes || '');
